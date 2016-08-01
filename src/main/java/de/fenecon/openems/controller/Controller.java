@@ -24,9 +24,13 @@ import de.fenecon.openems.modbus.device.counter.Counter;
 import de.fenecon.openems.modbus.device.ess.Ess;
 
 public abstract class Controller {
+	private static final int HYSTERESIS = 10;
 	private final String name;
 	protected final Map<String, Ess> esss;
 	protected final Map<String, Counter> counters;
+	private int lowSocCounter = HYSTERESIS;
+	private int lastSoc = 100;
+	private int minSoc = 10;
 
 	public Controller(String name, Map<String, Ess> esss, Map<String, Counter> counters) {
 		this.name = name;
@@ -42,7 +46,41 @@ public abstract class Controller {
 		}
 	}
 
+	public void setMinSoc(int minSoc) {
+		this.minSoc = minSoc;
+	}
+
+	public int getMinSoc() {
+		return minSoc;
+	}
+
 	public abstract void init();
 
 	public abstract void run();
+
+	public int calculateMinSocHyisteresis(int calculatedPower, int currentSoc) {
+		if (currentSoc >= minSoc) {
+			// increase the discharge Power slowly
+			if (lastSoc < minSoc) {
+				lowSocCounter = 0;
+			}
+			if (lowSocCounter < HYSTERESIS) {
+				lowSocCounter++;
+			}
+		} else {
+			// decrease the discharge Power slowly
+			if (lastSoc >= minSoc) {
+				lowSocCounter = HYSTERESIS;
+			}
+			if (lowSocCounter > 0) {
+				lowSocCounter--;
+			}
+		}
+		lastSoc = currentSoc;
+		System.out.println("vorher: " + calculatedPower + "; lowSocCounter: " + lowSocCounter);
+		// Calculate discharge power with hysteresis for the minSoc
+		calculatedPower = (int) (calculatedPower / (double) HYSTERESIS * lowSocCounter);
+		System.out.println("nachher: " + calculatedPower);
+		return calculatedPower;
+	}
 }
