@@ -20,10 +20,9 @@ package de.fenecon.openems.config;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import de.fenecon.openems.channel.ChannelWorker;
 import de.fenecon.openems.controller.ControllerWorker;
-import de.fenecon.openems.modbus.ModbusWorker;
-import de.fenecon.openems.modbus.device.counter.Counter;
-import de.fenecon.openems.modbus.device.ess.Ess;
+import de.fenecon.openems.device.Device;
 import de.fenecon.openems.monitoring.MonitoringWorker;
 
 public class Config {
@@ -31,50 +30,43 @@ public class Config {
 	private static final Logger log = Logger.getLogger(Config.class.getName());
 
 	private final String devicekey;
-	private final HashMap<String, ModbusWorker> modbuss;
-	private final HashMap<String, Ess> esss;
-	private final HashMap<String, Counter> counters;
-	private final HashMap<String, ControllerWorker> controllers;
-	private final HashMap<String, MonitoringWorker> monitorings;
+	private final HashMap<String, ChannelWorker> channelWorkers;
+	private final HashMap<String, Device> devices;
+	private final HashMap<String, ControllerWorker> controllerWorkers;
+	private final HashMap<String, MonitoringWorker> monitoringWorkers;
 
-	public Config(String devicekey, HashMap<String, ModbusWorker> modbuss, HashMap<String, Ess> esss,
-			HashMap<String, Counter> counters, HashMap<String, ControllerWorker> controllers,
-			HashMap<String, MonitoringWorker> monitorings) {
+	public Config(String devicekey, HashMap<String, ChannelWorker> channelWorkers, HashMap<String, Device> devices,
+			HashMap<String, ControllerWorker> controllerWorkers, HashMap<String, MonitoringWorker> monitoringWorkers) {
 		this.devicekey = devicekey;
-		this.modbuss = modbuss;
-		this.esss = esss;
-		this.counters = counters;
-		this.controllers = controllers;
-		this.monitorings = monitorings;
+		this.channelWorkers = channelWorkers;
+		this.devices = devices;
+		this.controllerWorkers = controllerWorkers;
+		this.monitoringWorkers = monitoringWorkers;
 	}
 
 	public String getDevicekey() {
 		return devicekey;
 	}
 
-	public HashMap<String, ModbusWorker> getModbuss() {
-		return modbuss;
+	public HashMap<String, ChannelWorker> getChannelWorkers() {
+		return channelWorkers;
 	}
 
-	public HashMap<String, Ess> getEsss() {
-		return esss;
+	public HashMap<String, Device> getDevices() {
+		return devices;
 	}
 
-	public HashMap<String, Counter> getCounters() {
-		return counters;
+	public HashMap<String, ControllerWorker> getControllerWorkers() {
+		return controllerWorkers;
 	}
 
-	public HashMap<String, ControllerWorker> getControllers() {
-		return controllers;
-	}
-
-	public HashMap<String, MonitoringWorker> getMonitorings() {
-		return monitorings;
+	public HashMap<String, MonitoringWorker> getMonitoringWorkers() {
+		return monitoringWorkers;
 	}
 
 	@Override
 	public String toString() {
-		return "Config [modbusWorkers=" + modbuss + ", esss=" + esss + ", counters=" + counters + ", controllerWorkers="
-				+ controllers + "]";
+		return "Config [devicekey=" + devicekey + ", channelWorkers=" + channelWorkers + ", devices=" + devices
+				+ ", controllerWorkers=" + controllerWorkers + ", monitoringWorkers=" + monitoringWorkers + "]";
 	}
 }

@@ -40,7 +40,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonStreamParser;
 
-import de.fenecon.openems.modbus.protocol.interfaces.ElementUpdateListener;
+import de.fenecon.openems.device.protocol.interfaces.ElementUpdateListener;
 import de.fenecon.openems.monitoring.MonitoringWorker;
 
 public class FeneconMonitoringWorker extends MonitoringWorker implements ElementUpdateListener {

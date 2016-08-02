@@ -22,42 +22,35 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fenecon.openems.modbus.device.counter.Counter;
-import de.fenecon.openems.modbus.device.counter.Socomec;
-import de.fenecon.openems.modbus.device.ess.Commercial;
-import de.fenecon.openems.modbus.device.ess.Ess;
-import de.fenecon.openems.modbus.device.ess.EssProtocol;
-import de.fenecon.openems.modbus.protocol.BitElement;
-import de.fenecon.openems.modbus.protocol.BitsElement;
-import de.fenecon.openems.modbus.protocol.SignedIntegerDoublewordElement;
-import de.fenecon.openems.modbus.protocol.SignedIntegerWordElement;
-import de.fenecon.openems.modbus.protocol.UnsignedIntegerDoublewordElement;
-import de.fenecon.openems.modbus.protocol.UnsignedShortWordElement;
+import de.fenecon.openems.device.counter.Counter;
+import de.fenecon.openems.device.counter.Socomec;
+import de.fenecon.openems.device.ess.Commercial;
+import de.fenecon.openems.device.ess.Ess;
+import de.fenecon.openems.device.ess.EssProtocol;
+import de.fenecon.openems.device.protocol.BitElement;
+import de.fenecon.openems.device.protocol.BitsElement;
+import de.fenecon.openems.device.protocol.SignedIntegerDoublewordElement;
+import de.fenecon.openems.device.protocol.SignedIntegerWordElement;
+import de.fenecon.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import de.fenecon.openems.device.protocol.UnsignedShortWordElement;
 
-public abstract class Balancing extends Controller {
+public class Balancing extends Controller {
 	private final static Logger log = LoggerFactory.getLogger(Balancing.class);
 
+	private final Counter gridCounter;
+	private final Map<String, Ess> essDevices;
 	private final boolean allowChargeFromAC;
-	private final boolean invertedCounter;
 
-	public Balancing(String name, Map<String, Ess> essDevices, Map<String, Counter> counterDevices,
-			boolean allowChargeFromAc) {
-		super(name, essDevices, counterDevices);
+	public Balancing(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc) {
+		super(name);
+		this.gridCounter = gridCounter;
+		this.essDevices = essDevices;
 		this.allowChargeFromAC = allowChargeFromAc;
-		this.invertedCounter = false;
-	}
-
-	// TODO: remove this
-	public Balancing(String name, Map<String, Ess> essDevices, Map<String, Counter> counterDevices,
-			boolean allowChargeFromAc, boolean invertedCounter) {
-		super(name, essDevices, counterDevices);
-		this.allowChargeFromAC = allowChargeFromAc;
-		this.invertedCounter = invertedCounter;
 	}
 
 	@Override
 	public void init() {
-		Commercial cess = (Commercial) esss.values().iterator().next();
+		Commercial cess = (Commercial) essDevices.values().iterator().next();
 		// TODO: check class
 		// TODO: take all ESS, not only first
 		BitsElement bitsElement = (BitsElement) cess.getElement(EssProtocol.SystemState.name());
@@ -80,7 +73,7 @@ public abstract class Balancing extends Controller {
 
 	@Override
 	public void run() {
-		Commercial cess = (Commercial) esss.values().iterator().next();
+		Commercial cess = (Commercial) essDevices.values().iterator().next();
 		// TODO: check class
 		// TODO: take all ESS, not only first
 		UnsignedShortWordElement cessSoc = cess.getSoc();
@@ -95,22 +88,19 @@ public abstract class Balancing extends Controller {
 		SignedIntegerWordElement cessPv1OutputPower = cess.getPv1OutputPower();
 		SignedIntegerWordElement cessPv2OutputPower = cess.getPv2OutputPower();
 
-		Socomec counter = (Socomec) (counters.get("grid"));
-		SignedIntegerDoublewordElement counterActivePower = counter.getActivePower();
-		int counterActivePowerValue = counter.getActivePower().getValue();
-		if (invertedCounter) {
-			counterActivePowerValue *= -1;
-			log.info("INVERTED! counterActivePowerValue: " + counterActivePowerValue);
-		}
-		SignedIntegerDoublewordElement counterReactivePower = counter.getReactivePower();
-		UnsignedIntegerDoublewordElement counterApparentPower = counter.getApparentPower();
-		UnsignedIntegerDoublewordElement counterActivePostiveEnergy = counter.getActivePositiveEnergy();
-		UnsignedIntegerDoublewordElement counterActiveNegativeEnergy = counter.getActiveNegativeEnergy();
+		// TODO: check class
+		Socomec gridCounterSocomec = (Socomec) gridCounter;
+		SignedIntegerDoublewordElement counterActivePower = gridCounterSocomec.getActivePower();
+		int counterActivePowerValue = gridCounterSocomec.getActivePower().getValue();
+		SignedIntegerDoublewordElement counterReactivePower = gridCounterSocomec.getReactivePower();
+		UnsignedIntegerDoublewordElement counterApparentPower = gridCounterSocomec.getApparentPower();
+		UnsignedIntegerDoublewordElement counterActivePostiveEnergy = gridCounterSocomec.getActivePositiveEnergy();
+		UnsignedIntegerDoublewordElement counterActiveNegativeEnergy = gridCounterSocomec.getActiveNegativeEnergy();
 
 		int calculatedCessActivePower;
 
 		// actual power calculation
-		calculatedCessActivePower = (cessActivePower.getValue() + counterActivePowerValue);
+		calculatedCessActivePower = cessActivePower.getValue() + counterActivePowerValue;
 
 		if (calculatedCessActivePower > 0) {
 			// discharge
@@ -139,25 +129,11 @@ public abstract class Balancing extends Controller {
 		lastCessActivePower = cessActivePower.getValue();
 		lastCounterActivePower = counterActivePowerValue;
 
-		/*
-		 * log.info("[" + cessSoc.readable() + "] PWR: [" +
-		 * cessActivePower.readable() + " " + cessReactivePower.readable() + " "
-		 * + cessApparentPower.readable() + "] ALLOWED: [" +
-		 * cessAllowedCharge.readable() + " " + cessAllowedDischarge.readable()
-		 * + " " + cessAllowedApparent.readable() + "] COUNTER: [" +
-		 * counterActivePower.readable() + " " + counterReactivePower.readable()
-		 * + " " + counterApparentPower.readable() + "] SET: [" +
-		 * calculatedCessActivePower + "]");
-		 */
-		log.info("[" + cessSoc.readable() + "] PWR: [" + cessActivePower.readable() + " "
-				+ cessReactivePower.readable() + " " + cessApparentPower.readable() + "] DCPV: ["
-				+ cessPv1OutputPower.readable() + cessPv2OutputPower.readable() + "] COUNTER: ["
-				+ counterActivePower.readable() + " " + counterReactivePower.readable() + " "
-				+ counterApparentPower.readable() + " +" + counterActivePostiveEnergy.readable() + " -"
-				+ counterActiveNegativeEnergy.readable() + "] SET: [" + calculatedCessActivePower + "]");
-	}
-
-	private int roundTo100(int value) {
-		return ((value + 99) / 100) * 100;
+		log.info("[" + cessSoc.readable() + "] PWR: [" + cessActivePower.readable() + " " + cessReactivePower.readable()
+				+ " " + cessApparentPower.readable() + "] DCPV: [" + cessPv1OutputPower.readable()
+				+ cessPv2OutputPower.readable() + "] COUNTER: [" + counterActivePower.readable() + " "
+				+ counterReactivePower.readable() + " " + counterApparentPower.readable() + " +"
+				+ counterActivePostiveEnergy.readable() + " -" + counterActiveNegativeEnergy.readable() + "] SET: ["
+				+ calculatedCessActivePower + "]");
 	}
 }

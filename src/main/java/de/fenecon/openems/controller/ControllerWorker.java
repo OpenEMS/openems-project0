@@ -22,15 +22,15 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fenecon.openems.modbus.ModbusWorker;
+import de.fenecon.openems.channel.ChannelWorker;
 
 public class ControllerWorker extends Thread {
 	private final static Logger log = LoggerFactory.getLogger(ControllerWorker.class);
 
-	private final Collection<ModbusWorker> modbusWorkers;
+	private final Collection<ChannelWorker> modbusWorkers;
 	private final Controller controller;
 
-	public ControllerWorker(String name, Collection<ModbusWorker> modbusWorkers, Controller controller) {
+	public ControllerWorker(String name, Collection<ChannelWorker> modbusWorkers, Controller controller) {
 		setName(name);
 		this.modbusWorkers = modbusWorkers;
 		this.controller = controller;
@@ -40,10 +40,10 @@ public class ControllerWorker extends Thread {
 	public void run() {
 		log.info("ControllerWorker {} started", getName());
 		// Initialize ModbusWorkers
-		for (ModbusWorker modbusWorker : modbusWorkers) {
+		for (ChannelWorker modbusWorker : modbusWorkers) {
 			modbusWorker.start();
 		}
-		for (ModbusWorker modbusWorker : modbusWorkers) {
+		for (ChannelWorker modbusWorker : modbusWorkers) {
 			try {
 				modbusWorker.waitForInit();
 			} catch (InterruptedException e) {
@@ -54,7 +54,7 @@ public class ControllerWorker extends Thread {
 
 		while (!isInterrupted()) {
 			try {
-				for (ModbusWorker modbusWorker : modbusWorkers) {
+				for (ChannelWorker modbusWorker : modbusWorkers) {
 					modbusWorker.waitForMain();
 				}
 				controller.run();

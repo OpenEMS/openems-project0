@@ -35,10 +35,10 @@ public class App {
 	public static void main(String[] args) throws Exception {
 		Config config = JsonConfigFactory.readConfigFromJsonFile();
 		log.info("Config: " + config);
-		for (ControllerWorker controllerWorker : config.getControllers().values()) {
+		for (ControllerWorker controllerWorker : config.getControllerWorkers().values()) {
 			controllerWorker.start();
 		}
-		for (MonitoringWorker monitoringWorker : config.getMonitorings().values()) {
+		for (MonitoringWorker monitoringWorker : config.getMonitoringWorkers().values()) {
 			monitoringWorker.start();
 		}
 	}

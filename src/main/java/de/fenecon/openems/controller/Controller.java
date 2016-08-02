@@ -17,33 +17,17 @@
  */
 package de.fenecon.openems.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import de.fenecon.openems.modbus.device.counter.Counter;
-import de.fenecon.openems.modbus.device.ess.Ess;
-
 public abstract class Controller {
 	private static final int HYSTERESIS = 10;
+
 	private final String name;
-	protected final Map<String, Ess> esss;
-	protected final Map<String, Counter> counters;
+
 	private int lowSocCounter = HYSTERESIS;
 	private int lastSoc = 100;
 	private int minSoc = 10;
 
-	public Controller(String name, Map<String, Ess> esss, Map<String, Counter> counters) {
+	public Controller(String name) {
 		this.name = name;
-		if (esss == null) {
-			this.esss = new HashMap<String, Ess>();
-		} else {
-			this.esss = esss;
-		}
-		if (counters == null) {
-			this.counters = new HashMap<String, Counter>();
-		} else {
-			this.counters = counters;
-		}
 	}
 
 	public void setMinSoc(int minSoc) {
@@ -58,7 +42,7 @@ public abstract class Controller {
 
 	public abstract void run();
 
-	public int calculateMinSocHyisteresis(int calculatedPower, int currentSoc) {
+	protected int calculateMinSocHyisteresis(int calculatedPower, int currentSoc) {
 		if (currentSoc >= minSoc) {
 			// increase the discharge Power slowly
 			if (lastSoc < minSoc) {

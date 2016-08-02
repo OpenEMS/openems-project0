@@ -22,10 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,50 +35,50 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-import de.fenecon.openems.controller.BalancingWithAcGenerator;
-import de.fenecon.openems.controller.BalancingWithAcGeneratorInvertedCounter;
-import de.fenecon.openems.controller.BalancingWithoutAcGenerator;
+import de.fenecon.openems.channel.ChannelWorker;
+import de.fenecon.openems.channel.modbus.ModbusChannelWorker;
+import de.fenecon.openems.channel.modbus.ModbusConnection;
+import de.fenecon.openems.channel.modbus.ModbusRtuConnection;
+import de.fenecon.openems.channel.modbus.ModbusTcpConnection;
 import de.fenecon.openems.controller.Controller;
+import de.fenecon.openems.controller.ControllerBuilder;
 import de.fenecon.openems.controller.ControllerWorker;
-import de.fenecon.openems.modbus.ModbusConnection;
-import de.fenecon.openems.modbus.ModbusRtuConnection;
-import de.fenecon.openems.modbus.ModbusTcpConnection;
-import de.fenecon.openems.modbus.ModbusWorker;
-import de.fenecon.openems.modbus.device.ModbusDevice;
-import de.fenecon.openems.modbus.device.counter.Counter;
-import de.fenecon.openems.modbus.device.counter.Socomec;
-import de.fenecon.openems.modbus.device.ess.Commercial;
-import de.fenecon.openems.modbus.device.ess.Ess;
+import de.fenecon.openems.device.Device;
+import de.fenecon.openems.device.DeviceBuilder;
+import de.fenecon.openems.device.counter.Counter;
+import de.fenecon.openems.device.ess.Ess;
 import de.fenecon.openems.monitoring.MonitoringWorker;
 import de.fenecon.openems.monitoring.fenecon.FeneconMonitoringWorker;
 
 /**
- * Create a fems-core {@link Config} from json
+ * Create an OpenEMS {@link Config} from json
  * 
- * @author stefan.feilmeier
+ * @author Stefan Feilmeier <stefan.feilmeier.@fenecon.de>
  */
 public class JsonConfigFactory {
 	private static final Logger log = Logger.getLogger(JsonConfigFactory.class.getName());
 
-	private final static File fileLin = new File("/etc/openems");
-	private final static File fileWin = new File("D:/fems/fems-core/fems-core");
+	private final static File configFile = new File("/etc/openems");
+	private final static File configFileDebug = new File("D:/fems/openems/openems");
 
 	public static Config readConfigFromJsonFile() throws Exception {
 		JsonObject jsonConfig = readJsonFile();
 		String devicekey = getDevicekey(jsonConfig.get("devicekey"));
-		HashMap<String, ModbusWorker> modbuss = getModbusWorkers(jsonConfig.get("modbus"));
-		HashMap<String, Ess> esss = getEsss(jsonConfig.get("ess"), modbuss);
-		HashMap<String, Counter> counters = getCounters(jsonConfig.get("counter"), modbuss);
-		HashMap<String, ControllerWorker> controllers = getControllerWorkers(jsonConfig.get("controller"), modbuss,
-				esss, counters);
-
-		Set<ModbusDevice> devices = new HashSet<>();
-		devices.addAll(esss.values());
-		devices.addAll(counters.values());
+		HashMap<String, ChannelWorker> channelWorkers = getChannelWorkers(jsonConfig.get("channel"));
+		HashMap<String, Device> devices = getDevices(jsonConfig.get("device"));
+		registerDevicesToChannels(devices, channelWorkers);
+		// HashMap<String, Ess> essDevices = getEssDevices(devices,
+		// channelWorkers);
+		// HashMap<String, Counter> counters = getCounters(devices,
+		// channelWorkers);
+		HashMap<String, ControllerWorker> controllers = getControllerWorkers(jsonConfig.get("controller"),
+				channelWorkers, devices);
 		HashMap<String, MonitoringWorker> monitorings = getMonitoringWorkers(jsonConfig.get("monitoring"), devicekey,
-				devices);
+				devices.values());
 
-		return new Config(devicekey, modbuss, esss, counters, controllers, monitorings);
+		// return new Config(devicekey, channelWorkers, essDevices, counters,
+		// controllers, monitorings);
+		return new Config(devicekey, channelWorkers, devices, controllers, monitorings);
 	}
 
 	private static JsonObject readJsonFile() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
@@ -91,10 +90,10 @@ public class JsonConfigFactory {
 	}
 
 	private static File getConfigFile() {
-		if (fileLin.exists()) {
-			return fileLin;
+		if (configFile.exists()) {
+			return configFile;
 		} else {
-			return fileWin;
+			return configFileDebug;
 		}
 	}
 
@@ -122,108 +121,22 @@ public class JsonConfigFactory {
 	}
 
 	/**
-	 * Create {@link Ess}s from json config:
+	 * Create {@link ModbusChannelWorker}s per channel:
 	 * 
 	 * <pre>
-	 * "ess": {
-	 *   "cess0": {
-	 *     "essType": "Commercial",
-	 *     "modbus": "192.168.1.88",
-	 *     "unitid": 100
-	 *   }
-	 * },
-	 * </pre>
-	 * 
-	 * @param jsonElement
-	 * @param modbusWorkers
-	 * @return
-	 */
-	private static HashMap<String, Ess> getEsss(JsonElement jsonElement, HashMap<String, ModbusWorker> modbusWorkers) {
-		HashMap<String, Ess> esss = new HashMap<String, Ess>();
-		if (jsonElement != null && jsonElement.isJsonObject()) {
-			JsonObject jsonObject = jsonElement.getAsJsonObject();
-			for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-				JsonObject obj = entry.getValue().getAsJsonObject();
-				Ess ess = null;
-				switch (obj.get("essType").getAsString()) {
-				case "Commercial":
-					ess = new Commercial(entry.getKey(), obj.get("modbus").getAsString(), obj.get("unitid").getAsInt());
-					break;
-				default:
-					throw new UnsupportedOperationException(
-							"EssType " + obj.get("essType").getAsString() + " is not implemented!");
-				}
-				esss.put(entry.getKey(), ess);
-				// register to ModbusWorker
-				ModbusWorker worker = modbusWorkers.get(ess.getModbusid());
-				worker.registerDevice(ess);
-			}
-		}
-		return esss;
-	}
-
-	/**
-	 * Create {@link Counter}s from json config:
-	 * 
-	 * <pre>
-	 * "counter": {
-	 *   "grid": {
-	 *     "counterType": "Socomec",
-	 *     "modbus": "/dev/ttyUSB0",
-	 *     "unitid": 5
-	 *   }
-	 * },
-	 * </pre>
-	 * 
-	 * @param jsonElement
-	 *            to be interpreted
-	 * @param modbusWorkers
-	 *            to be used by {@link Counter}s
-	 * @return
-	 */
-	private static HashMap<String, Counter> getCounters(JsonElement jsonElement,
-			HashMap<String, ModbusWorker> modbusWorkers) {
-		HashMap<String, Counter> counters = new HashMap<String, Counter>();
-		if (jsonElement != null && jsonElement.isJsonObject()) {
-			JsonObject jsonObject = jsonElement.getAsJsonObject();
-			for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-				JsonObject obj = entry.getValue().getAsJsonObject();
-				Counter counter = null;
-				switch (obj.get("counterType").getAsString()) {
-				case "Socomec":
-					counter = new Socomec(entry.getKey(), obj.get("modbus").getAsString(),
-							obj.get("unitid").getAsInt());
-					break;
-				default:
-					throw new UnsupportedOperationException(
-							"CounterType " + obj.get("counterType").getAsString() + " is not implemented!");
-				}
-				counters.put(entry.getKey(), counter);
-				// register to ModbusWorker
-				ModbusWorker worker = modbusWorkers.get(counter.getModbusid());
-				worker.registerDevice(counter);
-			}
-		}
-		return counters;
-	}
-
-	/**
-	 * Create {@link ModbusWorker}s from json config:
-	 * 
-	 * <pre>
-	 * "modbus": {
-	 *   "/dev/ttyUSB0": {
-	 *     "modbusType": "RTU",
+	 * "channel": {
+	 *   "usb0": {
+	 *     "type": "modbus rtu",
+	 *     "serialInterface": "/dev/ttyUSB0",
 	 *     "baudrate": "38400",
-	 *     "serialinterface": "/dev/ttyUSB0",
 	 *     "databits": 8,
 	 *     "parity": "even",
 	 *     "stopbits": 1,
 	 *     "cycle": 1000
 	 *   },
-	 *   "192.168.1.88": {
-	 *     "modbusType": "TCP",
-	 *     "inetAddress": "192.168.1.88",
+	 *   "lan0": {
+	 *     type: "modbus tcp",
+	 *     "inetAddress": "10.4.0.15",
 	 *     "cycle": 1000
 	 *   }
 	 * }
@@ -233,23 +146,23 @@ public class JsonConfigFactory {
 	 * @return
 	 * @throws UnknownHostException
 	 */
-	private static HashMap<String, ModbusWorker> getModbusWorkers(JsonElement jsonElement) throws UnknownHostException {
-		HashMap<String, ModbusWorker> modbusWorkers = new HashMap<String, ModbusWorker>();
+	private static HashMap<String, ChannelWorker> getChannelWorkers(JsonElement jsonElement)
+			throws UnknownHostException {
+		HashMap<String, ChannelWorker> channelWorkers = new HashMap<>();
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject jsonObject = jsonElement.getAsJsonObject();
-
 			for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
 				JsonObject obj = entry.getValue().getAsJsonObject();
 				ModbusConnection modbusConnection = null;
-				switch (obj.get("modbusType").getAsString()) {
-				case "RTU":
+				switch (obj.get("type").getAsString().toLowerCase()) {
+				case "modbus rtu":
 					modbusConnection = new ModbusRtuConnection(obj.get("serialinterface").getAsString(),
 							obj.get("baudrate").getAsString(), obj.get("databits").getAsInt(),
 							obj.get("parity").getAsString(), obj.get("stopbits").getAsInt(),
 							obj.get("cycle").getAsInt());
 					break;
 
-				case "TCP":
+				case "modbus tcp":
 					modbusConnection = new ModbusTcpConnection(
 							InetAddress.getByName(obj.get("inetAddress").getAsString()), obj.get("cycle").getAsInt());
 					break;
@@ -259,10 +172,105 @@ public class JsonConfigFactory {
 							"ModbusType " + obj.get("modbusType").getAsString() + " is not implemented!");
 				}
 
-				modbusWorkers.put(entry.getKey(), new ModbusWorker(entry.getKey(), modbusConnection));
+				channelWorkers.put(entry.getKey(), new ModbusChannelWorker(entry.getKey(), modbusConnection));
 			}
 		}
-		return modbusWorkers;
+		return channelWorkers;
+	}
+
+	/**
+	 * Read {@link Device}s:
+	 * 
+	 * <pre>
+	 * "device": {
+	 *   "ess0": {
+	 *     "type": "ess",
+	 *     "protocol": "FENECON Commercial",
+	 *     "channel": "lan0",
+	 *     "modbusUnit": 100
+	 *   },
+	 *   "counter0": {
+	 *     "type": "counter",
+	 *     "protocol": "Socomec",
+	 *     "channel": "usb0",
+	 *     "modbusUnit": 5
+	 *   }
+	 * },
+	 * </pre>
+	 * 
+	 * @param jsonElement
+	 * @param modbusWorkers
+	 * @return
+	 */
+	private static HashMap<String, Device> getDevices(JsonElement jsonElement) {
+		HashMap<String, Device> devices = new HashMap<>();
+		if (jsonElement != null && jsonElement.isJsonObject()) {
+			JsonObject jsonObject = jsonElement.getAsJsonObject();
+			for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+				JsonObject obj = entry.getValue().getAsJsonObject();
+				DeviceBuilder devBuilder = new DeviceBuilder().name(entry.getKey());
+				if (obj.has("type")) {
+					devBuilder.type(obj.get("type").getAsString());
+				}
+				if (obj.has("protocol")) {
+					devBuilder.protocol(obj.get("protocol").getAsString());
+				}
+				if (obj.has("channel")) {
+					devBuilder.channel(obj.get("channel").getAsString());
+				}
+				if (obj.has("modbusUnit")) {
+					devBuilder.modbusUnit(obj.get("modbusUnit").getAsInt());
+				}
+				Device device = devBuilder.build();
+				devices.put(entry.getKey(), device);
+			}
+		}
+		return devices;
+	}
+
+	/**
+	 * Connect {@link Device}s with their {@link ChannelWorker}
+	 * 
+	 * @param devices
+	 * @param channelWorkers
+	 */
+	private static void registerDevicesToChannels(HashMap<String, Device> devices,
+			HashMap<String, ChannelWorker> channelWorkers) {
+		for (Device device : devices.values()) {
+			channelWorkers.get(device.getChannel()).registerDevice(device);
+		}
+	}
+
+	/**
+	 * Create Map of {@link Ess}s
+	 */
+	private static HashMap<String, Ess> getEssDevices(HashMap<String, Device> devices,
+			HashMap<String, ChannelWorker> channelWorkers) {
+		HashMap<String, Ess> essDevices = new HashMap<String, Ess>();
+		for (Entry<String, Device> entry : devices.entrySet()) {
+			if (entry.getValue() instanceof Ess) {
+				Ess essDevice = (Ess) entry.getValue();
+				ChannelWorker worker = channelWorkers.get(essDevice.getChannel());
+				worker.registerDevice(essDevice);
+			}
+		}
+		return essDevices;
+	}
+
+	/**
+	 * Create Map of {@link Counter}s
+	 */
+	private static HashMap<String, Counter> getCounters(HashMap<String, Device> devices,
+			HashMap<String, ChannelWorker> channelWorkers) {
+		HashMap<String, Counter> counterDevices = new HashMap<>();
+		for (Entry<String, Device> entry : devices.entrySet()) {
+			if (entry.getValue() instanceof Counter) {
+				Counter counterDevice = (Counter) entry.getValue();
+				ChannelWorker worker = channelWorkers.get(counterDevice.getChannel());
+				worker.registerDevice(counterDevice);
+			}
+		}
+		return counterDevices;
 	}
 
 	/**
@@ -271,95 +279,67 @@ public class JsonConfigFactory {
 	 * <pre>
 	 * "controller": {
 	 *   "controller0": {
-	 *     "ess": [ 
-	 *       "cess0"
-	 *     ], 
-	 *     "counter": [
-	 *       "grid"
-	 *     ], 
-	 *     "strategy": [{
-	 *       "implementation": "BalancingWithoutAcGenerator",
-	 *       "minSoc": 10 
-	 *     }] 
-	 *   } 
+	 *     "devices": {
+	 *       "ess0",
+	 *       "counter0"
+	 *     },
+	 *     "strategy": {
+	 *       "implementation": "balancing",
+	 *       "chargeFromAc": false,
+	 *       "minSoc": 10,
+	 *       "gridCounter": "counter0",
+	 *       "ess": [
+	 *         "ess0"
+	 *       ]
+	 *     }
+	 *   }
 	 * }
 	 * </pre>
 	 * 
-	 * @param jsonElement
-	 * @param esss
-	 * @param counters
 	 * @return
 	 */
 	private static HashMap<String, ControllerWorker> getControllerWorkers(JsonElement jsonElement,
-			HashMap<String, ModbusWorker> modbusWorkers, HashMap<String, Ess> esss, HashMap<String, Counter> counters) {
+			HashMap<String, ChannelWorker> channelWorkers, HashMap<String, Device> devices) {
 		HashMap<String, ControllerWorker> controllerWorkers = new HashMap<String, ControllerWorker>();
 		if (jsonElement != null && jsonElement.isJsonObject()) {
-			JsonObject json = jsonElement.getAsJsonObject();
-			for (Entry<String, JsonElement> jsonControllerElement : json.entrySet()) {
-				JsonObject jsonController = jsonControllerElement.getValue().getAsJsonObject();
-				// get esss
-				HashMap<String, Ess> controllerEsss = new HashMap<String, Ess>();
-				for (JsonElement ess : jsonController.get("ess").getAsJsonArray()) {
-					controllerEsss.put(ess.getAsString(), esss.get(ess.getAsString()));
+			JsonObject jsonObject = jsonElement.getAsJsonObject();
+			for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+				JsonObject obj = entry.getValue().getAsJsonObject();
+				ControllerBuilder controllerBuilder = new ControllerBuilder().name(entry.getKey());
+				if (obj.has("implementation")) {
+					controllerBuilder.implementation(obj.get("implementation").getAsString());
 				}
-				// get counters
-				HashMap<String, Counter> controllerCounters = new HashMap<String, Counter>();
-				for (JsonElement counter : jsonController.get("counter").getAsJsonArray()) {
-					controllerCounters.put(counter.getAsString(), counters.get(counter.getAsString()));
+				if (obj.has("chargeFromAc")) {
+					controllerBuilder.chargeFromAc(obj.get("chargeFromAc").getAsBoolean());
 				}
-				// get controller
-				JsonArray jsonControllerStrategyArray = jsonController.get("strategy").getAsJsonArray();
-				for (int i = 0; i < jsonControllerStrategyArray.size(); i++) {
-					// get controller name
-					String name = jsonControllerElement.getKey();
-					if (i > 0) {
-						name += "-" + i;
-					}
-					JsonObject jsonControllerStrategy = jsonControllerStrategyArray.get(i).getAsJsonObject();
-
-					Controller controller;
-					switch (jsonControllerStrategy.get("implementation").getAsString()) {
-
-					case "BalancingWithoutAcGenerator": {
-						BalancingWithoutAcGenerator c = new BalancingWithoutAcGenerator(jsonControllerElement.getKey(),
-								controllerEsss, controllerCounters);
-						if (jsonControllerStrategy.has("minSoc")) {
-							c.setMinSoc(jsonControllerStrategy.get("minSoc").getAsInt());
-						}
-						controller = c;
-						break;
-					}
-
-					case "BalancingWithAcGenerator": {
-						BalancingWithAcGenerator c = new BalancingWithAcGenerator(jsonControllerElement.getKey(),
-								controllerEsss, controllerCounters);
-						if (jsonControllerStrategy.has("minSoc")) {
-							c.setMinSoc(jsonControllerStrategy.get("minSoc").getAsInt());
-						}
-						controller = c;
-						break;
-					}
-
-					case "BalancingWithAcGeneratorInvertedCounter": {
-						BalancingWithAcGeneratorInvertedCounter c = new BalancingWithAcGeneratorInvertedCounter(
-								jsonControllerElement.getKey(), controllerEsss, controllerCounters);
-						if (jsonControllerStrategy.has("minSoc")) {
-							c.setMinSoc(jsonControllerStrategy.get("minSoc").getAsInt());
-						}
-						controller = c;
-						break;
-					}
-
-					default:
-						throw new UnsupportedOperationException("Controller strategy "
-								+ jsonControllerStrategy.get("implementation").getAsString() + " is not implemented!");
-					}
-
-					controllerWorkers.put(name, new ControllerWorker(name, modbusWorkers.values(), controller));
+				if (obj.has("minSoc")) {
+					controllerBuilder.minSoc(obj.get("minSoc").getAsInt());
 				}
+				if (obj.has("gridCounter")) {
+					String gridCounter = obj.get("gridCounter").getAsString();
+					Device device = devices.get(gridCounter);
+					if (device instanceof Counter) {
+						controllerBuilder.gridCounter((Counter) device);
+					}
+				}
+				if (obj.has("ess")) {
+					JsonArray essJsonArray = obj.get("ess").getAsJsonArray();
+					for (JsonElement essJsonElement : essJsonArray) {
+						String essDevice = essJsonElement.getAsString();
+						Device device = devices.get(essDevice);
+						if (device instanceof Ess) {
+							controllerBuilder.addEss(essDevice, (Ess) device);
+						}
+					}
+				}
+				Controller controller = controllerBuilder.build();
+				ControllerWorker controllerWorker = new ControllerWorker(entry.getKey(), channelWorkers.values(),
+						controller);
+				controllerWorkers.put(entry.getKey(), controllerWorker);
 			}
 		}
 		return controllerWorkers;
+
 	}
 
 	/**
@@ -378,11 +358,11 @@ public class JsonConfigFactory {
 	 * @return
 	 */
 	private static HashMap<String, MonitoringWorker> getMonitoringWorkers(JsonElement jsonElement, String devicekey,
-			Set<ModbusDevice> devices) {
+			Collection<Device> devices) {
 		HashMap<String, MonitoringWorker> monitoringWorkers = new HashMap<String, MonitoringWorker>();
 		// default monitoring
 		FeneconMonitoringWorker feneconMonitoring = new FeneconMonitoringWorker(devicekey);
-		for (ModbusDevice device : devices) { // add listener for all elements
+		for (Device device : devices) { // add listener for all elements
 			for (String elementName : device.getElements()) {
 				device.getElement(elementName).addListener(feneconMonitoring);
 			}
