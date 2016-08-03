@@ -54,6 +54,12 @@ public class DeviceBuilder {
 			}
 			break;
 		}
-		throw new UnsupportedOperationException("DeviceBuilder: " + this.toString() + " is not implemented!");
+		throw new UnsupportedOperationException(this.toString() + " is not implemented!");
+	}
+
+	@Override
+	public String toString() {
+		return "DeviceBuilder [name=" + name + ", type=" + type + ", protocol=" + protocol + ", channel=" + channel
+				+ ", modbusUnit=" + modbusUnit + "]";
 	}
 }
