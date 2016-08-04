@@ -81,4 +81,10 @@ public class DeviceBuilder {
 		device.init();
 		return device;
 	}
+
+	@Override
+	public String toString() {
+		return "DeviceBuilder [name=" + name + ", type=" + type + ", protocol=" + protocol + ", channel=" + channel
+				+ ", modbusUnit=" + modbusUnit + "]";
+	}
 }

@@ -26,7 +26,7 @@ import de.fenecon.openems.device.protocol.ElementBuilder;
 import de.fenecon.openems.device.protocol.ElementRange;
 import de.fenecon.openems.device.protocol.ModbusProtocol;
 
-public class Wago extends Io {
+public class Wago extends IO {
 
 	private InetAddress ip;
 

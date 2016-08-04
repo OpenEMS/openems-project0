@@ -17,12 +17,21 @@
  */
 package de.fenecon.openems;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import de.fenecon.openems.api.rest.RestWorker;
+import de.fenecon.openems.channel.ChannelWorker;
 import de.fenecon.openems.config.Config;
-import de.fenecon.openems.config.JsonConfigFactory;
 import de.fenecon.openems.controller.ControllerWorker;
+import de.fenecon.openems.device.Device;
 import de.fenecon.openems.monitoring.MonitoringWorker;
 
 /**
@@ -32,25 +41,84 @@ import de.fenecon.openems.monitoring.MonitoringWorker;
 public class App {
 	private final static Logger log = LoggerFactory.getLogger(App.class);
 
+	private static Map<String, ChannelWorker> channelWorkers = new HashMap<>();
+	private static Map<String, ControllerWorker> controllerWorkers = new HashMap<>();
+	private static Map<String, MonitoringWorker> monitoringWorkers = new HashMap<>();
+
+	private static Config config = null;
+
+	/**
+	 * Main method
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
-		Config config = JsonConfigFactory.readConfigFromJsonFile();
-		log.info("Config: " + config);
-		for (ControllerWorker controllerWorker : config.getControllerWorkers().values()) {
+		config = new Config(Config.readJsonFile());
+		updateConfig(config);
+	}
+
+	/**
+	 * Starts all workers
+	 */
+	private static void startWorkers() {
+		for (ControllerWorker controllerWorker : controllerWorkers.values()) {
 			controllerWorker.start();
 		}
-		for (MonitoringWorker monitoringWorker : config.getMonitoringWorkers().values()) {
+		for (MonitoringWorker monitoringWorker : monitoringWorkers.values()) {
 			monitoringWorker.start();
 		}
-		// TCPMasterConnection con = new
-		// TCPMasterConnection(InetAddress.getByName("192.168.178.152"));
-		// con.setPort(502);
-		// con.connect();
-		// ModbusTCPTransaction trans = new ModbusTCPTransaction(con);
-		// WriteMultipleCoilsRequest req = new WriteMultipleCoilsRequest(512,
-		// 2);
-		// req.setCoilStatus(0, false);
-		// req.setCoilStatus(1, true);
-		// trans.setRequest(req);
-		// trans.execute();
+		try {
+			RestWorker.startWorker();
+		} catch (Exception e) {
+			log.warn("Unable to start REST-Api");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Stops all workers
+	 */
+	private static void stopWorkers() {
+		for (ControllerWorker controllerWorker : controllerWorkers.values()) {
+			controllerWorker.interrupt();
+		}
+		for (MonitoringWorker monitoringWorker : monitoringWorkers.values()) {
+			monitoringWorker.interrupt();
+		}
+		try {
+			RestWorker.stopWorker();
+		} catch (Exception e) {
+			log.warn("Unable to stop REST-Api");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Applies a new configuration. Restarts all workers.
+	 * 
+	 * @param config
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 */
+	public static void updateConfig(Config config) throws IOException, ParserConfigurationException, SAXException {
+		stopWorkers();
+		String devicekey = config.getDevicekey();
+		channelWorkers = config.getChannelWorkers();
+		HashMap<String, Device> devices = config.getDevices();
+		config.registerDevicesToChannelWorkers(devices, channelWorkers);
+		controllerWorkers = config.getControllerWorkers(devices, channelWorkers);
+		monitoringWorkers = config.getMonitoringWorkers(devicekey, devices);
+		startWorkers();
+	}
+
+	/**
+	 * Provides the configuration object
+	 * 
+	 * @return
+	 */
+	public static Config getConfig() {
+		return config;
 	}
 }

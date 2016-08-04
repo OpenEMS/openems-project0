@@ -8,9 +8,9 @@ import org.xml.sax.SAXException;
 
 import de.fenecon.openems.channel.modbus.WritableModbusDevice;
 
-public abstract class Io extends WritableModbusDevice {
+public abstract class IO extends WritableModbusDevice {
 
-	public Io(String name, String channel, int unitid) throws IOException, ParserConfigurationException, SAXException {
+	public IO(String name, String channel, int unitid) throws IOException, ParserConfigurationException, SAXException {
 		super(name, channel, unitid);
 	}
 

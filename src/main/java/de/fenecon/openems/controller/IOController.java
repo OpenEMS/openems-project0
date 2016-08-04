@@ -2,14 +2,14 @@ package de.fenecon.openems.controller;
 
 import java.util.HashMap;
 
-import de.fenecon.openems.device.io.Io;
+import de.fenecon.openems.device.io.IO;
 import de.fenecon.openems.device.io.Wago;
 
 public class IOController extends Controller {
 
-	private final HashMap<String, Io> io;
+	private final HashMap<String, IO> io;
 
-	public IOController(String name, HashMap<String, Io> io) {
+	public IOController(String name, HashMap<String, IO> io) {
 		super(name);
 		this.io = io;
 	}
