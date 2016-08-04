@@ -43,6 +43,8 @@ public class ModbusChannelWorker extends ChannelWorker {
 		return modbusConnection;
 	}
 
+	long beforeRun = 0;
+
 	@Override
 	public synchronized void run() {
 		log.info("ModbusWorker {} started: {}", getName(), toString());
@@ -59,6 +61,7 @@ public class ModbusChannelWorker extends ChannelWorker {
 		initQueryFinished.release();
 
 		while (!isInterrupted()) {
+			beforeRun = System.nanoTime();
 			// Execute Modbus Main Queries
 			boolean error = false;
 			for (Device device : devices) {
@@ -75,17 +78,17 @@ public class ModbusChannelWorker extends ChannelWorker {
 				mainQueryFinished.release();
 			}
 
-			// Execute Next Modbus Queries
-			for (Device device : devices) {
-				if (device instanceof ModbusDevice) { // TODO: fix polymorphism
-					try {
-						((ModbusDevice) device).executeRemainingQuery(modbusConnection);
-					} catch (Exception e) {
-						log.error("Query-Exception: {}", e.getMessage());
-						e.printStackTrace();
-					}
-				}
-			}
+			// // Execute Next Modbus Queries
+			// for (Device device : devices) {
+			// if (device instanceof ModbusDevice) { // TODO: fix polymorphism
+			// try {
+			// ((ModbusDevice) device).executeRemainingQuery(modbusConnection);
+			// } catch (Exception e) {
+			// log.error("Query-Exception: {}", e.getMessage());
+			// e.printStackTrace();
+			// }
+			// }
+			// }
 
 			// Execute Modbus Writes
 			// TODO start write only after controller finished (maybe via write
@@ -101,12 +104,16 @@ public class ModbusChannelWorker extends ChannelWorker {
 			}
 
 			// Sleep till next cycle
-			try {
-				Thread.sleep(this.modbusConnection.getCycle());
-				// TODO: calculate the difference from method start till now and
-				// wait only remaining time
-			} catch (InterruptedException e) {
-				interrupt();
+			long elapsedTime = (System.nanoTime() - beforeRun) / 1000000;
+			if (elapsedTime > this.modbusConnection.getCycle()) {
+				log.info(String.format("elapsed time (%d) is larger then cycle time (%d)", elapsedTime,
+						this.modbusConnection.getCycle()));
+			} else {
+				try {
+					Thread.sleep(this.modbusConnection.getCycle() - elapsedTime);
+				} catch (InterruptedException e) {
+					interrupt();
+				}
 			}
 		}
 		log.info("ModbusWorker {} stopped", getName());
