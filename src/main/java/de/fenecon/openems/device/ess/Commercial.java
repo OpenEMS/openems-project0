@@ -66,6 +66,7 @@ public class Commercial extends Ess {
 				EssProtocol.AllowedCharge.name(), //
 				EssProtocol.AllowedDischarge.name(), //
 				EssProtocol.AllowedApparent.name(), //
+				EssProtocol.GridMode.name(),//
 				EssProtocol.BatteryStringSoc.name()));
 	}
 
@@ -80,13 +81,15 @@ public class Commercial extends Ess {
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		protocol.addElementRange(new ElementRange(0x0210, new ElementBuilder(0x0210).name(EssProtocol.ActivePower)
 				.multiplier(100).signed(true).unit("W").build(), new ElementBuilder(0x0211)
-				.name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("VA").build(), new ElementBuilder(
-				0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("Var").build(), new ElementBuilder(0x0213)
-				.device(name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x213).build(),
+				.name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("VA").build(),//
+				new ElementBuilder(0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("Var").build(),//
+				new ElementBuilder(0x0213).device(name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x213).build(),//
 				new ElementBuilder(0x0230).device(name).name(EssProtocol.AllowedCharge).multiplier(100).signed(true)
-						.unit("W").build(), new ElementBuilder(0x0231).device(name).name(EssProtocol.AllowedDischarge)
-						.multiplier(100).unit("W").build(), new ElementBuilder(0x0232).device(name)
-						.name(EssProtocol.AllowedApparent).multiplier(100).unit("Var").build()));
+						.unit("W").build(),//
+				new ElementBuilder(0x0231).device(name).name(EssProtocol.AllowedDischarge).multiplier(100).unit("W")
+						.build(), //
+				new ElementBuilder(0x0232).device(name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var")
+						.build()));
 		protocol.addElementRange(new ElementRange(0x0101, new ElementBuilder(0x0101).device(name)
 				.name(EssProtocol.SystemState) //
 				.bit(new BitElement(1, EssProtocol.SystemStates.Stop.name())) //
@@ -95,6 +98,11 @@ public class Commercial extends Ess {
 				.bit(new BitElement(4, EssProtocol.SystemStates.Running.name())) //
 				.bit(new BitElement(5, EssProtocol.SystemStates.Fault.name())) //
 				.bit(new BitElement(6, EssProtocol.SystemStates.Debug.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0106, new ElementBuilder(0X0106).device(name)
+				.name(EssProtocol.GridMode)//
+				.bit(new BitElement(1, EssProtocol.GridStates.OffGrid.name()))//
+				.bit(new BitElement(2, EssProtocol.GridStates.OnGrid.name()))//
+				.build()));
 		protocol.addElementRange(new ElementRange(0x0501, //
 				new ElementBuilder(0x0501).device(name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
 						.unit("W").build()));
@@ -150,6 +158,13 @@ public class Commercial extends Ess {
 						.unit("Wh").build(), //
 				new ElementBuilder(0xAA37).device(name).name(EssProtocol.Pv2OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
+		protocol.addElementRange(new ElementRange(0x0150, new ElementBuilder(0x0150).device(name)
+				.name(EssProtocol.SwitchStates) //
+				.bit(new BitElement(1, EssProtocol.Switches.DCMain.name())) //
+				.bit(new BitElement(2, EssProtocol.Switches.DCPrecharge.name())) //
+				.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
+				.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
+				.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
 		return protocol;
 	}
 
