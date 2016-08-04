@@ -20,6 +20,7 @@ package de.fenecon.openems.config;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -27,6 +28,10 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -47,6 +52,7 @@ import de.fenecon.openems.device.Device;
 import de.fenecon.openems.device.DeviceBuilder;
 import de.fenecon.openems.device.counter.Counter;
 import de.fenecon.openems.device.ess.Ess;
+import de.fenecon.openems.device.io.Io;
 import de.fenecon.openems.monitoring.MonitoringWorker;
 import de.fenecon.openems.monitoring.fenecon.FeneconMonitoringWorker;
 
@@ -60,6 +66,7 @@ public class JsonConfigFactory {
 
 	private final static File configFile = new File("/etc/openems");
 	private final static File configFileDebug = new File("D:/fems/openems/openems");
+	private final static File configFileDebug2 = new File("C:/Users/matthias.rossmann/Dev/openems");
 
 	public static Config readConfigFromJsonFile() throws Exception {
 		JsonObject jsonConfig = readJsonFile();
@@ -92,8 +99,10 @@ public class JsonConfigFactory {
 	private static File getConfigFile() {
 		if (configFile.exists()) {
 			return configFile;
-		} else {
+		} else if (configFileDebug.exists()) {
 			return configFileDebug;
+		} else {
+			return configFileDebug2;
 		}
 	}
 
@@ -156,20 +165,19 @@ public class JsonConfigFactory {
 				ModbusConnection modbusConnection = null;
 				switch (obj.get("type").getAsString().toLowerCase()) {
 				case "modbus rtu":
-					modbusConnection = new ModbusRtuConnection(obj.get("serialinterface").getAsString(),
-							obj.get("baudrate").getAsString(), obj.get("databits").getAsInt(),
-							obj.get("parity").getAsString(), obj.get("stopbits").getAsInt(),
-							obj.get("cycle").getAsInt());
+					modbusConnection = new ModbusRtuConnection(obj.get("serialinterface").getAsString(), obj.get(
+							"baudrate").getAsString(), obj.get("databits").getAsInt(), obj.get("parity").getAsString(),
+							obj.get("stopbits").getAsInt(), obj.get("cycle").getAsInt());
 					break;
 
 				case "modbus tcp":
-					modbusConnection = new ModbusTcpConnection(
-							InetAddress.getByName(obj.get("inetAddress").getAsString()), obj.get("cycle").getAsInt());
+					modbusConnection = new ModbusTcpConnection(InetAddress.getByName(obj.get("inetAddress")
+							.getAsString()), obj.get("cycle").getAsInt());
 					break;
 
 				default:
-					throw new UnsupportedOperationException(
-							"ModbusType " + obj.get("modbusType").getAsString() + " is not implemented!");
+					throw new UnsupportedOperationException("ModbusType " + obj.get("modbusType").getAsString()
+							+ " is not implemented!");
 				}
 
 				channelWorkers.put(entry.getKey(), new ModbusChannelWorker(entry.getKey(), modbusConnection));
@@ -201,8 +209,12 @@ public class JsonConfigFactory {
 	 * @param jsonElement
 	 * @param modbusWorkers
 	 * @return
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	private static HashMap<String, Device> getDevices(JsonElement jsonElement) {
+	private static HashMap<String, Device> getDevices(JsonElement jsonElement) throws IOException,
+			ParserConfigurationException, SAXException {
 		HashMap<String, Device> devices = new HashMap<>();
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -220,6 +232,9 @@ public class JsonConfigFactory {
 				}
 				if (obj.has("modbusUnit")) {
 					devBuilder.modbusUnit(obj.get("modbusUnit").getAsInt());
+				}
+				if (obj.has("ip")) {
+					devBuilder.ip(InetAddress.getByName(obj.get("ip").getAsString()));
 				}
 				Device device = devBuilder.build();
 				devices.put(entry.getKey(), device);
@@ -329,6 +344,16 @@ public class JsonConfigFactory {
 						Device device = devices.get(essDevice);
 						if (device instanceof Ess) {
 							controllerBuilder.addEss(essDevice, (Ess) device);
+						}
+					}
+				}
+				if (obj.has("io")) {
+					JsonArray ioJsonArray = obj.get("io").getAsJsonArray();
+					for (JsonElement ioJsonElement : ioJsonArray) {
+						String ioDevice = ioJsonElement.getAsString();
+						Device device = devices.get(ioDevice);
+						if (device instanceof Io) {
+							controllerBuilder.addIo(ioDevice, (Io) device);
 						}
 					}
 				}

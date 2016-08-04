@@ -17,11 +17,18 @@
  */
 package de.fenecon.openems.device.counter;
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import de.fenecon.openems.channel.modbus.ModbusDevice;
 
 public abstract class Counter extends ModbusDevice {
 
-	public Counter(String name, String channel, int unitid) {
+	public Counter(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, channel, unitid);
 	}
 

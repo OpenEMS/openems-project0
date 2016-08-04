@@ -1,7 +1,12 @@
 package de.fenecon.openems.device;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import de.fenecon.openems.device.protocol.Element;
 
@@ -34,4 +39,6 @@ public abstract class Device {
 	public abstract Set<String> getInitElements();
 
 	public abstract Set<String> getMainElements();
+
+	public abstract void init() throws IOException, ParserConfigurationException, SAXException;
 }

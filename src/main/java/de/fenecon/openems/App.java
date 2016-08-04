@@ -41,5 +41,16 @@ public class App {
 		for (MonitoringWorker monitoringWorker : config.getMonitoringWorkers().values()) {
 			monitoringWorker.start();
 		}
+		// TCPMasterConnection con = new
+		// TCPMasterConnection(InetAddress.getByName("192.168.178.152"));
+		// con.setPort(502);
+		// con.connect();
+		// ModbusTCPTransaction trans = new ModbusTCPTransaction(con);
+		// WriteMultipleCoilsRequest req = new WriteMultipleCoilsRequest(512,
+		// 2);
+		// req.setCoilStatus(0, false);
+		// req.setCoilStatus(1, true);
+		// trans.setRequest(req);
+		// trans.execute();
 	}
 }

@@ -17,10 +17,14 @@
  */
 package de.fenecon.openems.channel.modbus;
 
+import java.io.IOException;
 import java.util.Set;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import de.fenecon.openems.device.Device;
 import de.fenecon.openems.device.protocol.Element;
@@ -32,17 +36,21 @@ public abstract class ModbusDevice extends Device {
 
 	protected final Integer unitid;
 	protected final String name;
-	protected final ModbusProtocol protocol;
+	protected ModbusProtocol protocol;
 
-	private final ModbusProtocol initProtocol;
-	private final ModbusProtocol mainProtocol;
-	protected final ModbusProtocol remainingProtocol;
+	private ModbusProtocol initProtocol;
+	private ModbusProtocol mainProtocol;
+	protected ModbusProtocol remainingProtocol;
 
 	public ModbusDevice(String name, String channel, int unitid) {
 		super(channel);
 		this.unitid = unitid;
 		this.name = name;
 
+	}
+
+	@Override
+	public void init() throws IOException, ParserConfigurationException, SAXException {
 		// Initialize protocols
 		this.protocol = getProtocol();
 		Set<String> allElements = this.protocol.getElementIds();
@@ -92,10 +100,11 @@ public abstract class ModbusDevice extends Device {
 		modbusConnection.updateProtocol(this.unitid, this.remainingProtocol);
 	};
 
-	protected abstract ModbusProtocol getProtocol();
+	protected abstract ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException;
 
 	@Override
 	public String toString() {
 		return "ModbusDevice [name=" + name + ", unitid=" + unitid + "]";
 	}
+
 }

@@ -17,10 +17,16 @@
  */
 package de.fenecon.openems.device.ess;
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import de.fenecon.openems.channel.modbus.WritableModbusDevice;
 
 public abstract class Ess extends WritableModbusDevice {
-	public Ess(String name, String modbusid, int unitid) {
+	public Ess(String name, String modbusid, int unitid) throws IOException, ParserConfigurationException, SAXException {
 		super(name, modbusid, unitid);
 	}
 

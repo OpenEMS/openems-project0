@@ -25,6 +25,8 @@ import com.ghgande.j2mod.modbus.io.ModbusTransaction;
 import com.ghgande.j2mod.modbus.msg.ModbusResponse;
 import com.ghgande.j2mod.modbus.msg.ReadMultipleRegistersRequest;
 import com.ghgande.j2mod.modbus.msg.ReadMultipleRegistersResponse;
+import com.ghgande.j2mod.modbus.msg.WriteCoilRequest;
+import com.ghgande.j2mod.modbus.msg.WriteCoilResponse;
 import com.ghgande.j2mod.modbus.msg.WriteMultipleRegistersRequest;
 import com.ghgande.j2mod.modbus.msg.WriteMultipleRegistersResponse;
 import com.ghgande.j2mod.modbus.msg.WriteSingleRegisterRequest;
@@ -136,6 +138,18 @@ public abstract class ModbusConnection implements AutoCloseable {
 			log.info("Write-Exception: {}. Try again with new connection", e.getMessage());
 			this.close();
 			singleWrite(unitid, ref, regs);
+		}
+	}
+
+	public synchronized void write(int unitid, int ref, boolean value) throws Exception {
+		ModbusTransaction trans = getTransaction();
+		WriteCoilRequest req = new WriteCoilRequest(ref, value);
+		req.setUnitID(unitid);
+		trans.setRequest(req);
+		trans.execute();
+		ModbusResponse res = trans.getResponse();
+		if (!(res instanceof WriteCoilResponse)) {
+			throw new ModbusException(res.toString());
 		}
 	}
 

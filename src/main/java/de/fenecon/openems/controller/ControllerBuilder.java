@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import de.fenecon.openems.device.counter.Counter;
 import de.fenecon.openems.device.ess.Ess;
+import de.fenecon.openems.device.io.Io;
 
 public class ControllerBuilder {
 	String name = "";
@@ -12,6 +13,7 @@ public class ControllerBuilder {
 	Integer minSoc = null;
 	Counter gridCounter = null;
 	HashMap<String, Ess> ess = new HashMap<>();
+	HashMap<String, Io> io = new HashMap<>();
 
 	public ControllerBuilder() {
 	}
@@ -46,10 +48,16 @@ public class ControllerBuilder {
 		return this;
 	}
 
+	public void addIo(String name, Io device) {
+		this.io.put(name, device);
+	}
+
 	public Controller build() {
 		switch (implementation) {
 		case "balancing":
 			return new Balancing(name, gridCounter, ess, chargeFromAc);
+		case "iotest":
+			return new IOController(name, io);
 		}
 		throw new UnsupportedOperationException("ControllerBuilder: " + this.toString() + " is not implemented!");
 	}

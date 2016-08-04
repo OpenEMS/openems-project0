@@ -17,12 +17,16 @@
  */
 package de.fenecon.openems.device.ess;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import de.fenecon.openems.device.protocol.BitElement;
 import de.fenecon.openems.device.protocol.BitsElement;
@@ -37,7 +41,8 @@ public class Commercial extends Ess {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Commercial.class);
 
-	public Commercial(String name, String channel, int unitid) {
+	public Commercial(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, channel, unitid);
 	}
 
@@ -73,43 +78,39 @@ public class Commercial extends Ess {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(0x0210,
-				new ElementBuilder(0x0210).name(EssProtocol.ActivePower).multiplier(100).signed(true).unit("W").build(),
-				new ElementBuilder(0x0211).name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("VA")
-						.build(),
-				new ElementBuilder(0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("Var").build(),
-				new ElementBuilder(0x0213).device(name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x213).build(),
+		protocol.addElementRange(new ElementRange(0x0210, new ElementBuilder(0x0210).name(EssProtocol.ActivePower)
+				.multiplier(100).signed(true).unit("W").build(), new ElementBuilder(0x0211)
+				.name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("VA").build(), new ElementBuilder(
+				0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("Var").build(), new ElementBuilder(0x0213)
+				.device(name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x213).build(),
 				new ElementBuilder(0x0230).device(name).name(EssProtocol.AllowedCharge).multiplier(100).signed(true)
-						.unit("W").build(),
-				new ElementBuilder(0x0231).device(name).name(EssProtocol.AllowedDischarge).multiplier(100).unit("W")
-						.build(),
-				new ElementBuilder(0x0232).device(name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var")
-						.build()));
-		protocol.addElementRange(new ElementRange(0x0101,
-				new ElementBuilder(0x0101).device(name).name(EssProtocol.SystemState) //
-						.bit(new BitElement(1, EssProtocol.SystemStates.Stop.name())) //
-						.bit(new BitElement(2, EssProtocol.SystemStates.PvCharging.name())) //
-						.bit(new BitElement(3, EssProtocol.SystemStates.Standby.name())) //
-						.bit(new BitElement(4, EssProtocol.SystemStates.Running.name())) //
-						.bit(new BitElement(5, EssProtocol.SystemStates.Fault.name())) //
-						.bit(new BitElement(6, EssProtocol.SystemStates.Debug.name())).build()));
+						.unit("W").build(), new ElementBuilder(0x0231).device(name).name(EssProtocol.AllowedDischarge)
+						.multiplier(100).unit("W").build(), new ElementBuilder(0x0232).device(name)
+						.name(EssProtocol.AllowedApparent).multiplier(100).unit("Var").build()));
+		protocol.addElementRange(new ElementRange(0x0101, new ElementBuilder(0x0101).device(name)
+				.name(EssProtocol.SystemState) //
+				.bit(new BitElement(1, EssProtocol.SystemStates.Stop.name())) //
+				.bit(new BitElement(2, EssProtocol.SystemStates.PvCharging.name())) //
+				.bit(new BitElement(3, EssProtocol.SystemStates.Standby.name())) //
+				.bit(new BitElement(4, EssProtocol.SystemStates.Running.name())) //
+				.bit(new BitElement(5, EssProtocol.SystemStates.Fault.name())) //
+				.bit(new BitElement(6, EssProtocol.SystemStates.Debug.name())).build()));
 		protocol.addElementRange(new ElementRange(0x0501, //
 				new ElementBuilder(0x0501).device(name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
 						.unit("W").build()));
-		protocol.addElementRange(new ElementRange(0x1402,
-				new ElementBuilder(0x1402).device(name).name(EssProtocol.BatteryStringSoc).unit("%").build()));
-		protocol.addElementRange(new ElementRange(0xA600,
-				new ElementBuilder(0xA600).device(name).name(EssProtocol.Pv1State) //
-						.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
-						.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
-						.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
-						.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
-						.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
-						.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
-						.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xA730,
-				new ElementBuilder(0xA730).device(name).name(EssProtocol.Pv1OutputVoltage).multiplier(10).signed(true)
-						.unit("V").build(), //
+		protocol.addElementRange(new ElementRange(0x1402, new ElementBuilder(0x1402).device(name)
+				.name(EssProtocol.BatteryStringSoc).unit("%").build()));
+		protocol.addElementRange(new ElementRange(0xA600, new ElementBuilder(0xA600).device(name)
+				.name(EssProtocol.Pv1State) //
+				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
+				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
+				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
+				.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
+				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
+				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
+				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
+		protocol.addElementRange(new ElementRange(0xA730, new ElementBuilder(0xA730).device(name)
+				.name(EssProtocol.Pv1OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
 				new ElementBuilder(0xA731).device(name).name(EssProtocol.Pv1OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
 				new ElementBuilder(0xA732).device(name).name(EssProtocol.Pv1OutputPower).multiplier(100).signed(true)
@@ -124,18 +125,17 @@ public class Commercial extends Ess {
 						.unit("Wh").build(), //
 				new ElementBuilder(0xA737).device(name).name(EssProtocol.Pv1OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
-		protocol.addElementRange(new ElementRange(0xA900,
-				new ElementBuilder(0xA900).device(name).name(EssProtocol.Pv2State) //
-						.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
-						.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
-						.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
-						.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
-						.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
-						.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
-						.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xAA30,
-				new ElementBuilder(0xAA30).device(name).name(EssProtocol.Pv2OutputVoltage).multiplier(10).signed(true)
-						.unit("V").build(), //
+		protocol.addElementRange(new ElementRange(0xA900, new ElementBuilder(0xA900).device(name)
+				.name(EssProtocol.Pv2State) //
+				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
+				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
+				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
+				.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
+				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
+				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
+				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
+		protocol.addElementRange(new ElementRange(0xAA30, new ElementBuilder(0xAA30).device(name)
+				.name(EssProtocol.Pv2OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
 				new ElementBuilder(0xAA31).device(name).name(EssProtocol.Pv2OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
 				new ElementBuilder(0xAA32).device(name).name(EssProtocol.Pv2OutputPower).multiplier(100).signed(true)

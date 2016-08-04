@@ -1,7 +1,15 @@
 package de.fenecon.openems.device;
 
+import java.io.IOException;
+import java.net.InetAddress;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import de.fenecon.openems.device.counter.Socomec;
 import de.fenecon.openems.device.ess.Commercial;
+import de.fenecon.openems.device.io.Wago;
 
 public class DeviceBuilder {
 	String name = "";
@@ -9,6 +17,7 @@ public class DeviceBuilder {
 	String protocol = "";
 	String channel = "";
 	int modbusUnit = 0;
+	InetAddress ip;
 
 	public DeviceBuilder() {
 	}
@@ -38,22 +47,38 @@ public class DeviceBuilder {
 		return this;
 	}
 
-	public Device build() {
+	public DeviceBuilder ip(InetAddress ip) {
+		this.ip = ip;
+		return this;
+	}
+
+	public Device build() throws IOException, ParserConfigurationException, SAXException {
+		Device device = null;
 		switch (type) {
 		case "ess":
 			switch (protocol) {
 			case "fenecon commercial":
-				return new Commercial(name, channel, modbusUnit);
+				device = new Commercial(name, channel, modbusUnit);
 			}
 			break;
 
 		case "counter":
 			switch (protocol) {
 			case "socomec":
-				return new Socomec(name, channel, modbusUnit);
+				device = new Socomec(name, channel, modbusUnit);
+			}
+			break;
+		case "io":
+			switch (protocol) {
+			case "wago":
+				device = new Wago(name, channel, modbusUnit, ip);
 			}
 			break;
 		}
-		throw new UnsupportedOperationException("DeviceBuilder: " + this.toString() + " is not implemented!");
+		if (device == null) {
+			throw new UnsupportedOperationException("DeviceBuilder: " + this.toString() + " is not implemented!");
+		}
+		device.init();
+		return device;
 	}
 }

@@ -75,17 +75,6 @@ public class ModbusChannelWorker extends ChannelWorker {
 				mainQueryFinished.release();
 			}
 
-			// Execute Modbus Writes
-			for (Device device : devices) {
-				if (device instanceof WritableModbusDevice) {
-					try {
-						((WritableModbusDevice) device).executeModbusWrite(modbusConnection);
-					} catch (Exception e) {
-						log.error("Write-Exception: {}", e.getMessage());
-					}
-				}
-			}
-
 			// Execute Next Modbus Queries
 			for (Device device : devices) {
 				if (device instanceof ModbusDevice) { // TODO: fix polymorphism
@@ -94,6 +83,19 @@ public class ModbusChannelWorker extends ChannelWorker {
 					} catch (Exception e) {
 						log.error("Query-Exception: {}", e.getMessage());
 						e.printStackTrace();
+					}
+				}
+			}
+
+			// Execute Modbus Writes
+			// TODO start write only after controller finished (maybe via write
+			// queue)
+			for (Device device : devices) {
+				if (device instanceof WritableModbusDevice) {
+					try {
+						((WritableModbusDevice) device).executeModbusWrite(modbusConnection);
+					} catch (Exception e) {
+						log.error("Write-Exception: {}", e.getMessage());
 					}
 				}
 			}
