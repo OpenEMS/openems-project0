@@ -1,7 +1,7 @@
 {
 	"channel": {
 		"usb0": {
-			"type": "de.fenecon.openems.channel.modbus.ModbusRtuConnection",
+			"type": "io.openems.channel.modbus.ModbusRtuConnection",
 			"serialinterface": "/dev/ttyUSB0",
 			"baudrate": "38400",
 			"databits": 8,
@@ -10,26 +10,26 @@
 			"cycle": 1000
 		},
 		"lan0": {
-			"type": "de.fenecon.openems.channel.modbus.ModbusTcpConnection",
+			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "10.4.0.15",
 			"cycle": 1000
 		}
 	},
 	"device": {
 		"ess0": {
-			"type": "de.fenecon.openems.device.ess.Commercial",
+			"type": "io.openems.device.ess.Commercial",
 			"channel": "lan0",
 			"modbusUnit": 100
 		},
 		"counter0": {
-			"type": "de.fenecon.openems.device.counter.Socomec",
+			"type": "io.openems.device.counter.Socomec",
 			"channel": "usb0",
 			"modbusUnit": 5
 		}
 	},
 	"controller": {
 		"controller0": {
-			"type": "de.fenecon.openems.controller.Balancing",
+			"type": "io.openems.controller.Balancing",
 			"chargeFromAc": false,
 			"minSoc": 10,
 			"gridCounter": "counter0",
@@ -40,7 +40,7 @@
 	},
 	"monitor":{
 		"monitor0":{
-			"type": "de.fenecon.openems.monitoring.fenecon.FeneconMonitoringWorker",
+			"type": "io.openems.monitoring.fenecon.FeneconMonitoringWorker",
 			"devicekey": "KEYKEYKEY"
 		}
 	}
