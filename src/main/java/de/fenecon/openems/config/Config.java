@@ -67,7 +67,8 @@ public class Config {
 	private Map<String, JsonObject> jsonDevices = new HashMap<>();
 	private Map<String, JsonObject> jsonControllers = new HashMap<>();
 
-	public Config(JsonObject obj) {
+	public Config(JsonObject obj) throws Exception {
+		devicekey = readDevicekeyFromJson(obj.get("devicekey"));
 		if (obj.has("channel")) {
 			readChannelsFromJson(obj.get("channel").getAsJsonObject());
 		}
@@ -194,6 +195,18 @@ public class Config {
 				jsonControllers.put(entry.getKey(), entry.getValue().getAsJsonObject());
 			}
 		}
+	}
+
+	private String readDevicekeyFromJson(JsonElement jsonElement) throws Exception {
+		String devicekey = null;
+		if (jsonElement != null && jsonElement.isJsonPrimitive()) {
+			devicekey = jsonElement.getAsString();
+		}
+		// TODO: if devicekey is still none: read hostname from device
+		if (devicekey == null) {
+			throw new Exception("Devicekey is mandatory!");
+		}
+		return devicekey;
 	}
 
 	/**
