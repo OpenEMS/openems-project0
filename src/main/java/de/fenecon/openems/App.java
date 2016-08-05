@@ -104,12 +104,11 @@ public class App {
 	 */
 	public static void updateConfig(Config config) throws IOException, ParserConfigurationException, SAXException {
 		stopWorkers();
-		String devicekey = config.getDevicekey();
 		channelWorkers = config.getChannelWorkers();
 		HashMap<String, Device> devices = config.getDevices();
 		config.registerDevicesToChannelWorkers(devices, channelWorkers);
-		controllerWorkers = config.getControllerWorkers(devices, channelWorkers);
-		monitoringWorkers = config.getMonitoringWorkers(devicekey, devices);
+		controllerWorkers = config.getControllerWorkers();
+		monitoringWorkers = config.getMonitoringWorkers();
 		startWorkers();
 	}
 

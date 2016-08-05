@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,42 +32,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import de.fenecon.openems.channel.ChannelFactory;
 import de.fenecon.openems.channel.ChannelWorker;
 import de.fenecon.openems.channel.modbus.ModbusChannelWorker;
-import de.fenecon.openems.channel.modbus.ModbusConnection;
-import de.fenecon.openems.channel.modbus.ModbusRtuConnection;
-import de.fenecon.openems.channel.modbus.ModbusTcpConnection;
-import de.fenecon.openems.controller.Controller;
-import de.fenecon.openems.controller.ControllerBuilder;
+import de.fenecon.openems.controller.ControllerFactory;
 import de.fenecon.openems.controller.ControllerWorker;
 import de.fenecon.openems.device.Device;
-import de.fenecon.openems.device.DeviceBuilder;
-import de.fenecon.openems.device.counter.Counter;
-import de.fenecon.openems.device.ess.Ess;
-import de.fenecon.openems.device.io.IO;
+import de.fenecon.openems.device.DeviceFactory;
+import de.fenecon.openems.monitoring.MonitorFactory;
 import de.fenecon.openems.monitoring.MonitoringWorker;
-import de.fenecon.openems.monitoring.fenecon.FeneconMonitoringWorker;
 
 public class Config {
 	private final static Logger log = LoggerFactory.getLogger(Config.class);
 	private final static File configFile = new File("/etc/openems");
 	private final static File configFileDebug = new File("D:/fems/openems/openems");
-	private final static File configFileDebug2 = new File("C:/Users/matthias.rossmann/Dev/openems");
+	private final static File configFileDebug2 = new File("C:/Users/matthias.rossmann/Dev/git/openems/openems");
 
-	private String devicekey;
-	private Map<String, JsonObject> jsonChannels = new HashMap<>();
-	private Map<String, JsonObject> jsonDevices = new HashMap<>();
-	private Map<String, JsonObject> jsonControllers = new HashMap<>();
+	private HashMap<String, ChannelWorker> channels = new HashMap<>();
+	private HashMap<String, Device> devices = new HashMap<>();
+	private HashMap<String, ControllerWorker> controllers = new HashMap<>();
+	private HashMap<String, MonitoringWorker> monitors = new HashMap<>();
 
 	public Config(JsonObject obj) throws Exception {
-		devicekey = readDevicekeyFromJson(obj.get("devicekey"));
 		if (obj.has("channel")) {
 			readChannelsFromJson(obj.get("channel").getAsJsonObject());
 		}
@@ -77,6 +68,9 @@ public class Config {
 		}
 		if (obj.has("controller")) {
 			readControllersFromJson(obj.get("controller").getAsJsonObject());
+		}
+		if (obj.has("monitor")) {
+			readMonitorFromJson(obj.get("monitor").getAsJsonObject());
 		}
 	}
 
@@ -98,12 +92,9 @@ public class Config {
 		}
 	}
 
-	public String getDevicekey() {
-		return devicekey;
-	}
-
 	/**
-	 * Read all channels from json
+	 * Calls the Factory for all channels from json and saves the generated
+	 * channel into a hashmap
 	 * 
 	 * <pre>
 	 * "channel": {
@@ -123,19 +114,47 @@ public class Config {
 	 *   }
 	 * }
 	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
-	private void readChannelsFromJson(JsonElement jsonElement) {
-		jsonChannels.clear();
+	private void readChannelsFromJson(JsonElement jsonElement) throws Exception {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
-				jsonChannels.put(entry.getKey(), entry.getValue().getAsJsonObject());
+				JsonObject channel = entry.getValue().getAsJsonObject();
+				Class<ChannelFactory> factory = (Class<ChannelFactory>) Class.forName(channel.get("type").getAsString()
+						+ "Factory");
+				ChannelFactory cf = factory.newInstance();
+				// TODO Factory cachen
+				channels.put(entry.getKey(), cf.getChannelWorker(entry.getKey(), channel));
 			}
 		}
 	}
 
 	/**
-	 * Read all devices from json
+	 * Calls the Factory for all monitors from json and saves the generated
+	 * monitor into a hashmap
+	 * 
+	 * @param jsonElement
+	 * @throws Exception
+	 */
+	private void readMonitorFromJson(JsonObject jsonElement) throws Exception {
+		if (jsonElement != null && jsonElement.isJsonObject()) {
+			JsonObject obj = jsonElement.getAsJsonObject();
+			for (Entry<String, JsonElement> entry : obj.entrySet()) {
+				JsonObject monitor = entry.getValue().getAsJsonObject();
+				Class<MonitorFactory> factory = (Class<MonitorFactory>) Class.forName(monitor.get("type").getAsString()
+						+ "Factory");
+				MonitorFactory cf = factory.newInstance();
+				// TODO Factory cachen
+				monitors.put(entry.getKey(), cf.getMonitoringWorker(entry.getKey(), monitor, devices));
+			}
+		}
+	}
+
+	/**
+	 * Calls the Factory for all devices from json and saves the generated
+	 * device into a hashmap
 	 * 
 	 * <pre>
 	 * "device": {
@@ -153,19 +172,26 @@ public class Config {
 	 *   }
 	 * },
 	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
-	private void readDevicesFromJson(JsonElement jsonElement) {
-		jsonDevices.clear();
+	private void readDevicesFromJson(JsonElement jsonElement) throws Exception {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
-				jsonDevices.put(entry.getKey(), entry.getValue().getAsJsonObject());
+				JsonObject device = entry.getValue().getAsJsonObject();
+				Class<DeviceFactory> factory = (Class<DeviceFactory>) Class.forName(device.get("type").getAsString()
+						+ "Factory");
+				DeviceFactory cf = factory.newInstance();
+				// TODO Factory cachen
+				devices.put(entry.getKey(), cf.getDevice(entry.getKey(), device));
 			}
 		}
 	}
 
 	/**
-	 * Read all controllers from json
+	 * Calls the Factory for all controllers from json and saves the generated
+	 * controller into a hashmap
 	 * 
 	 * <pre>
 	 * "controller": {
@@ -186,101 +212,43 @@ public class Config {
 	 *   }
 	 * }
 	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
-	private void readControllersFromJson(JsonElement jsonElement) {
-		jsonControllers.clear();
+	private void readControllersFromJson(JsonElement jsonElement) throws Exception {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
-				jsonControllers.put(entry.getKey(), entry.getValue().getAsJsonObject());
+				JsonObject controller = entry.getValue().getAsJsonObject();
+				Class<ControllerFactory> factory = (Class<ControllerFactory>) Class.forName(controller.get("type")
+						.getAsString() + "Factory");
+				ControllerFactory cf = factory.newInstance();
+				// TODO Factory cachen
+				controllers.put(entry.getKey(), cf.getControllerWorker(entry.getKey(), controller, devices, channels));
 			}
 		}
 	}
 
-	private String readDevicekeyFromJson(JsonElement jsonElement) throws Exception {
-		String devicekey = null;
-		if (jsonElement != null && jsonElement.isJsonPrimitive()) {
-			devicekey = jsonElement.getAsString();
-		}
-		// TODO: if devicekey is still none: read hostname from device
-		if (devicekey == null) {
-			throw new Exception("Devicekey is mandatory!");
-		}
-		return devicekey;
-	}
-
 	/**
-	 * Create {@link ModbusChannelWorker}s per channel:
+	 * returns {@link ModbusChannelWorker}s per channel:
 	 */
 	public HashMap<String, ChannelWorker> getChannelWorkers() throws UnknownHostException {
-		HashMap<String, ChannelWorker> channelWorkers = new HashMap<>();
-		for (Entry<String, JsonObject> entry : jsonChannels.entrySet()) {
-			String name = entry.getKey();
-			JsonObject channel = entry.getValue();
-			ModbusConnection modbusConnection = null;
-			switch (channel.get("type").getAsString().toLowerCase()) {
-			case "modbus rtu":
-				modbusConnection = new ModbusRtuConnection( //
-						channel.get("serialinterface").getAsString(), //
-						channel.get("baudrate").getAsString(), //
-						channel.get("databits").getAsInt(), //
-						channel.get("parity").getAsString(), //
-						channel.get("stopbits").getAsInt(), //
-						channel.get("cycle").getAsInt());
-				break;
-
-			case "modbus tcp":
-				modbusConnection = new ModbusTcpConnection(InetAddress.getByName(channel.get("inetAddress")
-						.getAsString()), //
-						channel.get("cycle").getAsInt());
-				break;
-
-			default:
-				throw new UnsupportedOperationException("ModbusType " + channel.get("modbusType").getAsString()
-						+ " is not implemented!");
-			}
-
-			channelWorkers.put(name, new ModbusChannelWorker(name, modbusConnection));
-		}
-		return channelWorkers;
+		return channels;
 	}
 
 	/**
-	 * Create {@link Device}s:
+	 * returns {@link Device}s:
 	 * 
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
 	public HashMap<String, Device> getDevices() throws IOException, ParserConfigurationException, SAXException {
-		HashMap<String, Device> devices = new HashMap<>();
-		for (Entry<String, JsonObject> entry : jsonDevices.entrySet()) {
-			String name = entry.getKey();
-			JsonObject deviceJson = entry.getValue();
-			DeviceBuilder devBuilder = new DeviceBuilder().name(name);
-			if (deviceJson.has("type")) {
-				devBuilder.type(deviceJson.get("type").getAsString());
-			}
-			if (deviceJson.has("protocol")) {
-				devBuilder.protocol(deviceJson.get("protocol").getAsString());
-			}
-			if (deviceJson.has("channel")) {
-				devBuilder.channel(deviceJson.get("channel").getAsString());
-			}
-			if (deviceJson.has("modbusUnit")) {
-				devBuilder.modbusUnit(deviceJson.get("modbusUnit").getAsInt());
-			}
-			if (deviceJson.has("ip")) {
-				devBuilder.ip(InetAddress.getByName(deviceJson.get("ip").getAsString()));
-			}
-			Device device = devBuilder.build();
-			devices.put(name, device);
-		}
 		return devices;
 	}
 
 	/**
-	 * Connect {@link Device}s with their {@link ChannelWorker}
+	 * returns {@link Device}s with their {@link ChannelWorker}
 	 * 
 	 * @param devices
 	 * @param channelWorkers
@@ -292,89 +260,17 @@ public class Config {
 	}
 
 	/**
-	 * Create {@link ControllerWorker}s:
+	 * returns {@link ControllerWorker}s:
 	 */
-	public HashMap<String, ControllerWorker> getControllerWorkers(Map<String, Device> devices,
-			Map<String, ChannelWorker> channelWorkers) {
-		HashMap<String, ControllerWorker> controllerWorkers = new HashMap<String, ControllerWorker>();
-		for (Entry<String, JsonObject> entry : jsonControllers.entrySet()) {
-			String name = entry.getKey();
-			JsonObject controllerJson = entry.getValue();
-			ControllerBuilder controllerBuilder = new ControllerBuilder().name(name);
-			if (controllerJson.has("implementation")) {
-				controllerBuilder.implementation(controllerJson.get("implementation").getAsString());
-			}
-			if (controllerJson.has("chargeFromAc")) {
-				controllerBuilder.chargeFromAc(controllerJson.get("chargeFromAc").getAsBoolean());
-			}
-			if (controllerJson.has("minSoc")) {
-				controllerBuilder.minSoc(controllerJson.get("minSoc").getAsInt());
-			}
-			if (controllerJson.has("gridCounter")) {
-				String gridCounter = controllerJson.get("gridCounter").getAsString();
-				Device device = devices.get(gridCounter);
-				if (device instanceof Counter) {
-					controllerBuilder.gridCounter((Counter) device);
-				}
-			}
-			if (controllerJson.has("ess")) {
-				JsonArray essJsonArray = controllerJson.get("ess").getAsJsonArray();
-				for (JsonElement essJsonElement : essJsonArray) {
-					String essDevice = essJsonElement.getAsString();
-					Device device = devices.get(essDevice);
-					if (device instanceof Ess) {
-						controllerBuilder.addEss(essDevice, (Ess) device);
-					}
-				}
-			}
-			if (controllerJson.has("io")) {
-				JsonArray ioJsonArray = controllerJson.get("io").getAsJsonArray();
-				for (JsonElement ioJsonElement : ioJsonArray) {
-					String ioDevice = ioJsonElement.getAsString();
-					Device device = devices.get(ioDevice);
-					if (device instanceof IO) {
-						controllerBuilder.addIo(ioDevice, (IO) device);
-					}
-				}
-			}
-			Controller controller = controllerBuilder.build();
-			ControllerWorker controllerWorker = new ControllerWorker(name, channelWorkers.values(), controller);
-			controllerWorkers.put(entry.getKey(), controllerWorker);
-		}
-		return controllerWorkers;
+	public Map<String, ControllerWorker> getControllerWorkers() {
+		return controllers;
 	}
 
 	/**
-	 * Create {@link MonitoringWorker}s:
+	 * returns {@link MonitoringWorker}s:
 	 */
-	public HashMap<String, MonitoringWorker> getMonitoringWorkers(String devicekey, Map<String, Device> devices) {
-		HashMap<String, MonitoringWorker> monitoringWorkers = new HashMap<String, MonitoringWorker>();
-		// default monitoring
-		FeneconMonitoringWorker feneconMonitoring = new FeneconMonitoringWorker(devicekey);
-		for (Device device : devices.values()) { // add listener for all
-													// elements
-			for (String elementName : device.getElements()) {
-				device.getElement(elementName).addListener(feneconMonitoring);
-			}
-		}
-		monitoringWorkers.put("fenecon", feneconMonitoring);
-
-		// TODO implement other monitorings or changes from default
-		// TODO remove if fenecon monitoring is disabled in config
-		/*
-		 * if (jsonElement != null && jsonElement.isJsonObject()) { JsonObject
-		 * jsonObject = jsonElement.getAsJsonObject(); for (Entry<String,
-		 * JsonElement> entry : jsonObject.entrySet()) { JsonObject obj =
-		 * entry.getValue().getAsJsonObject(); if (obj.has("enabled") &&
-		 * !obj.get("enabled").getAsBoolean()) { // remove if monitoring is not
-		 * enabled but already existing // in the map per default if
-		 * (monitoringWorkers.containsKey(entry.getKey())) {
-		 * monitoringWorkers.remove(entry.getKey()); } } else { // TODO
-		 * implement other monitorings or changes from default // for fenecon }
-		 * } }
-		 */
-
-		return monitoringWorkers;
+	public HashMap<String, MonitoringWorker> getMonitoringWorkers() {
+		return monitors;
 	}
 
 	/**
@@ -383,6 +279,10 @@ public class Config {
 	 * @return
 	 */
 	public Map<String, JsonObject> getJsonDevices() {
+		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
+		// for (Device d : devices.values()) {
+		//
+		// }
 		return jsonDevices;
 	}
 }
