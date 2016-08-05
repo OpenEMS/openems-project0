@@ -61,8 +61,9 @@ public class Balancing extends Controller {
 		} else if (isCessRunning) {
 			log.info("CESS is running");
 		} else {
-			log.warn("CESS is NOT running!");
-			// TODO: activate it
+			// Start CESS if not running
+			cess.addToWriteQueue(cess.getSetWorkState(), cess.getSetWorkState().toRegister(64));
+			log.warn("CESS is not running. Start CESS");
 		}
 	}
 
@@ -87,6 +88,8 @@ public class Balancing extends Controller {
 		SignedIntegerWordElement cessSetActivePower = cess.getSetActivePower();
 		SignedIntegerWordElement cessPv1OutputPower = cess.getPv1OutputPower();
 		SignedIntegerWordElement cessPv2OutputPower = cess.getPv2OutputPower();
+
+		System.out.println("GridState: " + cess.getGridState().name());
 
 		// TODO: check class
 		Socomec gridCounterSocomec = (Socomec) gridCounter;
@@ -129,11 +132,11 @@ public class Balancing extends Controller {
 		lastCessActivePower = cessActivePower.getValue();
 		lastCounterActivePower = counterActivePowerValue;
 
-		log.info("[" + cessSoc.readable() + "] PWR: [" + cessActivePower.readable() + " " + cessReactivePower.readable()
-				+ " " + cessApparentPower.readable() + "] DCPV: [" + cessPv1OutputPower.readable()
-				+ cessPv2OutputPower.readable() + "] COUNTER: [" + counterActivePower.readable() + " "
-				+ counterReactivePower.readable() + " " + counterApparentPower.readable() + " +"
-				+ counterActivePostiveEnergy.readable() + " -" + counterActiveNegativeEnergy.readable() + "] SET: ["
-				+ calculatedCessActivePower + "]");
+		log.info("[" + cessSoc.readable() + "] PWR: [" + cessActivePower.readable() + " "
+				+ cessReactivePower.readable() + " " + cessApparentPower.readable() + "] DCPV: ["
+				+ cessPv1OutputPower.readable() + cessPv2OutputPower.readable() + "] COUNTER: ["
+				+ counterActivePower.readable() + " " + counterReactivePower.readable() + " "
+				+ counterApparentPower.readable() + " +" + counterActivePostiveEnergy.readable() + " -"
+				+ counterActiveNegativeEnergy.readable() + "] SET: [" + calculatedCessActivePower + "]");
 	}
 }

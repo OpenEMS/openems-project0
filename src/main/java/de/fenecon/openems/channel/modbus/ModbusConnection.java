@@ -142,6 +142,7 @@ public abstract class ModbusConnection implements AutoCloseable {
 	}
 
 	public synchronized void write(int unitid, int ref, boolean value) throws Exception {
+		System.out.println(ref + " --- " + value);
 		ModbusTransaction trans = getTransaction();
 		WriteCoilRequest req = new WriteCoilRequest(ref, value);
 		req.setUnitID(unitid);

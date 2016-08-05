@@ -26,7 +26,7 @@ public enum EssProtocol {
 
 	BatteryStringSoc,
 
-	SetActivePower, SetReactivePower,
+	SetActivePower, SetReactivePower, SetWorkState,
 
 	GridMode,
 
@@ -50,5 +50,9 @@ public enum EssProtocol {
 
 	public enum Switches {
 		DCMain, DCPrecharge, ACBreaker, ACMain, ACPrecharge
+	}
+
+	public enum WorkStates {
+		Stop, Run
 	}
 }

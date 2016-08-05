@@ -73,7 +73,8 @@ public class Commercial extends Ess {
 	@Override
 	public Set<String> getWriteElements() {
 		return new HashSet<String>(Arrays.asList( //
-				EssProtocol.SetActivePower.name()));
+				EssProtocol.SetActivePower.name(),//
+				EssProtocol.SetWorkState.name()));
 	}
 
 	@Override
@@ -99,10 +100,7 @@ public class Commercial extends Ess {
 				.bit(new BitElement(5, EssProtocol.SystemStates.Fault.name())) //
 				.bit(new BitElement(6, EssProtocol.SystemStates.Debug.name())).build()));
 		protocol.addElementRange(new ElementRange(0x0106, new ElementBuilder(0X0106).device(name)
-				.name(EssProtocol.GridMode)//
-				.bit(new BitElement(1, EssProtocol.GridStates.OffGrid.name()))//
-				.bit(new BitElement(2, EssProtocol.GridStates.OnGrid.name()))//
-				.build()));
+				.name(EssProtocol.GridMode).build()));
 		protocol.addElementRange(new ElementRange(0x0501, //
 				new ElementBuilder(0x0501).device(name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
 						.unit("W").build()));
@@ -165,6 +163,10 @@ public class Commercial extends Ess {
 				.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
 				.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
 				.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500).device(name)
+				.name(EssProtocol.SetWorkState) //
+				.signed(true)//
+				.build()));
 		return protocol;
 	}
 
@@ -246,5 +248,16 @@ public class Commercial extends Ess {
 
 	public String getPv2State() {
 		return getDcState((BitsElement) getElement(EssProtocol.Pv2State.name()));
+	}
+
+	public EssProtocol.GridStates getGridState() {
+		if (((UnsignedShortWordElement) getElement(EssProtocol.GridMode.name())).getValue() == 2) {
+			return EssProtocol.GridStates.OnGrid;
+		}
+		return EssProtocol.GridStates.OffGrid;
+	}
+
+	public SignedIntegerWordElement getSetWorkState() {
+		return ((SignedIntegerWordElement) getElement(EssProtocol.SetWorkState.name()));
 	}
 }
