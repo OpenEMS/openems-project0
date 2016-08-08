@@ -30,4 +30,23 @@ public class BalancingFactory extends ControllerFactory {
 		boolean chargeFromAc = controllerJson.get("chargeFromAc").getAsBoolean();
 		return new ControllerWorker(name, channelWorkers.values(), new Balancing(name, counter, ess, chargeFromAc));
 	}
+
+	@Override
+	public JsonObject getConfig(ControllerWorker worker) {
+		if (worker.getController() instanceof Balancing) {
+			JsonObject jo = new JsonObject();
+			Balancing bal = (Balancing) worker.getController();
+			jo.addProperty("type", bal.getClass().getName());
+			jo.addProperty("chargeFromAc", bal.isAllowChargeFromAC());
+			jo.addProperty("minSoc", bal.getMinSoc());
+			jo.addProperty("gridCounter", bal.getGridCounter().getName());
+			JsonArray arr = new JsonArray();
+			jo.add("ess", arr);
+			for (Map.Entry<String, Ess> ess : bal.getEssDevices().entrySet()) {
+				arr.add(ess.getKey());
+			}
+			return jo;
+		}
+		return null;
+	}
 }

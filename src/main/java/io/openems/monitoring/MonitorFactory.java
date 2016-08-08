@@ -10,4 +10,6 @@ public abstract class MonitorFactory {
 
 	public abstract MonitoringWorker getMonitoringWorker(String name, JsonObject monitor,
 			HashMap<String, Device> devices) throws Exception;
+
+	public abstract JsonObject getConfig(MonitoringWorker worker);
 }

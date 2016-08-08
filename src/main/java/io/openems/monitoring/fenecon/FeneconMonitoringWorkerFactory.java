@@ -23,4 +23,16 @@ public class FeneconMonitoringWorkerFactory extends MonitorFactory {
 		}
 		return feneconMonitoring;
 	}
+
+	@Override
+	public JsonObject getConfig(MonitoringWorker worker) {
+		if (worker instanceof FeneconMonitoringWorker) {
+			JsonObject jo = new JsonObject();
+			FeneconMonitoringWorker fmw = (FeneconMonitoringWorker) worker;
+			jo.addProperty("type", fmw.getClass().getName());
+			jo.addProperty("devicekey", fmw.getDevicekey());
+			return jo;
+		}
+		return null;
+	}
 }

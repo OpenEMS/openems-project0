@@ -45,6 +45,10 @@ public class Wago extends IO {
 		return new HashSet<String>(writeElements);
 	}
 
+	public InetAddress getIp() {
+		return ip;
+	}
+
 	@Override
 	protected ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException {
 		writeElements = new ArrayList<String>();

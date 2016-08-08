@@ -32,4 +32,9 @@ public class IOController extends Controller {
 		wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_2"), !wago.getBitElement("DigitalOutput_1_2")
 				.getValue());
 	}
+
+	public HashMap<String, IO> getIo() {
+		return io;
+	}
+
 }

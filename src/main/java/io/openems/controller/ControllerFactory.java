@@ -11,4 +11,6 @@ public abstract class ControllerFactory {
 
 	public abstract ControllerWorker getControllerWorker(String name, JsonObject controller,
 			Map<String, Device> devices, Map<String, ChannelWorker> channelWorkers) throws Exception;
+
+	public abstract JsonObject getConfig(ControllerWorker worker);
 }

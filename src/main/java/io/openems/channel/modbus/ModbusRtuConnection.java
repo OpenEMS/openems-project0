@@ -89,4 +89,25 @@ public class ModbusRtuConnection extends ModbusConnection {
 		return "ModbusRtuConnection [serialinterface=" + serialinterface + ", baudrate=" + baudrate + ", databits="
 				+ databits + ", parity=" + parity + ", stopbits=" + stopbits + "]";
 	}
+
+	public String getSerialinterface() {
+		return serialinterface;
+	}
+
+	public String getBaudrate() {
+		return baudrate;
+	}
+
+	public int getDatabits() {
+		return databits;
+	}
+
+	public String getParity() {
+		return parity;
+	}
+
+	public int getStopbits() {
+		return stopbits;
+	}
+
 }

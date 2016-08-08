@@ -17,4 +17,18 @@ public class WagoFactory extends DeviceFactory {
 		return wago;
 	}
 
+	@Override
+	public JsonObject getConfig(Device d) {
+		if (d instanceof Wago) {
+			JsonObject jo = new JsonObject();
+			Wago w = (Wago) d;
+			jo.addProperty("type", w.getClass().getName());
+			jo.addProperty("channel", w.getChannel());
+			jo.addProperty("modbusUnit", w.getUnitid());
+			jo.addProperty("inetAddress", w.getIp().getHostAddress());
+			return jo;
+		}
+		return null;
+	}
+
 }

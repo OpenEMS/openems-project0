@@ -29,4 +29,20 @@ public class IOControllerFactory extends ControllerFactory {
 		return new ControllerWorker(name, channelWorkers.values(), new IOController(name, io));
 	}
 
+	@Override
+	public JsonObject getConfig(ControllerWorker worker) {
+		if (worker.getController() instanceof IOController) {
+			JsonObject jo = new JsonObject();
+			IOController ioc = (IOController) worker.getController();
+			jo.addProperty("type", ioc.getClass().getName());
+			JsonArray arr = new JsonArray();
+			jo.add("io", arr);
+			for (Map.Entry<String, IO> io : ioc.getIo().entrySet()) {
+				arr.add(io.getKey());
+			}
+			return jo;
+		}
+		return null;
+	}
+
 }

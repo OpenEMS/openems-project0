@@ -65,6 +65,10 @@ public class ControllerWorker extends Thread {
 		log.info("ControllerWorker {} stopped", getName());
 	}
 
+	public Controller getController() {
+		return controller;
+	}
+
 	@Override
 	public String toString() {
 		return "ControllerWorker [modbusWorkers=" + modbusWorkers + "]";

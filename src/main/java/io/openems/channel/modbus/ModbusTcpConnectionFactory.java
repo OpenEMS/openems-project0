@@ -16,4 +16,20 @@ public class ModbusTcpConnectionFactory extends ChannelFactory {
 				channel.get("cycle").getAsInt()));
 	}
 
+	@Override
+	public JsonObject getConfig(ChannelWorker worker) {
+		if (worker instanceof ModbusChannelWorker) {
+			ModbusChannelWorker mcw = (ModbusChannelWorker) worker;
+			if (mcw.getModbusConnection() instanceof ModbusTcpConnection) {
+				ModbusTcpConnection mtc = (ModbusTcpConnection) mcw.getModbusConnection();
+				JsonObject obj = new JsonObject();
+				obj.addProperty("type", mtc.getClass().getName());
+				obj.addProperty("inetAddress", mtc.getIp().getHostAddress());
+				obj.addProperty("cycle", mtc.getCycle());
+				return obj;
+			}
+		}
+		return null;
+	}
+
 }

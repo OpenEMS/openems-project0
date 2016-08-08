@@ -48,6 +48,18 @@ public class Balancing extends Controller {
 		this.allowChargeFromAC = allowChargeFromAc;
 	}
 
+	public Counter getGridCounter() {
+		return gridCounter;
+	}
+
+	public Map<String, Ess> getEssDevices() {
+		return essDevices;
+	}
+
+	public boolean isAllowChargeFromAC() {
+		return allowChargeFromAC;
+	}
+
 	@Override
 	public void init() {
 		Commercial cess = (Commercial) essDevices.values().iterator().next();

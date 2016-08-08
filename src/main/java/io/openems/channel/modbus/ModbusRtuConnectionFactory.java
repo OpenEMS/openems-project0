@@ -17,4 +17,24 @@ public class ModbusRtuConnectionFactory extends ChannelFactory {
 				channel.get("stopbits").getAsInt(), //
 				channel.get("cycle").getAsInt()));
 	}
+
+	@Override
+	public JsonObject getConfig(ChannelWorker worker) {
+		if (worker instanceof ModbusChannelWorker) {
+			ModbusChannelWorker mcw = (ModbusChannelWorker) worker;
+			if (mcw.getModbusConnection() instanceof ModbusRtuConnection) {
+				ModbusRtuConnection mrc = (ModbusRtuConnection) mcw.getModbusConnection();
+				JsonObject obj = new JsonObject();
+				obj.addProperty("type", mrc.getClass().getName());
+				obj.addProperty("serialinterface", mrc.getSerialinterface());
+				obj.addProperty("baudrate", mrc.getBaudrate());
+				obj.addProperty("databits", mrc.getDatabits());
+				obj.addProperty("parity", mrc.getParity());
+				obj.addProperty("stopbits", mrc.getStopbits());
+				obj.addProperty("cycle", mrc.getCycle());
+				return obj;
+			}
+		}
+		return null;
+	}
 }

@@ -83,6 +83,10 @@ public abstract class ModbusDevice extends Device {
 		return name;
 	}
 
+	public Integer getUnitid() {
+		return unitid;
+	}
+
 	@Override
 	public Element<?> getElement(String id) {
 		return protocol.getElement(id);

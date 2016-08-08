@@ -14,4 +14,17 @@ public class SocomecFactory extends DeviceFactory {
 		return socomec;
 	}
 
+	@Override
+	public JsonObject getConfig(Device d) {
+		if (d instanceof Socomec) {
+			JsonObject jo = new JsonObject();
+			Socomec s = (Socomec) d;
+			jo.addProperty("type", s.getClass().getName());
+			jo.addProperty("channel", s.getChannel());
+			jo.addProperty("modbusUnit", s.getUnitid());
+			return jo;
+		}
+		return null;
+	}
+
 }

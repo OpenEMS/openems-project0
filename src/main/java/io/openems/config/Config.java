@@ -59,6 +59,11 @@ public class Config {
 	private HashMap<String, ControllerWorker> controllers = new HashMap<>();
 	private HashMap<String, MonitoringWorker> monitors = new HashMap<>();
 
+	private HashMap<String, ChannelFactory> channelFactories = new HashMap<>();
+	private HashMap<String, DeviceFactory> deviceFactories = new HashMap<>();
+	private HashMap<String, ControllerFactory> controllerFactories = new HashMap<>();
+	private HashMap<String, MonitorFactory> monitorFactories = new HashMap<>();
+
 	public Config(JsonObject obj) throws Exception {
 		if (obj.has("channel")) {
 			readChannelsFromJson(obj.get("channel").getAsJsonObject());
@@ -122,10 +127,15 @@ public class Config {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject channel = entry.getValue().getAsJsonObject();
-				Class<ChannelFactory> factory = (Class<ChannelFactory>) Class.forName(channel.get("type").getAsString()
-						+ "Factory");
-				ChannelFactory cf = factory.newInstance();
-				// TODO Factory cachen
+				ChannelFactory cf = null;
+				if (channelFactories.containsKey(channel.get("type").getAsString())) {
+					cf = channelFactories.get(channel.get("type").getAsString());
+				} else {
+					Class<ChannelFactory> factory = (Class<ChannelFactory>) Class.forName(channel.get("type")
+							.getAsString() + "Factory");
+					cf = factory.newInstance();
+					channelFactories.put(channel.get("type").getAsString(), cf);
+				}
 				channels.put(entry.getKey(), cf.getChannelWorker(entry.getKey(), channel));
 			}
 		}
@@ -143,11 +153,16 @@ public class Config {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject monitor = entry.getValue().getAsJsonObject();
-				Class<MonitorFactory> factory = (Class<MonitorFactory>) Class.forName(monitor.get("type").getAsString()
-						+ "Factory");
-				MonitorFactory cf = factory.newInstance();
-				// TODO Factory cachen
-				monitors.put(entry.getKey(), cf.getMonitoringWorker(entry.getKey(), monitor, devices));
+				MonitorFactory mf = null;
+				if (monitorFactories.containsKey(monitor.get("type").getAsString())) {
+					mf = monitorFactories.get(monitor.get("type").getAsString());
+				} else {
+					Class<MonitorFactory> factory = (Class<MonitorFactory>) Class.forName(monitor.get("type")
+							.getAsString() + "Factory");
+					mf = factory.newInstance();
+					monitorFactories.put(monitor.get("type").getAsString(), mf);
+				}
+				monitors.put(entry.getKey(), mf.getMonitoringWorker(entry.getKey(), monitor, devices));
 			}
 		}
 	}
@@ -180,11 +195,16 @@ public class Config {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject device = entry.getValue().getAsJsonObject();
-				Class<DeviceFactory> factory = (Class<DeviceFactory>) Class.forName(device.get("type").getAsString()
-						+ "Factory");
-				DeviceFactory cf = factory.newInstance();
-				// TODO Factory cachen
-				devices.put(entry.getKey(), cf.getDevice(entry.getKey(), device));
+				DeviceFactory df = null;
+				if (deviceFactories.containsKey(device.get("type").getAsString())) {
+					df = deviceFactories.get(device.get("type").getAsString());
+				} else {
+					Class<DeviceFactory> factory = (Class<DeviceFactory>) Class.forName(device.get("type")
+							.getAsString() + "Factory");
+					df = factory.newInstance();
+					deviceFactories.put(device.get("type").getAsString(), df);
+				}
+				devices.put(entry.getKey(), df.getDevice(entry.getKey(), device));
 			}
 		}
 	}
@@ -220,10 +240,15 @@ public class Config {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject controller = entry.getValue().getAsJsonObject();
-				Class<ControllerFactory> factory = (Class<ControllerFactory>) Class.forName(controller.get("type")
-						.getAsString() + "Factory");
-				ControllerFactory cf = factory.newInstance();
-				// TODO Factory cachen
+				ControllerFactory cf = null;
+				if (controllerFactories.containsKey(controller.get("type").getAsString())) {
+					cf = controllerFactories.get(controller.get("type").getAsString());
+				} else {
+					Class<ControllerFactory> factory = (Class<ControllerFactory>) Class.forName(controller.get("type")
+							.getAsString() + "Factory");
+					cf = factory.newInstance();
+					controllerFactories.put(controller.get("type").getAsString(), cf);
+				}
 				controllers.put(entry.getKey(), cf.getControllerWorker(entry.getKey(), controller, devices, channels));
 			}
 		}
@@ -280,9 +305,56 @@ public class Config {
 	 */
 	public Map<String, JsonObject> getJsonDevices() {
 		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
-		// for (Device d : devices.values()) {
-		//
-		// }
+		for (Map.Entry<String, Device> entry : devices.entrySet()) {
+			jsonDevices.put(entry.getKey(),
+					deviceFactories.get(entry.getValue().getClass().getName()).getConfig(entry.getValue()));
+		}
+		return jsonDevices;
+	}
+
+	/**
+	 * Provides the Controllers as Map of JsonObjects
+	 * 
+	 * @return
+	 */
+	public Map<String, JsonObject> getJsonControllers() {
+		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
+		for (Map.Entry<String, ControllerWorker> entry : controllers.entrySet()) {
+			ControllerFactory cf = controllerFactories.get(entry.getValue().getController().getClass().getName());
+			JsonObject obj = cf.getConfig(entry.getValue());
+			jsonDevices.put(entry.getKey(), obj);
+		}
+		return jsonDevices;
+	}
+
+	/**
+	 * Provides the Channels as Map of JsonObjects
+	 * 
+	 * @return
+	 */
+	public Map<String, JsonObject> getJsonCannels() {
+		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
+		for (Map.Entry<String, ChannelWorker> entry : channels.entrySet()) {
+			ChannelFactory cf = channelFactories.get(((ModbusChannelWorker) entry.getValue()).getModbusConnection()
+					.getClass().getName());
+			JsonObject obj = cf.getConfig(entry.getValue());
+			jsonDevices.put(entry.getKey(), obj);
+		}
+		return jsonDevices;
+	}
+
+	/**
+	 * Provides the Monitors as Map of JsonObjects
+	 * 
+	 * @return
+	 */
+	public Map<String, JsonObject> getJsonMonitors() {
+		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
+		for (Map.Entry<String, MonitoringWorker> entry : monitors.entrySet()) {
+			MonitorFactory mf = monitorFactories.get(entry.getValue().getClass().getName());
+			JsonObject obj = mf.getConfig(entry.getValue());
+			jsonDevices.put(entry.getKey(), obj);
+		}
 		return jsonDevices;
 	}
 }

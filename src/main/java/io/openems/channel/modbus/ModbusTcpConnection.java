@@ -28,6 +28,10 @@ public class ModbusTcpConnection extends ModbusConnection {
 	private final InetAddress ip;
 	private TCPMasterConnection con = null;
 
+	public InetAddress getIp() {
+		return ip;
+	}
+
 	public ModbusTcpConnection(InetAddress ip, int cycle) {
 		super(cycle);
 		this.ip = ip;

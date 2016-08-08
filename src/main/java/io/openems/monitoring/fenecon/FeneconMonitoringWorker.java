@@ -44,6 +44,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonStreamParser;
 
 public class FeneconMonitoringWorker extends MonitoringWorker implements ElementUpdateListener {
+	public String getDevicekey() {
+		return devicekey;
+	}
+
 	private final static String URL = "https://fenecon.de/fems2";
 	public final static String CACHE_DB_PATH = "/opt/fems-cache.db";
 	public final static int MAX_CACHE_ENTRIES_TO_TRANSFER = 10000;
