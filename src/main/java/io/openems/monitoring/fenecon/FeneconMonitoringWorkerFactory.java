@@ -17,9 +17,7 @@ public class FeneconMonitoringWorkerFactory extends MonitorFactory {
 				.getAsString());
 		for (Device device : devices.values()) { // add listener for all
 													// elements
-			for (String elementName : device.getElements()) {
-				device.getElement(elementName).addListener(feneconMonitoring);
-			}
+			device.addListener(feneconMonitoring);
 		}
 		return feneconMonitoring;
 	}

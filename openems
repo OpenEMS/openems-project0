@@ -13,29 +13,25 @@
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "10.4.0.15",
 			"cycle": 1000
+		},
+		"lan1": {
+			"type": "io.openems.channel.modbus.ModbusTcpConnection",
+			"inetAddress": "192.168.178.152",
+			"cycle": 500
 		}
 	},
 	"device": {
-		"ess0": {
-			"type": "io.openems.device.ess.Commercial",
-			"channel": "lan0",
-			"modbusUnit": 100
-		},
-		"counter0": {
-			"type": "io.openems.device.counter.Socomec",
-			"channel": "usb0",
-			"modbusUnit": 5
-		}
+		"io0": {
+			"type": "io.openems.device.io.Wago",
+			"channel": "lan1",
+			"modbusUnit": 0,
+			"inetAddress":"192.168.178.152"
+		}		
 	},
 	"controller": {
-		"controller0": {
-			"type": "io.openems.controller.Balancing",
-			"chargeFromAc": false,
-			"minSoc": 10,
-			"gridCounter": "counter0",
-			"ess": [
-				"ess0"
-			]
+		"io0": {
+			"type": "io.openems.controller.IOController",
+			"io":["io0"]
 		}
 	},
 	"monitor":{

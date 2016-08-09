@@ -144,7 +144,7 @@ public class Wago extends IO {
 							elements.add((BitsElement) (currentElementBuilder.build()));
 						}
 						name = "inputs" + (count / 16 + 1);
-						currentElementBuilder = new ElementBuilder(512 + count / 16).device(name).name(name);
+						currentElementBuilder = new ElementBuilder(count / 16).device(name).name(name);
 						mainElements.add(name);
 					}
 					bitElementMapping.put(channel, name);

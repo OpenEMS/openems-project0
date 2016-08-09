@@ -6,7 +6,7 @@ import io.openems.utils.Mutex;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChannelWorker extends Thread {
+public abstract class ChannelWorker extends Thread {
 	protected final List<Device> devices = new ArrayList<>();
 
 	protected final Mutex initQueryFinished = new Mutex(false);

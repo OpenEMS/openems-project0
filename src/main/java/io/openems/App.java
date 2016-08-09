@@ -86,12 +86,12 @@ public class App {
 		for (MonitoringWorker monitoringWorker : monitoringWorkers.values()) {
 			monitoringWorker.interrupt();
 		}
-		try {
-			RestWorker.stopWorker();
-		} catch (Exception e) {
-			log.warn("Unable to stop REST-Api");
-			e.printStackTrace();
-		}
+		// try {
+		// RestWorker.stopWorker();
+		// } catch (Exception e) {
+		// log.warn("Unable to stop REST-Api");
+		// e.printStackTrace();
+		// }
 	}
 
 	/**

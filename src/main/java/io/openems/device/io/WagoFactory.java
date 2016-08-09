@@ -13,7 +13,6 @@ public class WagoFactory extends DeviceFactory {
 	public Device getDevice(String name, JsonObject device) throws Exception {
 		Wago wago = new Wago(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(),
 				InetAddress.getByName(device.get("inetAddress").getAsString()));
-		wago.init();
 		return wago;
 	}
 

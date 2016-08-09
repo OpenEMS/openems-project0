@@ -18,10 +18,15 @@
 package io.openems.channel.modbus;
 
 import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.Element;
+import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.interfaces.ElementUpdateListener;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -75,6 +80,52 @@ public abstract class ModbusDevice extends Device {
 			for (String id : allElements) {
 				remainingProtocol.addElementRange(protocol.getElement(id).getElementRange());
 				// TODO: split remainingProtocol in small pieces
+			}
+		}
+		for (ElementRange er : initProtocol.getElementRanges()) {
+			for (Element<?> e : er.getElements()) {
+				if (e instanceof BitsElement) {
+					for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
+						element.getValue().addListener(new ElementUpdateListener() {
+
+							@Override
+							public void elementUpdated(String name, Object value) {
+								notifyListeners(name, value);
+							}
+						});
+					}
+				} else {
+					e.addListener(new ElementUpdateListener() {
+
+						@Override
+						public void elementUpdated(String name, Object value) {
+							notifyListeners(name, value);
+						}
+					});
+				}
+			}
+		}
+		for (ElementRange er : mainProtocol.getElementRanges()) {
+			for (Element<?> e : er.getElements()) {
+				if (e instanceof BitsElement) {
+					for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
+						element.getValue().addListener(new ElementUpdateListener() {
+
+							@Override
+							public void elementUpdated(String name, Object value) {
+								notifyListeners(name, value);
+							}
+						});
+					}
+				} else {
+					e.addListener(new ElementUpdateListener() {
+
+						@Override
+						public void elementUpdated(String name, Object value) {
+							notifyListeners(name, value);
+						}
+					});
+				}
 			}
 		}
 	}

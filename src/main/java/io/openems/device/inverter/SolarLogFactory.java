@@ -11,7 +11,6 @@ public class SolarLogFactory extends DeviceFactory {
 	public Device getDevice(String name, JsonObject device) throws Exception {
 		SolarLog sl = new SolarLog(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(),
 				device.get("totalPower").getAsInt());
-		sl.init();
 		return sl;
 	}
 

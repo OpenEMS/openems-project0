@@ -50,8 +50,6 @@ public abstract class ModbusConnection implements AutoCloseable {
 
 	protected abstract ModbusTransaction getTransaction() throws Exception;
 
-	public abstract void dispose();
-
 	public int getCycle() {
 		return cycle;
 	}
@@ -142,7 +140,6 @@ public abstract class ModbusConnection implements AutoCloseable {
 	}
 
 	public synchronized void write(int unitid, int ref, boolean value) throws Exception {
-		System.out.println(ref + " --- " + value);
 		ModbusTransaction trans = getTransaction();
 		WriteCoilRequest req = new WriteCoilRequest(ref, value);
 		req.setUnitID(unitid);

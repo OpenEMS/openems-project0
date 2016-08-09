@@ -63,6 +63,9 @@ public class ControllerWorker extends Thread {
 			}
 		}
 		log.info("ControllerWorker {} stopped", getName());
+		for (ChannelWorker modbusWorker : modbusWorkers) {
+			modbusWorker.interrupt();
+		}
 	}
 
 	public Controller getController() {

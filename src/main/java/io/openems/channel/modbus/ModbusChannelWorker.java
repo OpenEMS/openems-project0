@@ -51,6 +51,7 @@ public class ModbusChannelWorker extends ChannelWorker {
 		for (Device device : devices) {
 			if (device instanceof ModbusDevice) { // TODO: fix polymorphism
 				try {
+					device.init();
 					((ModbusDevice) device).executeInitQuery(modbusConnection);
 				} catch (Exception e) {
 					log.error("Error while executing modbus query: {}", e.getMessage());
@@ -117,6 +118,7 @@ public class ModbusChannelWorker extends ChannelWorker {
 			}
 		}
 		log.info("ModbusWorker {} stopped", getName());
+		modbusConnection.close();
 	}
 
 	@Override
