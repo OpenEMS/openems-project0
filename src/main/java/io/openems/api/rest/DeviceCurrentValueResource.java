@@ -2,6 +2,8 @@ package io.openems.api.rest;
 
 import io.openems.App;
 import io.openems.device.Device;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.Element;
 
 import java.io.IOException;
 
@@ -21,6 +23,23 @@ public class DeviceCurrentValueResource extends ServerResource {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
 		Device d = App.getConfig().getDevices().get(device);
-		return new StringRepresentation(d.getElement(parameterName).getAsJson().toString(), MediaType.APPLICATION_JSON);
+		return new StringRepresentation(findElement(parameterName, d).getAsJson().toString(),
+				MediaType.APPLICATION_JSON);
+	}
+
+	public Element<?> findElement(String name, Device d) {
+		if (d.getElements().contains(name)) {
+			return d.getElement(name);
+		}
+		for (String s : d.getElements()) {
+			Element<?> e = d.getElement(s);
+			if (e instanceof BitsElement) {
+				BitsElement be = (BitsElement) e;
+				if (be.getBitElements().containsKey(name)) {
+					return be.getBit(name);
+				}
+			}
+		}
+		return null;
 	}
 }
