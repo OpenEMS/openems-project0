@@ -24,6 +24,7 @@ import java.nio.ByteOrder;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
+import com.google.gson.JsonElement;
 
 public class SignedIntegerWordElement extends NumberElement<Integer> implements WordElement {
 	final ByteOrder byteOrder;
@@ -46,5 +47,11 @@ public class SignedIntegerWordElement extends NumberElement<Integer> implements 
 		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
 				.putShort(new Integer((value - delta) / multiplier).shortValue()).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]) };
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
+		Integer i = value.getAsInt();
+		return toRegister(i);
 	}
 }

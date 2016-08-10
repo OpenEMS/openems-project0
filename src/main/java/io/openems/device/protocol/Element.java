@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public abstract class Element<T> {
@@ -156,4 +157,6 @@ public abstract class Element<T> {
 		obj.addProperty("value", getValue().toString());
 		return obj;
 	}
+
+	public abstract Register[] toRegister(JsonElement value);
 }

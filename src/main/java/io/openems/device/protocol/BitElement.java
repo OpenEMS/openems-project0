@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonElement;
 
 /**
  * This represents an Element that is only one bit long.
@@ -73,6 +74,11 @@ public class BitElement extends Element<Boolean> implements WordElement {
 
 	@Override
 	public Register[] toRegister(Boolean value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 }

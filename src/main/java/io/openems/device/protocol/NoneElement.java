@@ -18,6 +18,7 @@
 package io.openems.device.protocol;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonElement;
 
 public class NoneElement extends Element<Object> implements PlaceholderElement {
 	public NoneElement(int address, int length, String name) {
@@ -26,6 +27,11 @@ public class NoneElement extends Element<Object> implements PlaceholderElement {
 
 	@Override
 	public Register[] toRegister(Object value) {
+		return null;
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
 		return null;
 	}
 }

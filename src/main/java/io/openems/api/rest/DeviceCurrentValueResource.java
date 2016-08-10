@@ -1,7 +1,9 @@
 package io.openems.api.rest;
 
 import io.openems.App;
+import io.openems.channel.modbus.WritableModbusDevice;
 import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.Element;
 
@@ -13,18 +15,37 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 import org.xml.sax.SAXException;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 public class DeviceCurrentValueResource extends ServerResource {
 
-	@Get
+	@Get("json")
 	public Representation getCurrentValue() throws IOException, ParserConfigurationException, SAXException {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
 		Device d = App.getConfig().getDevices().get(device);
 		return new StringRepresentation(findElement(parameterName, d).getAsJson().toString(),
 				MediaType.APPLICATION_JSON);
+	}
+
+	@Post("json")
+	public void setValue(String json) throws IOException, ParserConfigurationException, SAXException {
+		JsonParser parser = new JsonParser();
+		JsonElement jsonElement = parser.parse(json);
+		String device = (String) this.getRequestAttributes().get("device");
+		String parameterName = (String) this.getRequestAttributes().get("parametername");
+		WritableModbusDevice d = (WritableModbusDevice) App.getConfig().getDevices().get(device);
+		Element<?> e = findElement(parameterName, d);
+		if (e instanceof BitElement) {
+			d.addToWriteQueue(e, jsonElement.getAsJsonObject().get("value").getAsBoolean());
+		} else {
+			d.addToWriteQueue(e, e.toRegister(jsonElement.getAsJsonObject().get("value")));
+		}
 	}
 
 	public Element<?> findElement(String name, Device d) {

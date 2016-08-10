@@ -22,10 +22,8 @@ public class ConfigDevicesResource extends ServerResource {
 
 	@Post("json")
 	public void setConfig(String json) throws ParserConfigurationException, SAXException, Exception {
-		System.out.println(json);
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(json);
-		System.out.println(jsonElement.toString());
 		App.updateConfig(new Config(jsonElement.getAsJsonObject()));
 	}
 }

@@ -24,6 +24,7 @@ import java.nio.ByteOrder;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
+import com.google.gson.JsonElement;
 
 public class SignedIntegerDoublewordElement extends NumberElement<Integer> implements DoublewordElement {
 	final ByteOrder byteOrder;
@@ -46,5 +47,11 @@ public class SignedIntegerDoublewordElement extends NumberElement<Integer> imple
 	public Register[] toRegister(Integer value) {
 		byte[] b = ByteBuffer.allocate(4).order(byteOrder).putInt((value - delta) / multiplier).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
+		Integer i = value.getAsInt();
+		return toRegister(i);
 	}
 }

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class BitsElement extends Element<Map<String, BitElement>> implements WordElement, DoublewordElement {
@@ -78,5 +79,10 @@ public class BitsElement extends Element<Map<String, BitElement>> implements Wor
 		}
 		obj.add("bits", arr);
 		return obj;
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
+		throw new UnsupportedOperationException("not implemented");
 	}
 }

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonElement;
 
 public class UnsignedShortWordElement extends NumberElement<Integer> implements WordElement {
 	@SuppressWarnings("unused")
@@ -44,5 +45,11 @@ public class UnsignedShortWordElement extends NumberElement<Integer> implements 
 	@Override
 	public Register[] toRegister(Integer value) {
 		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register[] toRegister(JsonElement value) {
+		Integer i = value.getAsInt();
+		return toRegister(i);
 	}
 }
