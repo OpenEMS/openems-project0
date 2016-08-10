@@ -20,6 +20,7 @@ package io.openems.device.ess;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ElementType;
 import io.openems.device.protocol.ModbusProtocol;
@@ -167,6 +168,28 @@ public class Commercial extends Ess {
 				.name(EssProtocol.SetWorkState) //
 				.signed(true)//
 				.build()));
+		protocol.addElementRange(new ElementRange(0x1100, new ElementBuilder(0x1100).device(name)
+				.name(EssProtocol.BatteryState).bit(new BitElement(0, EssProtocol.BatteryStates.Initial.name()))//
+				.bit(new BitElement(1, EssProtocol.BatteryStates.Stop.name()))//
+				.bit(new BitElement(2, EssProtocol.BatteryStates.StartingUp.name()))//
+				.bit(new BitElement(3, EssProtocol.BatteryStates.Running.name()))//
+				.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0105, new ElementBuilder(0x0105).device(name)
+				.name(EssProtocol.InverterState).bit(new BitElement(0, EssProtocol.InverterStates.Initial.name()))
+				.bit(new BitElement(1, EssProtocol.InverterStates.Fault.name()))//
+				.bit(new BitElement(2, EssProtocol.InverterStates.Stop.name()))//
+				.bit(new BitElement(3, EssProtocol.InverterStates.Standby.name()))//
+				.bit(new BitElement(4, EssProtocol.InverterStates.GridMonitoring.name()))//
+				.bit(new BitElement(5, EssProtocol.InverterStates.Ready.name()))//
+				.bit(new BitElement(6, EssProtocol.InverterStates.Running.name()))//
+				.bit(new BitElement(7, EssProtocol.InverterStates.Debug.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0208, new ElementBuilder(0x0208).device(name)
+				.name(EssProtocol.ChargeEnergy).unit("Wh").length(ElementLength.DOUBLEWORD).multiplier(100).build(),
+				new ElementBuilder(0x020A).device(name).name(EssProtocol.DischargeEnergy).unit("Wh").multiplier(100)
+						.length(ElementLength.DOUBLEWORD).build()));
+		protocol.addElementRange(new ElementRange(0x1418, new ElementBuilder(0x1418).device(name)
+				.name(EssProtocol.BatteryChargeEnergy).unit("Wh").length(ElementLength.DOUBLEWORD).build(),
+				new ElementBuilder(0x141A).device(name).name(name).unit("Wh").length(ElementLength.DOUBLEWORD).build()));
 		return protocol;
 	}
 
