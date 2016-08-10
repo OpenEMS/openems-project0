@@ -81,17 +81,21 @@ public abstract class ModbusConnection implements AutoCloseable {
 
 	public void updateProtocol(int unitid, ModbusProtocol protocol) throws Exception {
 		for (ElementRange elementRange : protocol.getElementRanges()) {
-			Register[] registers = query(unitid, elementRange.getStartAddress(), elementRange.getTotalLength());
-			int position = 0;
-			for (Element<?> element : elementRange.getElements()) {
-				int length = element.getLength();
-				if (element instanceof WordElement) {
-					((WordElement) element).update(registers[position]);
-				} else if (element instanceof DoublewordElement) {
-					((DoublewordElement) element).update(registers[position], registers[position + 1]);
-				}
-				position += length;
+			updateElementRange(unitid, elementRange);
+		}
+	}
+
+	public void updateElementRange(int unitid, ElementRange elementRange) throws Exception {
+		Register[] registers = query(unitid, elementRange.getStartAddress(), elementRange.getTotalLength());
+		int position = 0;
+		for (Element<?> element : elementRange.getElements()) {
+			int length = element.getLength();
+			if (element instanceof WordElement) {
+				((WordElement) element).update(registers[position]);
+			} else if (element instanceof DoublewordElement) {
+				((DoublewordElement) element).update(registers[position], registers[position + 1]);
 			}
+			position += length;
 		}
 	}
 

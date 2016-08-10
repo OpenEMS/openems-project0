@@ -47,6 +47,8 @@ public abstract class ModbusDevice extends Device {
 	private ModbusProtocol mainProtocol;
 	protected ModbusProtocol remainingProtocol;
 
+	private int remainingCounter = 0;
+
 	public ModbusDevice(String name, String channel, int unitid) {
 		super(channel);
 		this.unitid = unitid;
@@ -152,8 +154,13 @@ public abstract class ModbusDevice extends Device {
 	}
 
 	public void executeRemainingQuery(ModbusConnection modbusConnection) throws Exception {
-		modbusConnection.updateProtocol(this.unitid, this.remainingProtocol);
-	};
+		if (remainingProtocol.getElementRanges().size() > 0) {
+			remainingCounter = remainingCounter % remainingProtocol.getElementRanges().size();
+			modbusConnection.updateElementRange(this.unitid,
+					this.remainingProtocol.getElementRanges().get(remainingCounter));
+			remainingCounter++;
+		}
+	}
 
 	protected abstract ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException;
 

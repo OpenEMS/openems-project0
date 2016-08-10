@@ -376,9 +376,9 @@ public class Config {
 			monitors.add(entry.getKey(), entry.getValue());
 		}
 		JsonObject obj = new JsonObject();
+		obj.add("channel", channels);
 		obj.add("device", devices);
 		obj.add("controller", controllers);
-		obj.add("channel", channels);
 		obj.add("monitor", monitors);
 		return obj;
 	}
