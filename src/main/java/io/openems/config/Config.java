@@ -357,4 +357,29 @@ public class Config {
 		}
 		return jsonDevices;
 	}
+
+	public JsonObject getConfigAsJson() {
+		JsonObject devices = new JsonObject();
+		for (Entry<String, JsonObject> entry : getJsonDevices().entrySet()) {
+			devices.add(entry.getKey(), entry.getValue());
+		}
+		JsonObject controllers = new JsonObject();
+		for (Entry<String, JsonObject> entry : getJsonControllers().entrySet()) {
+			controllers.add(entry.getKey(), entry.getValue());
+		}
+		JsonObject channels = new JsonObject();
+		for (Entry<String, JsonObject> entry : getJsonCannels().entrySet()) {
+			channels.add(entry.getKey(), entry.getValue());
+		}
+		JsonObject monitors = new JsonObject();
+		for (Entry<String, JsonObject> entry : getJsonMonitors().entrySet()) {
+			monitors.add(entry.getKey(), entry.getValue());
+		}
+		JsonObject obj = new JsonObject();
+		obj.add("device", devices);
+		obj.add("controller", controllers);
+		obj.add("channel", channels);
+		obj.add("monitor", monitors);
+		return obj;
+	}
 }

@@ -1,7 +1,5 @@
 package io.openems.api.rest;
 
-import io.openems.config.api.ConfigDevicesResource;
-
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -38,6 +36,7 @@ public class RestWorker extends Application {
 		Router router = new Router(getContext());
 		// define all routes
 		router.attach("/config", ConfigDevicesResource.class);
+		router.attach("/device/{device}/current/{parametername}", DeviceCurrentValueResource.class);
 
 		return router;
 	}

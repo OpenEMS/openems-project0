@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonObject;
 
 public abstract class Element<T> {
 	@SuppressWarnings("unused")
@@ -145,5 +146,14 @@ public abstract class Element<T> {
 
 	public String readable() {
 		return String.format("%5d %s", value, unit);
+	}
+
+	public JsonObject getAsJson() {
+		JsonObject obj = new JsonObject();
+		obj.addProperty("name", this.name);
+		obj.addProperty("unit", this.unit);
+		obj.addProperty("lastUpdate", lastUpdate.toString());
+		obj.addProperty("value", getValue().toString());
+		return obj;
 	}
 }

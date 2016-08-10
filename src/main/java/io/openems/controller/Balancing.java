@@ -101,8 +101,6 @@ public class Balancing extends Controller {
 		SignedIntegerWordElement cessPv1OutputPower = cess.getPv1OutputPower();
 		SignedIntegerWordElement cessPv2OutputPower = cess.getPv2OutputPower();
 
-		System.out.println("GridState: " + cess.getGridState().name());
-
 		// TODO: check class
 		Socomec gridCounterSocomec = (Socomec) gridCounter;
 		SignedIntegerDoublewordElement counterActivePower = gridCounterSocomec.getActivePower();

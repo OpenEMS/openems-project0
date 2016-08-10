@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class BitsElement extends Element<Map<String, BitElement>> implements WordElement, DoublewordElement {
 	@SuppressWarnings("unused")
@@ -64,5 +66,17 @@ public class BitsElement extends Element<Map<String, BitElement>> implements Wor
 
 	public Map<String, BitElement> getBitElements() {
 		return bitElements;
+	}
+
+	@Override
+	public JsonObject getAsJson() {
+		JsonObject obj = new JsonObject();
+		obj.addProperty("name", this.name);
+		JsonArray arr = new JsonArray();
+		for (BitElement e : bitElements.values()) {
+			arr.add(e.getAsJson());
+		}
+		obj.add("bits", arr);
+		return obj;
 	}
 }

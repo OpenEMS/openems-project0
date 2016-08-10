@@ -61,7 +61,6 @@ public abstract class Controller {
 			}
 		}
 		lastSoc = currentSoc;
-		System.out.println("vorher: " + calculatedPower + "; lowSocCounter: " + lowSocCounter);
 		// Calculate discharge power with hysteresis for the minSoc
 		calculatedPower = (int) (calculatedPower / (double) HYSTERESIS * lowSocCounter);
 		System.out.println("nachher: " + calculatedPower);
