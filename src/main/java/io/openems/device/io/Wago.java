@@ -178,4 +178,20 @@ public class Wago extends IO {
 		return ((BitsElement) getElement(bitElementMapping.get(name))).getBit(name);
 	}
 
+	@Override
+	public String getCurrentDataAsString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeDigitalValue(String output, boolean value) {
+		this.addToWriteQueue(getBitElement(output), value);
+	}
+
+	@Override
+	public boolean readDigitalValue(String channel) {
+		return getBitElement(channel).getValue();
+	}
+
 }

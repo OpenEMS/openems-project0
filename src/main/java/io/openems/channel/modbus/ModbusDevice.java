@@ -154,7 +154,7 @@ public abstract class ModbusDevice extends Device {
 	}
 
 	public void executeRemainingQuery(ModbusConnection modbusConnection) throws Exception {
-		if (remainingProtocol.getElementRanges().size() > 0) {
+		if (remainingProtocol != null && remainingProtocol.getElementRanges().size() > 0) {
 			remainingCounter = remainingCounter % remainingProtocol.getElementRanges().size();
 			modbusConnection.updateElementRange(this.unitid,
 					this.remainingProtocol.getElementRanges().get(remainingCounter));
@@ -167,6 +167,11 @@ public abstract class ModbusDevice extends Device {
 	@Override
 	public String toString() {
 		return "ModbusDevice [name=" + name + ", unitid=" + unitid + "]";
+	}
+
+	@Override
+	public Set<String> getElements() {
+		return protocol.getElementIds();
 	}
 
 }

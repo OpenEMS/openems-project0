@@ -38,7 +38,6 @@ public class BalancingFactory extends ControllerFactory {
 			Balancing bal = (Balancing) worker.getController();
 			jo.addProperty("type", bal.getClass().getName());
 			jo.addProperty("chargeFromAc", bal.isAllowChargeFromAC());
-			jo.addProperty("minSoc", bal.getMinSoc());
 			jo.addProperty("gridCounter", bal.getGridCounter().getName());
 			JsonArray arr = new JsonArray();
 			jo.add("ess", arr);

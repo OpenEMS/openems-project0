@@ -1,14 +1,17 @@
 package io.openems.device.counter;
 
+import io.openems.channel.ChannelWorker;
 import io.openems.device.Device;
 import io.openems.device.DeviceFactory;
+
+import java.util.HashMap;
 
 import com.google.gson.JsonObject;
 
 public class SocomecFactory extends DeviceFactory {
 
 	@Override
-	public Device getDevice(String name, JsonObject device) throws Exception {
+	public Device getDevice(String name, JsonObject device, HashMap<String, ChannelWorker> channels) throws Exception {
 		Socomec socomec = new Socomec(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt());
 		return socomec;
 	}

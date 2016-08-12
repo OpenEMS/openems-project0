@@ -37,4 +37,5 @@ public abstract class Counter extends ModbusDevice {
 		return "Counter [name=" + name + ", unitid=" + unitid + "]";
 	}
 
+	public abstract int getActivePower();
 }

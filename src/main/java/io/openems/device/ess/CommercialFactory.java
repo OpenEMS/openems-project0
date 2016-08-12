@@ -1,15 +1,19 @@
 package io.openems.device.ess;
 
+import io.openems.channel.ChannelWorker;
 import io.openems.device.Device;
 import io.openems.device.DeviceFactory;
+
+import java.util.HashMap;
 
 import com.google.gson.JsonObject;
 
 public class CommercialFactory extends DeviceFactory {
 
 	@Override
-	public Device getDevice(String name, JsonObject device) throws Exception {
-		Commercial c = new Commercial(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt());
+	public Device getDevice(String name, JsonObject device, HashMap<String, ChannelWorker> channels) throws Exception {
+		Commercial c = new Commercial(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(),
+				device.get("minSoc").getAsInt());
 		return c;
 	}
 

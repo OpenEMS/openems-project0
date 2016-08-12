@@ -18,15 +18,19 @@
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "192.168.178.152",
 			"cycle": 500
+		},
+		"lan2":{
+			"type": "io.openems.channel.modbus.ModbusTcpConnection",
+			"inetAddress": "192.168.178.122",
+			"cycle": 500
 		}
 	},
 	"device": {
 		"io0": {
 			"type": "io.openems.device.io.Wago",
 			"channel": "lan1",
-			"modbusUnit": 0,
-			"inetAddress":"192.168.178.152"
-		}		
+			"modbusUnit": 0
+		}
 	},
 	"controller": {
 		"io0": {

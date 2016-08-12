@@ -1,18 +1,23 @@
 package io.openems.device.io;
 
+import io.openems.channel.ChannelWorker;
+import io.openems.channel.modbus.ModbusChannelWorker;
+import io.openems.channel.modbus.ModbusTcpConnection;
 import io.openems.device.Device;
 import io.openems.device.DeviceFactory;
 
 import java.net.InetAddress;
+import java.util.HashMap;
 
 import com.google.gson.JsonObject;
 
 public class WagoFactory extends DeviceFactory {
 
 	@Override
-	public Device getDevice(String name, JsonObject device) throws Exception {
-		Wago wago = new Wago(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(),
-				InetAddress.getByName(device.get("inetAddress").getAsString()));
+	public Device getDevice(String name, JsonObject device, HashMap<String, ChannelWorker> channels) throws Exception {
+		ModbusChannelWorker cw = (ModbusChannelWorker) channels.get(device.get("channel").getAsString());
+		InetAddress ip = ((ModbusTcpConnection) cw.getModbusConnection()).getIp();
+		Wago wago = new Wago(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(), ip);
 		return wago;
 	}
 
@@ -24,7 +29,6 @@ public class WagoFactory extends DeviceFactory {
 			jo.addProperty("type", w.getClass().getName());
 			jo.addProperty("channel", w.getChannel());
 			jo.addProperty("modbusUnit", w.getUnitid());
-			jo.addProperty("inetAddress", w.getIp().getHostAddress());
 			return jo;
 		}
 		return null;
