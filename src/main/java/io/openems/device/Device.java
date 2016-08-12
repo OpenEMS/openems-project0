@@ -23,18 +23,7 @@ public abstract class Device {
 		return this.channel;
 	}
 
-	public Set<String> getElements() {
-		Set<String> elements = new HashSet<>();
-		Set<String> initElements = getInitElements();
-		if (initElements != null) {
-			elements.addAll(initElements);
-		}
-		Set<String> mainElements = getMainElements();
-		if (mainElements != null) {
-			elements.addAll(mainElements);
-		}
-		return elements;
-	}
+	public abstract Set<String> getElements();
 
 	public abstract Element<?> getElement(String id);
 
@@ -53,4 +42,6 @@ public abstract class Device {
 			listener.elementUpdated(fullName, value);
 		}
 	}
+
+	public abstract String getCurrentDataAsString();
 }

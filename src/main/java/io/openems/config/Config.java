@@ -204,7 +204,7 @@ public class Config {
 					df = factory.newInstance();
 					deviceFactories.put(device.get("type").getAsString(), df);
 				}
-				devices.put(entry.getKey(), df.getDevice(entry.getKey(), device));
+				devices.put(entry.getKey(), df.getDevice(entry.getKey(), device, channels));
 			}
 		}
 	}

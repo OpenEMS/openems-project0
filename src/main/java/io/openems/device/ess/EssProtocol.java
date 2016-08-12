@@ -24,7 +24,7 @@ public enum EssProtocol {
 
 	AllowedCharge, AllowedDischarge, AllowedApparent,
 
-	BatteryStringSoc,
+	BatteryVoltage, BatteryAmperage, BatteryPower, BatteryStringSoc, BatteryStringSOH,
 
 	SetActivePower, SetReactivePower, SetWorkState,
 
@@ -38,7 +38,15 @@ public enum EssProtocol {
 
 	BatteryState, InverterState,
 
-	ChargeEnergy, DischargeEnergy, BatteryChargeEnergy, BatteryDischargeEnergy;
+	ChargeEnergy, DischargeEnergy, BatteryChargeEnergy, BatteryDischargeEnergy,
+
+	CurrentPhase1, CurrentPhase2, CurrentPhase3,
+
+	VoltagePhase1, VoltagePhase2, VoltagePhase3,
+
+	Frequency,
+
+	ControlMode, WorkMode, RemoteDispatch, BatteryMaintananceState, ProtocolVersion, SystemType, SystemManufacturer, DcVoltage, DcCurrent, DcPower;
 
 	public enum SystemStates {
 		Stop, PvCharging, Standby, Running, Fault, Debug
@@ -66,5 +74,9 @@ public enum EssProtocol {
 
 	public enum InverterStates {
 		Initial, Fault, Stop, Standby, GridMonitoring, Ready, Running, Debug
+	}
+
+	public enum ControlModes {
+		Remote, LocalManual
 	}
 }

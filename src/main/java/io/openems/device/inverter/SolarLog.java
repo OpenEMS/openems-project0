@@ -27,8 +27,10 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public Set<String> getWriteElements() {
-		return new HashSet<String>(Arrays.asList( //
-				InverterProtocol.SetLimit.name()));
+		return new HashSet<String>(
+		// Arrays.asList( //
+		// InverterProtocol.SetLimit.name())
+		);
 	}
 
 	@Override
@@ -36,7 +38,7 @@ public class SolarLog extends WritableModbusDevice {
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502).name(InverterProtocol.PAC.name())
 				.length(ElementLength.DOUBLEWORD).unit("W").build()));//
-		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3504).name(InverterProtocol.PDC.name())
+		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504).name(InverterProtocol.PDC.name())
 				.length(ElementLength.DOUBLEWORD).unit("W").build(),//
 				new ElementBuilder(3506).name(InverterProtocol.UAC.name()).unit("V").build(),//
 				new ElementBuilder(3507).name(InverterProtocol.UDC.name()).unit("V").build(),//
@@ -50,23 +52,27 @@ public class SolarLog extends WritableModbusDevice {
 						.unit("Wh").build(),//
 				new ElementBuilder(3516).name(InverterProtocol.TotalYield.name()).length(ElementLength.DOUBLEWORD)
 						.unit("Wh").build()));//
-		protocol.addElementRange(new ElementRange(10400, new ElementBuilder(10400)
-				.name(InverterProtocol.SetLimit.name()).unit("%").build()));
-		protocol.addElementRange(new ElementRange(10401, new ElementBuilder(10401).name(
-				InverterProtocol.SetLimitType.name()).build()));
+		// protocol.addElementRange(new ElementRange(10400, new
+		// ElementBuilder(10400)
+		// .name(InverterProtocol.SetLimit.name()).unit("%").build()));
+		// protocol.addElementRange(new ElementRange(10401, new
+		// ElementBuilder(10401).name(
+		// InverterProtocol.SetLimitType.name()).build()));
 		return protocol;
 	}
 
 	@Override
 	public Set<String> getInitElements() {
-		return new HashSet<String>(Arrays.asList( //
-				InverterProtocol.SetLimitType.name()));
+		return new HashSet<String>(
+		// Arrays.asList( //
+		// InverterProtocol.SetLimitType.name())
+		);
 	}
 
 	@Override
 	public Set<String> getMainElements() {
 		return new HashSet<String>(Arrays.asList( //
-				InverterProtocol.SetLimit.name(),//
+				// InverterProtocol.SetLimit.name(),//
 				InverterProtocol.PAC.name()));
 	}
 
@@ -76,6 +82,12 @@ public class SolarLog extends WritableModbusDevice {
 
 	public void setTotalPower(int totalPower) {
 		this.totalPower = totalPower;
+	}
+
+	@Override
+	public String getCurrentDataAsString() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

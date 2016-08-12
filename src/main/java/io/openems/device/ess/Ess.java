@@ -26,12 +26,73 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 public abstract class Ess extends WritableModbusDevice {
-	public Ess(String name, String modbusid, int unitid) throws IOException, ParserConfigurationException, SAXException {
+
+	protected int minSoc = 10;
+
+	private static final int HYSTERESIS = 10;
+
+	private int lowSocCounter = HYSTERESIS;
+	private int lastSoc = 100;
+
+	public Ess(String name, String modbusid, int unitid, int minSoc) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, modbusid, unitid);
+		this.minSoc = minSoc;
 	}
 
 	@Override
 	public String toString() {
 		return "ESS [name=" + name + ", unitid=" + unitid + "]";
+	}
+
+	public abstract EssProtocol.GridStates getGridState();
+
+	public abstract void setActivePower(int power);
+
+	public abstract int getActivePower();
+
+	public abstract int getSOC();
+
+	public abstract int getAllowedCharge();
+
+	public abstract int getAllowedDischarge();
+
+	public abstract void start();
+
+	public abstract void stop();
+
+	public int getMinSoc() {
+		return minSoc;
+	}
+
+	public void setMinSoc(int minSoc) {
+		this.minSoc = minSoc;
+	}
+
+	public int getUseableSoc() {
+		return getSOC() - getMinSoc();
+	}
+
+	public int getMaxDischargePower() {
+		if (getSOC() >= minSoc) {
+			// increase the discharge Power slowly
+			if (lastSoc < minSoc) {
+				lowSocCounter = 0;
+			}
+			if (lowSocCounter < HYSTERESIS) {
+				lowSocCounter++;
+			}
+		} else {
+			// decrease the discharge Power slowly
+			if (lastSoc >= minSoc) {
+				lowSocCounter = HYSTERESIS;
+			}
+			if (lowSocCounter > 0) {
+				lowSocCounter--;
+			}
+		}
+		lastSoc = getSOC();
+		// Calculate discharge power with hysteresis for the minSoc
+		return (int) (getAllowedDischarge() / (double) HYSTERESIS * lowSocCounter);
 	}
 }

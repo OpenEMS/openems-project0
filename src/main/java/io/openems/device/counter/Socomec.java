@@ -78,8 +78,9 @@ public class Socomec extends Counter {
 				CounterProtocol.ApparentPower.name()));
 	}
 
-	public SignedIntegerDoublewordElement getActivePower() {
-		return (SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name());
+	@Override
+	public int getActivePower() {
+		return ((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name())).getValue();
 	}
 
 	public SignedIntegerDoublewordElement getReactivePower() {
@@ -96,5 +97,14 @@ public class Socomec extends Counter {
 
 	public UnsignedIntegerDoublewordElement getActiveNegativeEnergy() {
 		return (UnsignedIntegerDoublewordElement) getElement(CounterProtocol.ActiveNegativeEnergy.name());
+	}
+
+	@Override
+	public String getCurrentDataAsString() {
+		return "COUNTER: [" + getElement(CounterProtocol.ActivePower.name()).readable() + " "
+				+ getElement(CounterProtocol.ReactivePower.name()).readable() + " "
+				+ getElement(CounterProtocol.ApparentPower.name()).readable() + " +"
+				+ getElement(CounterProtocol.ActivePositiveEnergy.name()).readable() + " -"
+				+ getElement(CounterProtocol.ActiveNegativeEnergy.name()).readable() + "] ";
 	}
 }

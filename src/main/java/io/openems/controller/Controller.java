@@ -18,51 +18,14 @@
 package io.openems.controller;
 
 public abstract class Controller {
-	private static final int HYSTERESIS = 10;
 
 	private final String name;
-
-	private int lowSocCounter = HYSTERESIS;
-	private int lastSoc = 100;
-	private int minSoc = 10;
 
 	public Controller(String name) {
 		this.name = name;
 	}
 
-	public void setMinSoc(int minSoc) {
-		this.minSoc = minSoc;
-	}
-
-	public int getMinSoc() {
-		return minSoc;
-	}
-
 	public abstract void init();
 
 	public abstract void run();
-
-	protected int calculateMinSocHyisteresis(int calculatedPower, int currentSoc) {
-		if (currentSoc >= minSoc) {
-			// increase the discharge Power slowly
-			if (lastSoc < minSoc) {
-				lowSocCounter = 0;
-			}
-			if (lowSocCounter < HYSTERESIS) {
-				lowSocCounter++;
-			}
-		} else {
-			// decrease the discharge Power slowly
-			if (lastSoc >= minSoc) {
-				lowSocCounter = HYSTERESIS;
-			}
-			if (lowSocCounter > 0) {
-				lowSocCounter--;
-			}
-		}
-		lastSoc = currentSoc;
-		// Calculate discharge power with hysteresis for the minSoc
-		calculatedPower = (int) (calculatedPower / (double) HYSTERESIS * lowSocCounter);
-		return calculatedPower;
-	}
 }
