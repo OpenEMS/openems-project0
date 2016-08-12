@@ -17,9 +17,6 @@
  */
 package io.openems.monitoring.fenecon;
 
-import io.openems.device.protocol.interfaces.ElementUpdateListener;
-import io.openems.monitoring.MonitoringWorker;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -43,13 +40,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonStreamParser;
 
+import io.openems.device.protocol.interfaces.ElementUpdateListener;
+import io.openems.monitoring.MonitoringWorker;
+
 public class FeneconMonitoringWorker extends MonitoringWorker implements ElementUpdateListener {
 	public String getDevicekey() {
 		return devicekey;
 	}
 
 	private final static String URL = "https://fenecon.de/fems2";
-	public final static String CACHE_DB_PATH = "/opt/fems-cache.db";
+	// public final static String CACHE_DB_PATH = "/opt/fems-cache.db";
 	public final static int MAX_CACHE_ENTRIES_TO_TRANSFER = 10000;
 	private final static int CYCLE = 60000;
 	public final static String FEMS_SYSTEMMESSAGE = "FEMS Systemmessage";
@@ -57,11 +57,11 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 	private final static Logger log = LoggerFactory.getLogger(FeneconMonitoringWorker.class);
 
 	private final String devicekey;
-	private final FeneconMonitoringCache cache;
+	// private final FeneconMonitoringCache cache;
 
 	public FeneconMonitoringWorker(String devicekey) {
 		this.devicekey = devicekey;
-		cache = new FeneconMonitoringCache(this);
+		// cache = new FeneconMonitoringCache(this);
 	}
 
 	private static ConcurrentLinkedQueue<TimedElementValue> queue = new ConcurrentLinkedQueue<>();
@@ -87,7 +87,9 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 					log.info("FENECON Online Monitoring: No new data to send");
 				} else {
 
-					String statsBefore = "Queue:" + queue.size() + "; Cache:" + cache.isEmpty();
+					// String statsBefore = "Queue:" + queue.size() + "; Cache:"
+					// + cache.isEmpty();
+					String statsBefore = "Queue:" + queue.size() + ";";
 					// Get entries from current queue
 					ArrayList<TimedElementValue> currentQueue = new ArrayList<>(queue.size());
 					for (int i = 0; i < MAX_CACHE_ENTRIES_TO_TRANSFER; i++) {
@@ -102,12 +104,12 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 						handleJsonRpcResult(resultObj);
 						currentQueue.clear(); // clear currentQueue
 						// transfer from cache
-						try {
-							currentQueue.addAll(cache.pollMany(MAX_CACHE_ENTRIES_TO_TRANSFER));
-						} catch (Exception e1) {
-							log.error("Error while receiving from cache: " + e1.getMessage());
-							e1.printStackTrace();
-						}
+						/*
+						 * try { currentQueue.addAll(cache.pollMany(
+						 * MAX_CACHE_ENTRIES_TO_TRANSFER)); } catch (Exception
+						 * e1) { log.error("Error while receiving from cache: "
+						 * + e1.getMessage()); e1.printStackTrace(); }
+						 */
 						if (!currentQueue.isEmpty()) { // if there are elements
 														// in
 														// the list
@@ -116,26 +118,26 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 							if (resultObj != null) { // sending was successful
 								currentQueue.clear();
 							} else { // sending was not successful
-								try {
-									cache.addAll(currentQueue);
-								} catch (Exception e) {
-									log.error("Error while adding to cache: " + e.getMessage());
-									e.printStackTrace();
-									queue.addAll(currentQueue);
-								}
+								/*
+								 * try { cache.addAll(currentQueue); } catch
+								 * (Exception e) { log.error(
+								 * "Error while adding to cache: " +
+								 * e.getMessage()); e.printStackTrace();
+								 * queue.addAll(currentQueue); }
+								 */
 							}
 						}
 					} else { // sending was not successful;
-						try {
-							cache.addAll(currentQueue);
-						} catch (Exception e) {
-							log.error("Error while adding to cache");
-							e.printStackTrace();
-							queue.addAll(currentQueue);
-						}
+						/*
+						 * try { cache.addAll(currentQueue); } catch (Exception
+						 * e) { log.error("Error while adding to cache");
+						 * e.printStackTrace(); queue.addAll(currentQueue); }
+						 */
 					}
-					log.info("  Before[" + statsBefore + "]; Now[" + "Queue:" + queue.size() + "; Cache:"
-							+ cache.isEmpty() + "]");
+					// log.info(" Before[" + statsBefore + "]; Now[" + "Queue:"
+					// + queue.size() + "; Cache:"
+					// + cache.isEmpty() + "]");
+					log.info("  Before[" + statsBefore + "]; Now[" + "Queue:" + queue.size() + "]");
 				}
 			} catch (Throwable t) {
 				log.error("Error in FENECON Online-Monitoring: " + t.getMessage());
