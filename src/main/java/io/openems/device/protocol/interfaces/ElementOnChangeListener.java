@@ -17,6 +17,6 @@
  */
 package io.openems.device.protocol.interfaces;
 
-public interface ElementUpdateListener {
-	public void elementUpdated(String name, Object value);
+public interface ElementOnChangeListener {
+	public void elementChanged(String name, Object newValue, Object oldValue);
 }

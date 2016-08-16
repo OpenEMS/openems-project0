@@ -17,9 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusDevice;
-import io.openems.device.protocol.interfaces.ElementUpdateListener;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +29,10 @@ import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import io.openems.channel.modbus.ModbusDevice;
+import io.openems.device.protocol.interfaces.ElementOnChangeListener;
+import io.openems.device.protocol.interfaces.ElementOnUpdateListener;
+
 public abstract class Element<T> {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Element.class);
@@ -41,7 +42,8 @@ public abstract class Element<T> {
 	protected final String name;
 	protected final String unit;
 	protected final Period validPeriod;
-	protected Set<ElementUpdateListener> listeners = new HashSet<>();
+	protected Set<ElementOnUpdateListener> listenersOnUpdate = new HashSet<>();
+	protected Set<ElementOnChangeListener> listenersOnChange = new HashSet<>();
 
 	protected DateTime lastUpdate = null;
 	protected T value = null;
@@ -90,13 +92,39 @@ public abstract class Element<T> {
 		return value;
 	}
 
-	public void addListener(ElementUpdateListener listener) {
-		listeners.add(listener);
+	/**
+	 * Add a new listener for OnUpdate events.
+	 * 
+	 * @param listener
+	 */
+	public void addOnUpdateListener(ElementOnUpdateListener listener) {
+		listenersOnUpdate.add(listener);
 	}
 
-	private void notifyListeners() {
-		for (ElementUpdateListener listener : listeners) {
+	/**
+	 * Notify {@link ElementOnUpdateListener}s about updated value
+	 */
+	private void notifyOnUpdateListeners() {
+		for (ElementOnUpdateListener listener : listenersOnUpdate) {
 			listener.elementUpdated(this.getFullName(), this.value);
+		}
+	}
+
+	/**
+	 * Add a new listener for OnChange events.
+	 * 
+	 * @param listener
+	 */
+	public void addOnChangeListener(ElementOnChangeListener listener) {
+		listenersOnChange.add(listener);
+	}
+
+	/**
+	 * Notify {@link ElementOnChangeListener}s about changed value
+	 */
+	private void notifyOnChangeListeners(T oldValue) {
+		for (ElementOnChangeListener listener : listenersOnChange) {
+			listener.elementChanged(this.getFullName(), this.value, oldValue);
 		}
 	}
 
@@ -133,10 +161,15 @@ public abstract class Element<T> {
 	 * "update" method
 	 * 
 	 */
-	protected void update(T value) {
+	protected void update(T newValue) {
 		lastUpdate = DateTime.now();
-		this.value = value;
-		notifyListeners();
+		T oldValue = newValue;
+		this.value = newValue;
+		if (oldValue != newValue) {
+			// TODO should be a smarter comparison
+			notifyOnChangeListeners(oldValue);
+		}
+		notifyOnUpdateListeners();
 	};
 
 	@Override

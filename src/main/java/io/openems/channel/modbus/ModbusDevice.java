@@ -17,14 +17,6 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.device.Device;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.Element;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.interfaces.ElementUpdateListener;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +26,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.Element;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.interfaces.ElementOnChangeListener;
+import io.openems.device.protocol.interfaces.ElementOnUpdateListener;
 
 public abstract class ModbusDevice extends Device {
 	@SuppressWarnings("unused")
@@ -61,6 +61,19 @@ public abstract class ModbusDevice extends Device {
 		// Initialize protocols
 		this.protocol = getProtocol();
 		Set<String> allElements = this.protocol.getElementIds();
+
+		// Add listeners for OnUpdate and OnChange events
+		for (String id : allElements) {
+			Element<?> e = this.protocol.getElement(id);
+			if (e instanceof BitsElement) {
+				for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
+					addListenersToElement(element.getValue());
+				}
+			} else {
+				addListenersToElement(e);
+			}
+		}
+
 		this.initProtocol = new ModbusProtocol(); // Init-Protocol
 		Set<String> initElements = getInitElements();
 		if (initElements != null) {
@@ -84,52 +97,27 @@ public abstract class ModbusDevice extends Device {
 				// TODO: split remainingProtocol in small pieces
 			}
 		}
-		for (ElementRange er : initProtocol.getElementRanges()) {
-			for (Element<?> e : er.getElements()) {
-				if (e instanceof BitsElement) {
-					for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
-						element.getValue().addListener(new ElementUpdateListener() {
+	}
 
-							@Override
-							public void elementUpdated(String name, Object value) {
-								notifyListeners(name, value);
-							}
-						});
-					}
-				} else {
-					e.addListener(new ElementUpdateListener() {
-
-						@Override
-						public void elementUpdated(String name, Object value) {
-							notifyListeners(name, value);
-						}
-					});
-				}
+	/**
+	 * Add listeners to an element in order to forward OnUpdate and OnChange
+	 * events
+	 * 
+	 * @param element
+	 */
+	private void addListenersToElement(Element<?> element) {
+		element.addOnUpdateListener(new ElementOnUpdateListener() {
+			@Override
+			public void elementUpdated(String name, Object newValue) {
+				notifyOnUpdateListeners(name, newValue);
 			}
-		}
-		for (ElementRange er : mainProtocol.getElementRanges()) {
-			for (Element<?> e : er.getElements()) {
-				if (e instanceof BitsElement) {
-					for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
-						element.getValue().addListener(new ElementUpdateListener() {
-
-							@Override
-							public void elementUpdated(String name, Object value) {
-								notifyListeners(name, value);
-							}
-						});
-					}
-				} else {
-					e.addListener(new ElementUpdateListener() {
-
-						@Override
-						public void elementUpdated(String name, Object value) {
-							notifyListeners(name, value);
-						}
-					});
-				}
+		});
+		element.addOnChangeListener(new ElementOnChangeListener() {
+			@Override
+			public void elementChanged(String name, Object newValue, Object oldValue) {
+				notifyOnChangeListeners(name, newValue, oldValue);
 			}
-		}
+		});
 	}
 
 	public String getName() {
