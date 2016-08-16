@@ -8,9 +8,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import io.openems.device.protocol.Element;
-import io.openems.device.protocol.interfaces.ElementOnChangeListener;
-import io.openems.device.protocol.interfaces.ElementOnUpdateListener;
+import io.openems.device.protocol.ModbusElement;
+import io.openems.element.ElementOnChangeListener;
+import io.openems.element.ElementOnUpdateListener;
+import io.openems.element.type.Type;
 
 public abstract class Device {
 	private final String channel;
@@ -27,7 +28,7 @@ public abstract class Device {
 
 	public abstract Set<String> getElements();
 
-	public abstract Element<?> getElement(String id);
+	public abstract ModbusElement<?> getElement(String id);
 
 	public abstract Set<String> getInitElements();
 
@@ -56,7 +57,7 @@ public abstract class Device {
 	/**
 	 * Notify all onUpdateListeners about updated value
 	 */
-	public void notifyOnUpdateListeners(String fullName, Object newValue) {
+	public void notifyOnUpdateListeners(String fullName, Type newValue) {
 		for (ElementOnUpdateListener listener : onUpdateListeners) {
 			listener.elementUpdated(fullName, newValue);
 		}
@@ -65,7 +66,7 @@ public abstract class Device {
 	/**
 	 * Notify all onChangeListeners about changed value
 	 */
-	public void notifyOnChangeListeners(String fullName, Object newValue, Object oldValue) {
+	public void notifyOnChangeListeners(String fullName, Type newValue, Type oldValue) {
 		for (ElementOnChangeListener listener : onChangeListeners) {
 			listener.elementChanged(fullName, newValue, oldValue);
 		}

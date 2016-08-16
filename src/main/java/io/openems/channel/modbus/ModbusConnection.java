@@ -17,7 +17,7 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.device.protocol.Element;
+import io.openems.device.protocol.ModbusElement;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.interfaces.DoublewordElement;
@@ -88,7 +88,7 @@ public abstract class ModbusConnection implements AutoCloseable {
 	public void updateElementRange(int unitid, ElementRange elementRange) throws Exception {
 		Register[] registers = query(unitid, elementRange.getStartAddress(), elementRange.getTotalLength());
 		int position = 0;
-		for (Element<?> element : elementRange.getElements()) {
+		for (ModbusElement<?> element : elementRange.getElements()) {
 			int length = element.getLength();
 			if (element instanceof WordElement) {
 				((WordElement) element).update(registers[position]);

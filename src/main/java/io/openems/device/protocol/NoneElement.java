@@ -22,7 +22,7 @@ import com.google.gson.JsonElement;
 
 import io.openems.element.type.NoneType;
 
-public class NoneElement extends Element<NoneType> implements PlaceholderElement {
+public class NoneElement extends ModbusElement<NoneType> implements PlaceholderElement {
 	public NoneElement(int address, int length, String name) {
 		super(address, length, name, "");
 	}

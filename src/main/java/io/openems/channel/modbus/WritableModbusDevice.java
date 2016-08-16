@@ -17,7 +17,7 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.device.protocol.Element;
+import io.openems.device.protocol.ModbusElement;
 import io.openems.device.protocol.ModbusProtocol;
 
 import java.io.IOException;
@@ -39,8 +39,8 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	private final static Logger log = LoggerFactory.getLogger(WritableModbusDevice.class);
 
 	private ModbusProtocol writeProtocol;
-	protected final Map<Element<?>, Register[]> writeRegisterQueue = new HashMap<Element<?>, Register[]>();
-	protected final Map<Element<?>, Boolean> writeBooleanQueue = new HashMap<Element<?>, Boolean>();
+	protected final Map<ModbusElement<?>, Register[]> writeRegisterQueue = new HashMap<ModbusElement<?>, Register[]>();
+	protected final Map<ModbusElement<?>, Boolean> writeBooleanQueue = new HashMap<ModbusElement<?>, Boolean>();
 
 	public WritableModbusDevice(String name, String channel, int unitid) throws IOException,
 			ParserConfigurationException, SAXException {
@@ -61,18 +61,18 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 		}
 	}
 
-	public void addToWriteQueue(Element<?> element, Register[] registers) {
+	public void addToWriteQueue(ModbusElement<?> element, Register[] registers) {
 		writeRegisterQueue.put(element, registers);
 	}
 
 	public void addToWriteQueue(String id, Register[] registers) {
-		Element<?> element = writeProtocol.getElement(id);
+		ModbusElement<?> element = writeProtocol.getElement(id);
 		if (element != null) {
 			writeRegisterQueue.put(element, registers);
 		}
 	}
 
-	public void addToWriteQueue(Element<?> element, Boolean value) {
+	public void addToWriteQueue(ModbusElement<?> element, Boolean value) {
 		writeBooleanQueue.put(element, value);
 	}
 
@@ -80,7 +80,7 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 
 	public void executeModbusWrite(ModbusConnection modbusConnection) throws Exception {
 		// Write registers (Words)
-		for (Entry<Element<?>, Register[]> entry : writeRegisterQueue.entrySet()) {
+		for (Entry<ModbusElement<?>, Register[]> entry : writeRegisterQueue.entrySet()) {
 			// TODO: combine writes to one write
 			if (entry.getValue().length > 1) {
 				/*
@@ -100,7 +100,7 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 			}
 		}
 		// Write booleans (Coils)
-		for (Entry<Element<?>, Boolean> entry : writeBooleanQueue.entrySet()) {
+		for (Entry<ModbusElement<?>, Boolean> entry : writeBooleanQueue.entrySet()) {
 			modbusConnection.write(this.unitid, entry.getKey().getAddress(), entry.getValue());
 		}
 	}

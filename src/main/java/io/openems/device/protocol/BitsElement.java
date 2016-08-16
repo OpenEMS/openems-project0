@@ -31,7 +31,7 @@ import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.type.BooleanMapType;
 
-public class BitsElement extends Element<BooleanMapType> implements WordElement, DoublewordElement {
+public class BitsElement extends ModbusElement<BooleanMapType> implements WordElement, DoublewordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitsElement.class);
 
@@ -73,7 +73,7 @@ public class BitsElement extends Element<BooleanMapType> implements WordElement,
 	@Override
 	public JsonObject getAsJson() {
 		JsonObject obj = new JsonObject();
-		obj.addProperty("name", this.name);
+		obj.addProperty("name", getName());
 		JsonArray arr = new JsonArray();
 		for (BitElement e : bitElements.values()) {
 			arr.add(e.getAsJson());

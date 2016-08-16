@@ -17,7 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,7 @@ import io.openems.element.type.BooleanType;
  * 
  * @author stefan.feilmeier
  */
-public class BitElement extends Element<BooleanType> implements WordElement {
+public class BitElement extends ModbusElement<BooleanType> implements WordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitElement.class);
 
@@ -40,31 +39,11 @@ public class BitElement extends Element<BooleanType> implements WordElement {
 		super(address, 1, name, "");
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public BooleanType getValue() {
-		return value;
-	}
-
-	/**
-	 * Gets the timestamp of the last update, null if no update ever happened
+	/*
+	 * @Override public String getName() { return name; }
 	 * 
-	 * @return last update timestamp
+	 * @Override public BooleanType getValue() { return value; }
 	 */
-	@Override
-	public DateTime getLastUpdate() {
-		return lastUpdate;
-	}
-
-	@Override
-	public String toString() {
-		return "Element [address=0x" + Integer.toHexString(address) + ", name=" + name + ", unit=" + unit
-				+ ", lastUpdate=" + lastUpdate + ", value=" + value + "]";
-	}
 
 	@Override
 	public void update(Register register) {
