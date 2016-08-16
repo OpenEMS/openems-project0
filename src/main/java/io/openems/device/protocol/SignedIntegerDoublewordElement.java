@@ -17,6 +17,9 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.element.type.IntegerType;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -24,23 +27,27 @@ import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
-import io.openems.device.protocol.interfaces.DoublewordElement;
-import io.openems.element.type.IntegerType;
-
 public class SignedIntegerDoublewordElement extends NumberElement<IntegerType> implements DoublewordElement {
 	final ByteOrder byteOrder;
+	final WordOrder wordOrder;
 
 	public SignedIntegerDoublewordElement(int address, int length, String name, int multiplier, int delta, String unit,
-			ByteOrder byteOrder) {
+			ByteOrder byteOrder, WordOrder wordOrder) {
 		super(address, length, name, multiplier, delta, unit);
 		this.byteOrder = byteOrder;
+		this.wordOrder = wordOrder;
 	}
 
 	@Override
 	public void update(Register reg1, Register reg2) {
 		ByteBuffer buff = ByteBuffer.allocate(4).order(byteOrder);
-		buff.put(reg1.toBytes());
-		buff.put(reg2.toBytes());
+		if (wordOrder == WordOrder.MSWLSW) {
+			buff.put(reg1.toBytes());
+			buff.put(reg2.toBytes());
+		} else {
+			buff.put(reg2.toBytes());
+			buff.put(reg1.toBytes());
+		}
 		update(new IntegerType(buff.order(byteOrder).getInt(0) * multiplier - delta));
 	}
 

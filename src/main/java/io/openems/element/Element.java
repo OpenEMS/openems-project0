@@ -1,5 +1,7 @@
 package io.openems.element;
 
+import io.openems.element.type.Type;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,8 +9,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Period;
 
 import com.google.gson.JsonObject;
-
-import io.openems.element.type.Type;
 
 public class Element<T extends Type> {
 	private Set<ElementOnUpdateListener> listenersOnUpdate = new HashSet<>();
@@ -129,7 +129,7 @@ public class Element<T extends Type> {
 		obj.addProperty("name", this.name);
 		obj.addProperty("unit", this.unit);
 		obj.addProperty("lastUpdate", lastUpdate.toString());
-		obj.addProperty("value", getValue().toString());
+		obj.addProperty("value", getValue().readable());
 		return obj;
 	}
 }

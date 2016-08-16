@@ -27,7 +27,7 @@
 		"ssh0": {
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "127.0.0.1",
-			"cycle": 10000
+			"cycle": 1000
 		}
 	},
 	"device": {

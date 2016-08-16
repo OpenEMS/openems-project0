@@ -17,12 +17,12 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.device.counter.CounterProtocol;
+import io.openems.device.ess.EssProtocol;
+
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.openems.device.counter.CounterProtocol;
-import io.openems.device.ess.EssProtocol;
 
 public class ElementBuilder {
 	final int address;
@@ -36,6 +36,7 @@ public class ElementBuilder {
 	String unit = "";
 	boolean signed = false;
 	ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+	WordOrder wordOrder = WordOrder.MSWLSW;
 	boolean writable = false;
 	Map<String, BitElement> bitElements = new HashMap<>();
 
@@ -122,6 +123,11 @@ public class ElementBuilder {
 		return this;
 	}
 
+	public ElementBuilder wordOrder(WordOrder wordOrder) {
+		this.wordOrder = wordOrder;
+		return this;
+	}
+
 	public ModbusElement<?> build() {
 		ModbusElement<?> element = null;
 		if (bitElements.size() > 0) {
@@ -129,17 +135,17 @@ public class ElementBuilder {
 		} else if (type == ElementType.INTEGER) {
 			if (signed) {
 				if (length == ElementLength.WORD) {
-					element = new SignedIntegerWordElement(address, intLength, name, multiplier, delta, unit,
-							byteOrder);
+					element = new SignedIntegerWordElement(address, intLength, name, multiplier, delta, unit, byteOrder);
 				} else if (length == ElementLength.DOUBLEWORD) {
 					element = new SignedIntegerDoublewordElement(address, intLength, name, multiplier, delta, unit,
-							byteOrder);
+							byteOrder, wordOrder);
 				}
 			} else {
 				if (length == ElementLength.WORD) {
-					element = new UnsignedShortWordElement(address, intLength, name, multiplier, delta, unit);
+					element = new UnsignedShortWordElement(address, intLength, name, multiplier, delta, unit, byteOrder);
 				} else if (length == ElementLength.DOUBLEWORD) {
-					element = new UnsignedIntegerDoublewordElement(address, intLength, name, multiplier, delta, unit);
+					element = new UnsignedIntegerDoublewordElement(address, intLength, name, multiplier, delta, unit,
+							byteOrder, wordOrder);
 				}
 			}
 			// } else if (type == ElementType.DOUBLE) {

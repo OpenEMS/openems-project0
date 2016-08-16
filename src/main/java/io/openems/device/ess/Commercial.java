@@ -17,9 +17,24 @@
  */
 package io.openems.device.ess;
 
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementLength;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ElementType;
+import io.openems.device.protocol.ModbusElement;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.SignedIntegerWordElement;
+import io.openems.device.protocol.UnsignedShortWordElement;
+import io.openems.device.protocol.WordOrder;
+import io.openems.element.type.IntegerType;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,23 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementLength;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ElementType;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.SignedIntegerWordElement;
-import io.openems.device.protocol.UnsignedShortWordElement;
-import io.openems.element.type.IntegerType;
-
 public class Commercial extends Ess {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Commercial.class);
 
-	public Commercial(String name, String channel, int unitid, int minSoc)
-			throws IOException, ParserConfigurationException, SAXException {
+	public Commercial(String name, String channel, int unitid, int minSoc) throws IOException,
+			ParserConfigurationException, SAXException {
 		super(name, channel, unitid, minSoc);
 	}
 
@@ -310,13 +314,12 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x0203).device(name).type(ElementType.PLACEHOLDER).intLength(0x0208 - 0x0203)
 						.build(), //
 				new ElementBuilder(0x0208).device(name).name(EssProtocol.ChargeEnergy).unit("Wh")
-						.length(ElementLength.DOUBLEWORD).multiplier(100).build(), //
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).multiplier(100).build(), //
 				new ElementBuilder(0x020A).device(name).name(EssProtocol.DischargeEnergy).unit("Wh").multiplier(100)
-						.length(ElementLength.DOUBLEWORD).build()));
-		protocol.addElementRange(new ElementRange(0x0210,
-				new ElementBuilder(0x0210).name(EssProtocol.ActivePower).multiplier(100).signed(true).unit("W").build(),
-				new ElementBuilder(0x0211).name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("Var")
-						.build(), //
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build()));
+		protocol.addElementRange(new ElementRange(0x0210, new ElementBuilder(0x0210).name(EssProtocol.ActivePower)
+				.multiplier(100).signed(true).unit("W").build(), new ElementBuilder(0x0211)
+				.name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("Var").build(), //
 				new ElementBuilder(0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("VA").build(), //
 				new ElementBuilder(0x0213).name(EssProtocol.CurrentPhase1).signed(true).multiplier(100).unit("mA")
 						.build(), //
@@ -349,16 +352,16 @@ public class Commercial extends Ess {
 						.signed(true).build()));
 		protocol.addElementRange(new ElementRange(0x0300,//
 				new ElementBuilder(0x0300).device(name).name(EssProtocol.TotalEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
 				new ElementBuilder(0x0302).device(name).name(EssProtocol.TotalYearEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
 				new ElementBuilder(0x0304).device(name).name(EssProtocol.TotalMonthEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
 				new ElementBuilder(0x0306).device(name).name(EssProtocol.TotalDateEnergy).unit("kWh").build()));
-		protocol.addElementRange(new ElementRange(0x0500,
-				new ElementBuilder(0x0500).device(name).name(EssProtocol.SetWorkState) //
-						.signed(true)//
-						.build()));
+		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500).device(name)
+				.name(EssProtocol.SetWorkState) //
+				.signed(true)//
+				.build()));
 		protocol.addElementRange(new ElementRange(0x0501, //
 				new ElementBuilder(0x0501).device(name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
 						.unit("W").build()));
@@ -442,29 +445,28 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x1408).device(name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408)
 						.build(),//
 				new ElementBuilder(0x140A).device(name).name(EssProtocol.ChargeDischargeTimes)
-						.length(ElementLength.DOUBLEWORD).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
 				new ElementBuilder(0x140C).device(name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x140C)
 						.build(), //
 				new ElementBuilder(0x1418).device(name).name(EssProtocol.BatteryChargeEnergy).unit("Wh")
-						.length(ElementLength.DOUBLEWORD).build(), //
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x141A).device(name).name(EssProtocol.BatteryDischargeEnergy).unit("Wh")
-						.length(ElementLength.DOUBLEWORD).build(), //
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x141C).device(name).type(ElementType.PLACEHOLDER).intLength(0x1420 - 0x141C)
 						.build(), //
 				new ElementBuilder(0x1420).device(name).name(EssProtocol.BatteryPower).unit("W").signed(true)
 						.multiplier(100).build()));
-		protocol.addElementRange(new ElementRange(0xA600,
-				new ElementBuilder(0xA600).device(name).name(EssProtocol.Pv1State) //
-						.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
-						.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
-						.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
-						.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
-						.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
-						.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
-						.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xA730,
-				new ElementBuilder(0xA730).device(name).name(EssProtocol.Pv1OutputVoltage).multiplier(10).signed(true)
-						.unit("V").build(), //
+		protocol.addElementRange(new ElementRange(0xA600, new ElementBuilder(0xA600).device(name)
+				.name(EssProtocol.Pv1State) //
+				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
+				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
+				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
+				.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
+				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
+				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
+				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
+		protocol.addElementRange(new ElementRange(0xA730, new ElementBuilder(0xA730).device(name)
+				.name(EssProtocol.Pv1OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
 				new ElementBuilder(0xA731).device(name).name(EssProtocol.Pv1OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
 				new ElementBuilder(0xA732).device(name).name(EssProtocol.Pv1OutputPower).multiplier(100).signed(true)
@@ -479,18 +481,17 @@ public class Commercial extends Ess {
 						.unit("Wh").build(), //
 				new ElementBuilder(0xA737).device(name).name(EssProtocol.Pv1OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
-		protocol.addElementRange(new ElementRange(0xA900,
-				new ElementBuilder(0xA900).device(name).name(EssProtocol.Pv2State) //
-						.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
-						.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
-						.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
-						.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
-						.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
-						.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
-						.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xAA30,
-				new ElementBuilder(0xAA30).device(name).name(EssProtocol.Pv2OutputVoltage).multiplier(10).signed(true)
-						.unit("V").build(), //
+		protocol.addElementRange(new ElementRange(0xA900, new ElementBuilder(0xA900).device(name)
+				.name(EssProtocol.Pv2State) //
+				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
+				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
+				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
+				.bit(new BitElement(4, EssProtocol.DcStates.Running.name())) //
+				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
+				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
+				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
+		protocol.addElementRange(new ElementRange(0xAA30, new ElementBuilder(0xAA30).device(name)
+				.name(EssProtocol.Pv2OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
 				new ElementBuilder(0xAA31).device(name).name(EssProtocol.Pv2OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
 				new ElementBuilder(0xAA32).device(name).name(EssProtocol.Pv2OutputPower).multiplier(100).signed(true)
@@ -506,8 +507,21 @@ public class Commercial extends Ess {
 				new ElementBuilder(0xAA37).device(name).name(EssProtocol.Pv2OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
 		int index = 0;
+		List<ModbusElement<?>> voltageElements = new ArrayList<>();
+		List<ModbusElement<?>> temperatureElements = new ArrayList<>();
 		while (index < 224) {
-
+			voltageElements.add(new ElementBuilder(0x1500 + index).unit("mV").device(name)
+					.name("Cell" + (index + 1) + "Voltage").build());
+			temperatureElements.add(new ElementBuilder(0x1700 + index).unit("°C").device(name)
+					.name("Cell" + (index + 1) + "Temperature").build());
+			if (voltageElements.size() == 20) {
+				protocol.addElementRange(new ElementRange(voltageElements.get(0).getAddress(), voltageElements
+						.toArray(new ModbusElement<?>[voltageElements.size()])));
+				voltageElements.clear();
+				protocol.addElementRange(new ElementRange(temperatureElements.get(0).getAddress(), temperatureElements
+						.toArray(new ModbusElement<?>[temperatureElements.size()])));
+				temperatureElements.clear();
+			}
 			index++;
 		}
 		return protocol;
