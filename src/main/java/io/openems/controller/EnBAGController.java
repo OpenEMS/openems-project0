@@ -1,12 +1,5 @@
 package io.openems.controller;
 
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssProtocol;
-import io.openems.device.io.IO;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +7,13 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
+import io.openems.device.ess.EssProtocol;
+import io.openems.device.io.IO;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
 
 public class EnBAGController extends Controller {
 
@@ -33,8 +33,8 @@ public class EnBAGController extends Controller {
 	private List<Ess> aviableEss;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
-			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
-			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io) {
+			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch, Map<String, String> essOffGridSwitches,
+			String primaryOffGridEss, IO io) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
@@ -55,7 +55,7 @@ public class EnBAGController extends Controller {
 			if (essRunning == null) {
 				log.info("No connection to ESS");
 			} else {
-				boolean isEssRunning = essRunning.getValue();
+				boolean isEssRunning = essRunning.getValue().toBoolean();
 				if (isEssRunning) {
 					log.info("ESS is running");
 				} else {

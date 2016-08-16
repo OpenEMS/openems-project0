@@ -17,16 +17,16 @@
  */
 package io.openems.controller;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
-
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Balancing extends Controller {
 	private final static Logger log = LoggerFactory.getLogger(Balancing.class);
@@ -62,7 +62,7 @@ public class Balancing extends Controller {
 			if (essRunning == null) {
 				log.info("No connection to ESS");
 			} else {
-				boolean isEssRunning = essRunning.getValue();
+				boolean isEssRunning = essRunning.getValue().toBoolean();
 				if (isEssRunning) {
 					log.info("ESS is running");
 				} else {

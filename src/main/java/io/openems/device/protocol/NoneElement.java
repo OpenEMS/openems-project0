@@ -20,13 +20,15 @@ package io.openems.device.protocol;
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
-public class NoneElement extends Element<Object> implements PlaceholderElement {
+import io.openems.element.type.NoneType;
+
+public class NoneElement extends Element<NoneType> implements PlaceholderElement {
 	public NoneElement(int address, int length, String name) {
 		super(address, length, name, "");
 	}
 
 	@Override
-	public Register[] toRegister(Object value) {
+	public Register[] toRegister(NoneType value) {
 		return null;
 	}
 

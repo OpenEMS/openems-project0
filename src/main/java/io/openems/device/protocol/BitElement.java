@@ -17,8 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.protocol.interfaces.WordElement;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +24,15 @@ import org.slf4j.LoggerFactory;
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.BooleanType;
+
 /**
  * This represents an Element that is only one bit long.
  * 
  * @author stefan.feilmeier
  */
-public class BitElement extends Element<Boolean> implements WordElement {
+public class BitElement extends Element<BooleanType> implements WordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitElement.class);
 
@@ -45,7 +46,7 @@ public class BitElement extends Element<Boolean> implements WordElement {
 	}
 
 	@Override
-	public Boolean getValue() {
+	public BooleanType getValue() {
 		return value;
 	}
 
@@ -69,11 +70,11 @@ public class BitElement extends Element<Boolean> implements WordElement {
 	public void update(Register register) {
 		int position = address % 8;
 		byte curByte = register.toBytes()[1 - address / 8];
-		update(new Boolean(((curByte >> position) & 1) == 1));
+		update(new BooleanType(((curByte >> position) & 1) == 1));
 	}
 
 	@Override
-	public Register[] toRegister(Boolean value) {
+	public Register[] toRegister(BooleanType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 

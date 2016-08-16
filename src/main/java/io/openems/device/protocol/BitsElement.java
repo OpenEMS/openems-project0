@@ -17,9 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.protocol.interfaces.DoublewordElement;
-import io.openems.device.protocol.interfaces.WordElement;
-
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -30,7 +27,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class BitsElement extends Element<Map<String, BitElement>> implements WordElement, DoublewordElement {
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.BooleanMapType;
+
+public class BitsElement extends Element<BooleanMapType> implements WordElement, DoublewordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitsElement.class);
 
@@ -61,7 +62,7 @@ public class BitsElement extends Element<Map<String, BitElement>> implements Wor
 	}
 
 	@Override
-	public Register[] toRegister(Map<String, BitElement> value) {
+	public Register[] toRegister(BooleanMapType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 

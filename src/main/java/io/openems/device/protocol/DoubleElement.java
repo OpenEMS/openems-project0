@@ -20,19 +20,21 @@ package io.openems.device.protocol;
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
-public class DoubleElement extends NumberElement<Double> {
+import io.openems.element.type.DoubleType;
+
+public class DoubleElement extends NumberElement<DoubleType> {
 	public DoubleElement(int address, int length, String name, short multiplier, short delta, String unit) {
 		super(address, length, name, multiplier, delta, unit);
 	}
 
 	@Override
-	public Register[] toRegister(Double value) {
+	public Register[] toRegister(DoubleType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
 	public Register[] toRegister(JsonElement value) {
-		Double d = value.getAsDouble();
+		DoubleType d = new DoubleType(value.getAsDouble());
 		return toRegister(d);
 	}
 }
