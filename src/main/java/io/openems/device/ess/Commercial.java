@@ -110,13 +110,198 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x0108).device(name).name(EssProtocol.ProtocolVersion).build(), //
 				new ElementBuilder(0x0109).device(name).name(EssProtocol.SystemManufacturer).build(),//
 				new ElementBuilder(0x010A).device(name).name(EssProtocol.SystemType).build()));
-		protocol.addElementRange(new ElementRange(0x0150, new ElementBuilder(0x0150).device(name)
-				.name(EssProtocol.SwitchStates) //
-				.bit(new BitElement(1, EssProtocol.Switches.DCMain.name())) //
-				.bit(new BitElement(2, EssProtocol.Switches.DCPrecharge.name())) //
-				.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
-				.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
-				.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0110,//
+				new ElementBuilder(0x0110).device(name)//
+						.bit(new BitElement(2, EssProtocol.Information.EmergencyStop.name()))//
+						.bit(new BitElement(6, EssProtocol.Information.ManualStop.name())).build(),//
+				new ElementBuilder(0x0111).device(name)//
+						.bit(new BitElement(3, EssProtocol.Information.TransformertPH1TempSensInvalidation.name()))//
+						.bit(new BitElement(12, EssProtocol.Information.SDCardInvalidation.name())).build()));
+		protocol.addElementRange(new ElementRange(
+				0x0125,//
+				new ElementBuilder(0x0125).device(name)//
+						.bit(new BitElement(0, EssProtocol.Information.InverterCommunicationAbnormity.name()))//
+						.bit(new BitElement(1, EssProtocol.Information.BatteryCommunicationAbnormity.name()))//
+						.bit(new BitElement(2, EssProtocol.Information.AmmeterCommunicationAbnormity.name()))//
+						.bit(new BitElement(4, EssProtocol.Information.RemoteCommunicationAbnormity.name())).build(),
+				new ElementBuilder(0x0126).device(name)
+						//
+						.bit(new BitElement(3, EssProtocol.Information.TransformerSevereOvertemperature.name()))
+						.build()));
+		protocol.addElementRange(new ElementRange(0x0150,//
+				new ElementBuilder(0x0150).device(name).name(EssProtocol.SwitchStates) //
+						.bit(new BitElement(1, EssProtocol.Switches.DCMain.name())) //
+						.bit(new BitElement(2, EssProtocol.Switches.DCPrecharge.name())) //
+						.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
+						.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
+						.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0180,//
+				new ElementBuilder(0x0180).device(name)
+						.bit(new BitElement(0, EssProtocol.Abnormity.DCPrechargeContactorCloseUnsuccessfully.name()))
+						.bit(new BitElement(1, EssProtocol.Abnormity.ACPrechargeContactorCloseUnsuccessfully.name()))
+						.bit(new BitElement(2, EssProtocol.Abnormity.ACMainContactorCloseUnsuccessfully.name()))
+						.bit(new BitElement(3, EssProtocol.Abnormity.DCElectricalBreaker1CloseUnsuccessfully.name()))
+						.bit(new BitElement(4, EssProtocol.Abnormity.DCMainContactorCloseUnsuccessfully.name()))
+						.bit(new BitElement(5, EssProtocol.Abnormity.ACBreakerTrip.name()))
+						.bit(new BitElement(6, EssProtocol.Abnormity.ACMainContactorOpenWhenRunning.name()))
+						.bit(new BitElement(7, EssProtocol.Abnormity.DCMainContactorOpenWhenRunning.name()))
+						.bit(new BitElement(8, EssProtocol.Abnormity.ACMainContactorOpenUnsuccessfully.name()))
+						.bit(new BitElement(9, EssProtocol.Abnormity.DCElectricalBreaker1OpenUnsuccessfully.name()))
+						.bit(new BitElement(10, EssProtocol.Abnormity.DCMainContactorOpenUnsuccessFully.name()))
+						.bit(new BitElement(11, EssProtocol.Abnormity.HardwarePDPFault.name()))
+						.bit(new BitElement(12, EssProtocol.Abnormity.MasterStopSuddenly.name())).build()));
+		protocol.addElementRange(new ElementRange(0x0182,//
+				new ElementBuilder(0x0182)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Abnormity.DCShortCircuitProtection.name()))
+						.bit(new BitElement(1, EssProtocol.Abnormity.DCOvervoltageProtection.name()))
+						.bit(new BitElement(2, EssProtocol.Abnormity.DCUndervoltageProtection.name()))
+						.bit(new BitElement(3, EssProtocol.Abnormity.DCInverseConnectionProtection.name()))
+						.bit(new BitElement(4, EssProtocol.Abnormity.DCDisconnectionProtection.name()))
+						.bit(new BitElement(5, EssProtocol.Abnormity.CommutingColtageAbnormityProtection.name()))
+						.bit(new BitElement(6, EssProtocol.Abnormity.DCOvercurrentProtection.name()))
+						.bit(new BitElement(7, EssProtocol.Abnormity.Phase1PeakCurrentOverLimitProtection.name()))
+						.bit(new BitElement(8, EssProtocol.Abnormity.Phase2PeakCurrentOverLimitProtection.name()))
+						.bit(new BitElement(9, EssProtocol.Abnormity.Phase3PeakCurrentOverLimitProtection.name()))
+						.bit(new BitElement(10, EssProtocol.Abnormity.Phase1VirtualCurrentOverLimitProtection.name()))
+						.bit(new BitElement(11, EssProtocol.Abnormity.Phase2VirtualCurrentOverLimitProtection.name()))
+						.bit(new BitElement(12, EssProtocol.Abnormity.Phase3VirtualCurrentOverLimitProtection.name()))
+						.bit(new BitElement(13, EssProtocol.Abnormity.Phase1GridVoltageSamplingInvalidation.name()))
+						.bit(new BitElement(14, EssProtocol.Abnormity.Phase2GridVoltageSamplingInvalidation.name()))
+						.bit(new BitElement(15, EssProtocol.Abnormity.Phase3GridVoltageSamplingInvalidation.name()))
+						.build(),//
+				new ElementBuilder(0x0183)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1InverterVoltageSamplingInvalidation.name()))
+						.bit(new BitElement(1, EssProtocol.Abnormity.Phase2InverterVoltageSamplingInvalidation.name()))
+						.bit(new BitElement(2, EssProtocol.Abnormity.Phase3InverterVoltageSamplingInvalidation.name()))
+						.bit(new BitElement(3, EssProtocol.Abnormity.ACCurrentSamplingInvalidation.name()))
+						.bit(new BitElement(4, EssProtocol.Abnormity.DCCurrentSamplingInvalidation.name()))
+						.bit(new BitElement(5, EssProtocol.Abnormity.Phase1OvertemperatureProtection.name()))
+						.bit(new BitElement(6, EssProtocol.Abnormity.Phase2OvertemperatureProtection.name()))
+						.bit(new BitElement(7, EssProtocol.Abnormity.Phase3OvertemperatureProtection.name()))
+						.bit(new BitElement(8, EssProtocol.Abnormity.Phase1TemperatureSamplingInvalidation.name()))
+						.bit(new BitElement(9, EssProtocol.Abnormity.Phase2TemperatureSamplingInvalidation.name()))
+						.bit(new BitElement(10, EssProtocol.Abnormity.Phase3TemperatureSamplingInvalidation.name()))
+						.bit(new BitElement(11, EssProtocol.Abnormity.Phase1PrechargeUnmetProtection.name()))
+						.bit(new BitElement(12, EssProtocol.Abnormity.Phase2PrechargeUnmetProtection.name()))
+						.bit(new BitElement(13, EssProtocol.Abnormity.Phase3PrechargeUnmetProtection.name()))
+						.bit(new BitElement(14, EssProtocol.Abnormity.UnadaptablePhaseSequenceErrorProtection.name()))
+						.bit(new BitElement(15, EssProtocol.Abnormity.DSPProtection.name())).build(),
+				new ElementBuilder(0x0184).device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1GridVoltageSevereOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(1, EssProtocol.Abnormity.Phase1GridVoltageGeneralOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(2, EssProtocol.Abnormity.Phase2GridVoltageSevereOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(3, EssProtocol.Abnormity.Phase2GridVoltageGeneralOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(4, EssProtocol.Abnormity.Phase3GridVoltageSevereOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(5, EssProtocol.Abnormity.Phase3GridVoltageGeneralOvervoltageProtection
+								.name()))//
+						.bit(new BitElement(6, EssProtocol.Abnormity.Phase1GridVoltageSevereUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(7, EssProtocol.Abnormity.Phase1GridVoltageGeneralUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(8, EssProtocol.Abnormity.Phase2GridVoltageSevereUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(9, EssProtocol.Abnormity.Phase2GridVoltageGeneralUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(10, EssProtocol.Abnormity.Phase3GridVoltageSevereUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(11, EssProtocol.Abnormity.Phase3GridVoltageGeneralUndervoltageProtection
+								.name()))//
+						.bit(new BitElement(12, EssProtocol.Abnormity.SevereOverfequencyProtection.name()))//
+						.bit(new BitElement(13, EssProtocol.Abnormity.GeneralOverfrequencyProtection.name()))//
+						.bit(new BitElement(14, EssProtocol.Abnormity.SevereUnderfrequencyProtection.name()))//
+						.bit(new BitElement(15, EssProtocol.Abnormity.GeneralUnderPrequencyProtection.name()))//
+						.build(),//
+				new ElementBuilder(0x0185)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1GridLoss.name()))
+						.bit(new BitElement(1, EssProtocol.Abnormity.Phase2GridLoss.name()))
+						.bit(new BitElement(2, EssProtocol.Abnormity.Phase3GridLoss.name()))
+						.bit(new BitElement(3, EssProtocol.Abnormity.IslandingProtection.name()))
+						.bit(new BitElement(4, EssProtocol.Abnormity.Phase1UnderVoltageRideThrough.name()))
+						.bit(new BitElement(5, EssProtocol.Abnormity.Phase2UnderVoltageRideThrough.name()))
+						.bit(new BitElement(6, EssProtocol.Abnormity.Phase3UnderVoltageRideThrough.name()))
+						.bit(new BitElement(7, EssProtocol.Abnormity.Phase1InverterVoltageSevereOvervoltageProtection
+								.name()))
+						.bit(new BitElement(8, EssProtocol.Abnormity.Phase1InverterVoltageGeneralOvervoltageProtection
+								.name()))
+						.bit(new BitElement(9, EssProtocol.Abnormity.Phase2InverterVoltageSevereOvervoltageProtection
+								.name()))
+						.bit(new BitElement(10, EssProtocol.Abnormity.Phase2InverterVoltageGeneralOvervoltageProtection
+								.name()))
+						.bit(new BitElement(11, EssProtocol.Abnormity.Phase3InverterVoltageSevereOvervoltageProtection
+								.name()))
+						.bit(new BitElement(12, EssProtocol.Abnormity.Phase3InverterVoltageGeneralOvervoltageProtection
+								.name()))
+						.bit(new BitElement(13,
+								EssProtocol.Abnormity.InverterPeakVoltageHighProtectionCauseByACDisconnect.name()))
+						.build(),//
+				new ElementBuilder(0x0186)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Information.DCPrechargeContactorInspectionAbnormity.name()))
+						.bit(new BitElement(1, EssProtocol.Information.DCBreaker1InspectionAbnormity.name()))
+						.bit(new BitElement(2, EssProtocol.Information.DCBreaker2InspectionAbnormity.name()))
+						.bit(new BitElement(3, EssProtocol.Information.ACPrechargeContactorInspectionAbnormity.name()))
+						.bit(new BitElement(4, EssProtocol.Information.ACMainContactorInspectionAbnormity.name()))
+						.bit(new BitElement(5, EssProtocol.Information.ACBreakerInspectionAbnormity.name()))
+						.bit(new BitElement(6, EssProtocol.Information.DCBreaker1CloseUnsuccessfully.name()))
+						.bit(new BitElement(7, EssProtocol.Information.DCBreaker2CloseUnsuccessfully.name()))
+						.bit(new BitElement(8, EssProtocol.Information.ControlSignalCloseAbnormallyInspectedBySystem
+								.name()))
+						.bit(new BitElement(9, EssProtocol.Information.ControlSignalOpenAbnormallyInspectedBySystem
+								.name()))
+						.bit(new BitElement(10, EssProtocol.Information.NeutralWireContactorCloseUnsuccessfully.name()))
+						.bit(new BitElement(11, EssProtocol.Information.NeutralWireContactorOpenUnsuccessfully.name()))
+						.bit(new BitElement(12, EssProtocol.Information.WorkDoorOpen.name()))
+						.bit(new BitElement(13, EssProtocol.Information.EmergencyStop2.name()))
+						.bit(new BitElement(14, EssProtocol.Information.ACBreakerCloseUnsuccessfully.name()))
+						.bit(new BitElement(15, EssProtocol.Information.ControlSwitchStop.name())).build(),//
+				new ElementBuilder(0x0187)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Information.GeneralOverload.name()))
+						.bit(new BitElement(1, EssProtocol.Information.SevereOverload.name()))
+						.bit(new BitElement(2, EssProtocol.Information.BatteryCurrentOverLimit.name()))
+						.bit(new BitElement(3, EssProtocol.Information.PowerDecreaseCausedByOvertemperature.name()))
+						.bit(new BitElement(4, EssProtocol.Information.InverterGeneralOvertemperature.name()))
+						.bit(new BitElement(5, EssProtocol.Information.ACThreePhaseCurrentUnbalance.name()))
+						.bit(new BitElement(6, EssProtocol.Information.RestoreFactorySettingUnsuccessfully.name()))
+						.bit(new BitElement(7, EssProtocol.Information.PoleBoardInvalidatioin.name()))
+						.bit(new BitElement(8, EssProtocol.Information.SelfInspectionFailed.name()))
+						.bit(new BitElement(9, EssProtocol.Information.ReceiveBMSFaultAndStop.name()))
+						.bit(new BitElement(10, EssProtocol.Information.RefrigerationEquipmentInvalidation.name()))
+						.bit(new BitElement(11, EssProtocol.Information.LargeTemperatureDifferenceAmongIGBTThreePhases
+								.name()))
+						.bit(new BitElement(12, EssProtocol.Information.EEPROMParametersOverRange.name()))
+						.bit(new BitElement(13, EssProtocol.Information.EEPROMParametersBackupFailed.name()))
+						.bit(new BitElement(14, EssProtocol.Information.DCBreakerCloseUnsuccessfully.name())).build(),//
+				new ElementBuilder(0x0188)
+						.device(name)
+						//
+						.bit(new BitElement(0, EssProtocol.Information.CommunicationBetweenInverterAndBSMUDisconnected
+								.name()))
+						.bit(new BitElement(1,
+								EssProtocol.Information.CommunicationBetweenInverterAndMasterDisconnected.name()))
+						.bit(new BitElement(2, EssProtocol.Information.CommunicationBetweenInverterAndUCDisconnected
+								.name()))
+						.bit(new BitElement(3, EssProtocol.Information.BMSStartOvertimeControlledByPCS.name()))
+						.bit(new BitElement(4, EssProtocol.Information.BMSStopOvertimeControlledByPCS.name()))
+						.bit(new BitElement(5, EssProtocol.Information.SyncSignalInvalidation.name()))
+						.bit(new BitElement(6, EssProtocol.Information.SyncSignalContinuousCaptureFault.name()))
+						.bit(new BitElement(7, EssProtocol.Information.SyncSignalSeveralTimesCaptureFault.name()))
+						.build()//
+		));
 		protocol.addElementRange(new ElementRange(0x0200, new ElementBuilder(0x0200).device(name)
 				.name(EssProtocol.DcVoltage).unit("mV").multiplier(100).build(),//
 				new ElementBuilder(0x0201).device(name).name(EssProtocol.DcCurrent).unit("mA").multiplier(100).build(),//
@@ -149,6 +334,25 @@ public class Commercial extends Ess {
 						.build(), //
 				new ElementBuilder(0x0232).device(name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var")
 						.build()));
+		protocol.addElementRange(new ElementRange(0x0240,//
+				new ElementBuilder(0x0240).device(name).name(EssProtocol.IPMPhase1Temperature).unit("°C").signed(true)
+						.build(),//
+				new ElementBuilder(0x0241).device(name).name(EssProtocol.IPMPhase2Temperature).unit("°C").signed(true)
+						.build(),//
+				new ElementBuilder(0x0242).device(name).name(EssProtocol.IPMPhase3Temperature).unit("°C").signed(true)
+						.build(),//
+				new ElementBuilder(0x0243).device(name).type(ElementType.PLACEHOLDER).intLength(0x0249 - 0x0243)
+						.build(),//
+				new ElementBuilder(0x0249).device(name).name(EssProtocol.TransformerPhase1Temperature).unit("°C")
+						.signed(true).build()));
+		protocol.addElementRange(new ElementRange(0x0300,//
+				new ElementBuilder(0x0300).device(name).name(EssProtocol.TotalEnergy).unit("kWh")
+						.length(ElementLength.DOUBLEWORD).build(),//
+				new ElementBuilder(0x0302).device(name).name(EssProtocol.TotalYearEnergy).unit("kWh")
+						.length(ElementLength.DOUBLEWORD).build(),//
+				new ElementBuilder(0x0304).device(name).name(EssProtocol.TotalMonthEnergy).unit("kWh")
+						.length(ElementLength.DOUBLEWORD).build(),//
+				new ElementBuilder(0x0306).device(name).name(EssProtocol.TotalDateEnergy).unit("kWh").build()));
 		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500).device(name)
 				.name(EssProtocol.SetWorkState) //
 				.signed(true)//
@@ -158,19 +362,86 @@ public class Commercial extends Ess {
 						.unit("W").build()));
 		protocol.addElementRange(new ElementRange(0x0502, new ElementBuilder(0x0502).device(name)
 				.name(EssProtocol.SetReactivePower).multiplier(100).signed(true).unit("var").build()));
-		protocol.addElementRange(new ElementRange(0x1100, new ElementBuilder(0x1100).device(name)
-				.name(EssProtocol.BatteryState).bit(new BitElement(0, EssProtocol.BatteryStates.Initial.name()))//
-				.bit(new BitElement(1, EssProtocol.BatteryStates.Stop.name()))//
-				.bit(new BitElement(2, EssProtocol.BatteryStates.StartingUp.name()))//
-				.bit(new BitElement(3, EssProtocol.BatteryStates.Running.name()))//
-				.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build()));
-		protocol.addElementRange(new ElementRange(0x1400, new ElementBuilder(0x1400).device(name)
-				.name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100).build(),//
+		protocol.addElementRange(new ElementRange(
+				0x1100,//
+				new ElementBuilder(0x1100).device(name).name(EssProtocol.BatteryState)//
+						.bit(new BitElement(0, EssProtocol.BatteryStates.Initial.name()))//
+						.bit(new BitElement(1, EssProtocol.BatteryStates.Stop.name()))//
+						.bit(new BitElement(2, EssProtocol.BatteryStates.StartingUp.name()))//
+						.bit(new BitElement(3, EssProtocol.BatteryStates.Running.name()))//
+						.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build(),//
+				new ElementBuilder(0x1101).device(name).name(EssProtocol.BatterySwitchState)
+						.bit(new BitElement(0, EssProtocol.BatterySwitches.MainContactor.name()))
+						.bit(new BitElement(1, EssProtocol.BatterySwitches.PrechargeContactor.name()))
+						.bit(new BitElement(2, EssProtocol.BatterySwitches.FANContactor.name()))
+						.bit(new BitElement(3, EssProtocol.BatterySwitches.BMUPowerSupplyRelay.name()))
+						.bit(new BitElement(4, EssProtocol.BatterySwitches.MiddleRelay.name())).build(),//
+				new ElementBuilder(0x1102).device(name).name(EssProtocol.BatteryPeripheralIOState)
+						.bit(new BitElement(0, EssProtocol.PheripheralIOs.Fuse.name()))
+						.bit(new BitElement(4, EssProtocol.PheripheralIOs.IsolatedSwitch.name())).build(),//
+				new ElementBuilder(0x1103).device(name)
+						.bit(new BitElement(0, EssProtocol.BatteryInformation.ChargeGeneralOvercurrent.name()))
+						.bit(new BitElement(1, EssProtocol.BatteryInformation.DischargeGeneralOvercurrent.name()))
+						.bit(new BitElement(2, EssProtocol.BatteryInformation.ChargeCurrentOverLimit.name()))
+						.bit(new BitElement(3, EssProtocol.BatteryInformation.DischargeCurrentOverLimit.name()))
+						.bit(new BitElement(4, EssProtocol.BatteryInformation.GeneralOvervoltage.name()))
+						.bit(new BitElement(5, EssProtocol.BatteryInformation.GeneralUndervoltage.name()))
+						.bit(new BitElement(7, EssProtocol.BatteryInformation.GeneralOverTemperature.name()))
+						.bit(new BitElement(8, EssProtocol.BatteryInformation.GeneralUnderTemperature.name()))
+						.bit(new BitElement(10, EssProtocol.BatteryInformation.SevereOvervoltage.name()))
+						.bit(new BitElement(11, EssProtocol.BatteryInformation.SevereUnderVoltage.name()))
+						.bit(new BitElement(12, EssProtocol.BatteryInformation.SevereUnderTemperature.name()))
+						.bit(new BitElement(13, EssProtocol.BatteryInformation.ChargeSevereOvercurrent.name()))
+						.bit(new BitElement(14, EssProtocol.BatteryInformation.DischargeSevereOvercurrent.name()))
+						.bit(new BitElement(15, EssProtocol.BatteryInformation.CapacityAbnormity.name())).build(),//
+				new ElementBuilder(0x1104).device(name).type(ElementType.PLACEHOLDER).intLength(0x1105 - 0x1104)
+						.build(),
+				new ElementBuilder(0x1105)
+						.device(name)
+						.bit(new BitElement(2, EssProtocol.BatteryAbnormity.VoltageSamplingRouteInvalidation.name()))
+						.bit(new BitElement(4, EssProtocol.BatteryAbnormity.VoltageSamplingRouteDisconnected.name()))
+						.bit(new BitElement(5, EssProtocol.BatteryAbnormity.TemperatureSamplingRouteDisconnected.name()))
+						.bit(new BitElement(6, EssProtocol.BatteryAbnormity.InsideCANDisconnected.name()))
+						.bit(new BitElement(9, EssProtocol.BatteryAbnormity.CurrentSamplingCircuitAbnormity.name()))
+						.bit(new BitElement(10, EssProtocol.BatteryAbnormity.BatteryCellInvalidation.name()))
+						.bit(new BitElement(11, EssProtocol.BatteryAbnormity.MainContactorInspectionAbnormity.name()))
+						.bit(new BitElement(12, EssProtocol.BatteryAbnormity.PrechargeContactorInspectionAbnormity
+								.name()))
+						.bit(new BitElement(13, EssProtocol.BatteryAbnormity.NegativeContactorInspectionAbnormity
+								.name()))
+						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
+								.name()))
+						.bit(new BitElement(15, EssProtocol.BatteryAbnormity.MiddleRelayAbnormity.name())).build(),//
+				new ElementBuilder(0x1106)
+						.device(name)
+						.bit(new BitElement(2, EssProtocol.BatteryAbnormity.SevereOvertemperature.name()))
+						.bit(new BitElement(7, EssProtocol.BatteryAbnormity.SmogFault.name()))
+						.bit(new BitElement(8, EssProtocol.BatteryAbnormity.BlownFuseIndicatorFault.name()))
+						.bit(new BitElement(10, EssProtocol.BatteryAbnormity.GeneralLeakage.name()))
+						.bit(new BitElement(11, EssProtocol.BatteryAbnormity.SevereLeakage.name()))
+						.bit(new BitElement(12, EssProtocol.BatteryAbnormity.BecuToPeripheryCanDisconnected.name()))
+						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
+								.name())).build()));
+		protocol.addElementRange(new ElementRange(0x1400,//
+				new ElementBuilder(0x1400).device(name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100)
+						.build(),//
 				new ElementBuilder(0x1401).device(name).name(EssProtocol.BatteryAmperage).unit("mA").signed(true)
 						.multiplier(100).build(),//
 				new ElementBuilder(0x1402).device(name).name(EssProtocol.BatteryStringSoc).unit("%").build(),//
 				new ElementBuilder(0x1403).device(name).name(EssProtocol.BatteryStringSOH).unit("%").build(),//
-				new ElementBuilder(0x1404).device(name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x1404)
+				new ElementBuilder(0x1404).device(name).name(EssProtocol.BatteryCellAverageTemperature).signed(true)
+						.unit("°C").build(),//
+				new ElementBuilder(0x1405).device(name).type(ElementType.PLACEHOLDER).intLength(0x1406 - 0x1405)
+						.build(),//
+				new ElementBuilder(0x1406).device(name).name(EssProtocol.BatteryChargeCurrentLimit).unit("mA")
+						.multiplier(100).build(),//
+				new ElementBuilder(0x1407).device(name).name(EssProtocol.BatteryDischargeCurrentLimit).unit("mA")
+						.multiplier(100).build(),//
+				new ElementBuilder(0x1408).device(name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408)
+						.build(),//
+				new ElementBuilder(0x140A).device(name).name(EssProtocol.ChargeDischargeTimes)
+						.length(ElementLength.DOUBLEWORD).build(),//
+				new ElementBuilder(0x140C).device(name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x140C)
 						.build(),//
 				new ElementBuilder(0x1418).device(name).name(EssProtocol.BatteryChargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).build(),//
@@ -230,6 +501,11 @@ public class Commercial extends Ess {
 						.unit("Wh").build(), //
 				new ElementBuilder(0xAA37).device(name).name(EssProtocol.Pv2OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
+		int index = 0;
+		while (index < 224) {
+
+			index++;
+		}
 		return protocol;
 	}
 
