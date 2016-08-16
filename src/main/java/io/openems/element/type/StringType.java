@@ -1,5 +1,7 @@
 package io.openems.element.type;
 
+import com.google.gson.JsonPrimitive;
+
 public class StringType extends Type {
 	private final String value;
 
@@ -22,5 +24,10 @@ public class StringType extends Type {
 	@Override
 	public String readable() {
 		return value;
+	}
+
+	@Override
+	public JsonPrimitive toJson() {
+		return new JsonPrimitive(value);
 	}
 }

@@ -1,5 +1,7 @@
 package io.openems.element.type;
 
+import com.google.gson.JsonPrimitive;
+
 public class DoubleType extends Type {
 	private final double value;
 
@@ -21,5 +23,10 @@ public class DoubleType extends Type {
 	@Override
 	public String readable() {
 		return String.format("%.3f", value);
+	}
+
+	@Override
+	public JsonPrimitive toJson() {
+		return new JsonPrimitive(value);
 	}
 }

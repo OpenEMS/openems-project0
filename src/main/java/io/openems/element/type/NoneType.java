@@ -1,5 +1,7 @@
 package io.openems.element.type;
 
+import com.google.gson.JsonPrimitive;
+
 public class NoneType extends Type {
 	public NoneType() {
 	}
@@ -14,5 +16,10 @@ public class NoneType extends Type {
 	@Override
 	public String readable() {
 		return "[None]";
+	}
+
+	@Override
+	public JsonPrimitive toJson() {
+		return new JsonPrimitive("");
 	}
 }

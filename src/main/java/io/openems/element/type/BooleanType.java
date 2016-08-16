@@ -1,5 +1,7 @@
 package io.openems.element.type;
 
+import com.google.gson.JsonPrimitive;
+
 public class BooleanType extends Type {
 	private final boolean value;
 
@@ -25,5 +27,10 @@ public class BooleanType extends Type {
 		} else {
 			return "false";
 		}
+	}
+
+	@Override
+	public JsonPrimitive toJson() {
+		return new JsonPrimitive(value);
 	}
 }

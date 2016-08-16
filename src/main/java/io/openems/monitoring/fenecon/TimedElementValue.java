@@ -17,13 +17,14 @@
  */
 package io.openems.monitoring.fenecon;
 
-import java.io.Serializable;
 import java.util.Calendar;
 
-public class TimedElementValue implements Serializable {
-	private Long time;
-	private String name;
-	private Object value;
+import io.openems.element.type.Type;
+
+public class TimedElementValue {
+	private final Long time;
+	private final String name;
+	private final Type value;
 
 	/**
 	 * T ideally is a java.util class, which is directly supported by MapDB
@@ -32,7 +33,7 @@ public class TimedElementValue implements Serializable {
 	 * @param name
 	 * @param value
 	 */
-	public TimedElementValue(String name, Object value) {
+	public TimedElementValue(String name, Type value) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.SECOND, 0);
 		calendar.set(Calendar.MILLISECOND, 0);
@@ -45,7 +46,7 @@ public class TimedElementValue implements Serializable {
 		return name;
 	}
 
-	public Object getValue() {
+	public Type getValue() {
 		return value;
 	}
 

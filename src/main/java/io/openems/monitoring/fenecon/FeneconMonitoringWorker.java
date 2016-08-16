@@ -20,7 +20,6 @@ package io.openems.monitoring.fenecon;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -33,8 +32,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -146,25 +143,24 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 	}
 
 	private String tevListToJson(List<TimedElementValue> queue) {
-		HashMap<String, HashMap<Long, Object>> valuesPerItem = new HashMap<String, HashMap<Long, Object>>();
-		for (TimedElementValue entry : queue) {
-			HashMap<Long, Object> values = valuesPerItem.get(entry.getName());
-			if (values == null) {
-				values = new HashMap<Long, Object>();
-				valuesPerItem.put(entry.getName(), values);
-			}
-			values.put(entry.getTime(), entry.getValue());
-		}
-		Gson gson = new GsonBuilder().create();
-		JsonElement jsonValues = gson.toJsonTree(valuesPerItem);
-
 		// create json rpc
 		JsonObject json = new JsonObject();
 		json.addProperty("jsonrpc", "2.0");
 		json.addProperty("method", devicekey);
 		json.addProperty("id", 1);
+		JsonObject jsonValues = new JsonObject();
+		for (TimedElementValue entry : queue) {
+			String name = entry.getName();
+			if (jsonValues.has(name)) {
+				jsonValues.get(name).getAsJsonObject().add(Long.toString(entry.getTime()), entry.getValue().toJson());
+			} else {
+				JsonObject timedValues = new JsonObject();
+				timedValues.add(Long.toString(entry.getTime()), entry.getValue().toJson());
+				jsonValues.add(name, timedValues);
+			}
+		}
 		json.add("params", jsonValues);
-		return gson.toJson(json);
+		return json.toString();
 	}
 
 	private void handleJsonRpcResult(JsonObject resultObj) {

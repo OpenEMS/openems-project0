@@ -1,5 +1,7 @@
 package io.openems.element.type;
 
+import com.google.gson.JsonPrimitive;
+
 public class IntegerType extends Type {
 	private final Integer value;
 
@@ -21,5 +23,10 @@ public class IntegerType extends Type {
 	@Override
 	public String readable() {
 		return String.format("%d", value);
+	}
+
+	@Override
+	public JsonPrimitive toJson() {
+		return new JsonPrimitive(value);
 	}
 }
