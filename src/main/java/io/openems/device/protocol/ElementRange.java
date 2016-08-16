@@ -25,12 +25,12 @@ import com.ghgande.j2mod.modbus.net.SerialConnection;
 
 public class ElementRange {
 	private int startAddress;
-	private Element<?>[] elements;
+	private ModbusElement<?>[] elements;
 
-	public ElementRange(int startAddress, Element<?>... elements) {
+	public ElementRange(int startAddress, ModbusElement<?>... elements) {
 		this.startAddress = startAddress;
 		this.elements = elements;
-		for (Element<?> element : elements) {
+		for (ModbusElement<?> element : elements) {
 			element.setElementRange(this);
 		}
 	}
@@ -40,7 +40,7 @@ public class ElementRange {
 	 */
 	public int getTotalLength() {
 		int length = 0;
-		for (Element<?> element : elements) {
+		for (ModbusElement<?> element : elements) {
 			length += element.getLength();
 		}
 		return length;
@@ -65,7 +65,7 @@ public class ElementRange {
 		return "ModbusElementRange [startAddress=" + startAddress + ", words=" + Arrays.toString(elements) + "]";
 	}
 
-	public Element<?>[] getElements() {
+	public ModbusElement<?>[] getElements() {
 		return elements;
 	}
 

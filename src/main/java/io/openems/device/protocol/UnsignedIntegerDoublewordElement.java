@@ -17,15 +17,17 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.protocol.interfaces.DoublewordElement;
-
 import java.nio.ByteBuffer;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
-public class UnsignedIntegerDoublewordElement extends NumberElement<Long> implements DoublewordElement {
-	public UnsignedIntegerDoublewordElement(int address, int length, String name, int multiplier, int delta, String unit) {
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.element.type.LongType;
+
+public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> implements DoublewordElement {
+	public UnsignedIntegerDoublewordElement(int address, int length, String name, int multiplier, int delta,
+			String unit) {
 		super(address, length, name, multiplier, delta, unit);
 	}
 
@@ -34,17 +36,17 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<Long> implem
 		ByteBuffer buff = ByteBuffer.allocate(4);
 		buff.put(reg1.toBytes());
 		buff.put(reg2.toBytes());
-		update(Integer.toUnsignedLong(buff.getInt(0) * multiplier - delta));
+		update(new LongType(Integer.toUnsignedLong(buff.getInt(0) * multiplier - delta)));
 	}
 
 	@Override
-	public Register[] toRegister(Long value) {
+	public Register[] toRegister(LongType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
 	public Register[] toRegister(JsonElement value) {
-		Long l = value.getAsLong();
+		LongType l = new LongType(value.getAsLong());
 		return toRegister(l);
 	}
 }

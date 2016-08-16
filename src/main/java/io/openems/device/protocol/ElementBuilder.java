@@ -17,12 +17,12 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.counter.CounterProtocol;
-import io.openems.device.ess.EssProtocol;
-
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.openems.device.counter.CounterProtocol;
+import io.openems.device.ess.EssProtocol;
 
 public class ElementBuilder {
 	final int address;
@@ -122,8 +122,8 @@ public class ElementBuilder {
 		return this;
 	}
 
-	public Element<?> build() {
-		Element<?> element = null;
+	public ModbusElement<?> build() {
+		ModbusElement<?> element = null;
 		if (bitElements.size() > 0) {
 			element = new BitsElement(address, intLength, name, unit, bitElements);
 		} else if (type == ElementType.INTEGER) {

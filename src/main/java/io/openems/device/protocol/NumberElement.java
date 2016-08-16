@@ -17,7 +17,9 @@
  */
 package io.openems.device.protocol;
 
-public abstract class NumberElement<T> extends Element<T> {
+import io.openems.element.type.Type;
+
+public abstract class NumberElement<T extends Type> extends ModbusElement<T> {
 	protected final int multiplier;
 	protected final int delta;
 

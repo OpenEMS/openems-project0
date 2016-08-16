@@ -1,9 +1,5 @@
 package io.openems.controller;
 
-import io.openems.channel.ChannelWorker;
-import io.openems.device.Device;
-import io.openems.device.io.IO;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,22 +7,26 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class IOControllerFactory extends ControllerFactory {
+import io.openems.channel.ChannelWorker;
+import io.openems.device.Device;
+import io.openems.device.ess.Ess;
+import io.openems.device.io.IO;
+
+public class MiniTestFactory extends ControllerFactory {
 
 	@Override
 	public ControllerWorker getControllerWorker(String name, JsonObject controllerJson, Map<String, Device> devices,
 			Map<String, ChannelWorker> channelWorkers) throws Exception {
-		HashMap<String, IO> io = new HashMap<>();
-		JsonArray ioJsonArray = controllerJson.get("io").getAsJsonArray();
-		for (JsonElement ioJsonElement : ioJsonArray) {
-			String ioDevice = ioJsonElement.getAsString();
-			Device device = devices.get(ioDevice);
-			if (device instanceof IO) {
-				io.put(ioDevice, (IO) device);
+		Map<String, Ess> ess = new HashMap<>();
+		JsonArray essJsonArray = controllerJson.get("ess").getAsJsonArray();
+		for (JsonElement essJsonElement : essJsonArray) {
+			String essDevice = essJsonElement.getAsString();
+			Device device = devices.get(essDevice);
+			if (device instanceof Ess) {
+				ess.put(essDevice, (Ess) device);
 			}
 		}
-
-		return new ControllerWorker(name, channelWorkers.values(), new IOController(name, io));
+		return new ControllerWorker(name, channelWorkers.values(), new MiniTest(name, ess));
 	}
 
 	@Override

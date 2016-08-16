@@ -33,9 +33,9 @@ public class ModbusProtocol {
 	private final static Logger log = LoggerFactory.getLogger(ModbusProtocol.class);
 
 	private final List<ElementRange> elementRanges = new ArrayList<ElementRange>();
-	private final Map<String, Element<?>> elements = new HashMap<String, Element<?>>();
+	private final Map<String, ModbusElement<?>> elements = new HashMap<String, ModbusElement<?>>();
 	/**
-	 * name of the {@link ModbusDevice} the {@link Element}s in this
+	 * name of the {@link ModbusDevice} the {@link ModbusElement}s in this
 	 * {@link ModbusProtocol} belong to
 	 */
 	private final String deviceName;
@@ -51,7 +51,7 @@ public class ModbusProtocol {
 	public void addElementRange(ElementRange elementRange) {
 		checkElementRange(elementRange);
 		elementRanges.add(elementRange);
-		for (Element<?> element : elementRange.getElements()) {
+		for (ModbusElement<?> element : elementRange.getElements()) {
 			if (!(element instanceof NoneElement)) {
 				if (deviceName != null) {
 					element.setDeviceName(deviceName);
@@ -61,7 +61,7 @@ public class ModbusProtocol {
 		}
 	}
 
-	public Element<?> getElement(String id) {
+	public ModbusElement<?> getElement(String id) {
 		return elements.get(id);
 	}
 
@@ -81,7 +81,7 @@ public class ModbusProtocol {
 	 */
 	private void checkElementRange(ElementRange elementRange) {
 		int address = elementRange.getStartAddress();
-		for (Element<?> element : elementRange.getElements()) {
+		for (ModbusElement<?> element : elementRange.getElements()) {
 			if (element.address != address) {
 				log.error("Start address of Element {} is wrong. Should be 0x{}", element.getName(),
 						Integer.toHexString(address));

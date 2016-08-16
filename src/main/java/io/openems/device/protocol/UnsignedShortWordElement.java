@@ -17,8 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.protocol.interfaces.WordElement;
-
 import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
@@ -27,7 +25,10 @@ import org.slf4j.LoggerFactory;
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
-public class UnsignedShortWordElement extends NumberElement<Integer> implements WordElement {
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
+
+public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(UnsignedShortWordElement.class);
 
@@ -39,17 +40,17 @@ public class UnsignedShortWordElement extends NumberElement<Integer> implements 
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2);
 		buff.put(register.toBytes());
-		update(Short.toUnsignedInt((short) (buff.getShort(0) * multiplier - delta)));
+		update(new IntegerType(Short.toUnsignedInt((short) (buff.getShort(0) * multiplier - delta))));
 	}
 
 	@Override
-	public Register[] toRegister(Integer value) {
+	public Register[] toRegister(IntegerType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
 	public Register[] toRegister(JsonElement value) {
-		Integer i = value.getAsInt();
+		IntegerType i = new IntegerType(value.getAsInt());
 		return toRegister(i);
 	}
 }

@@ -40,10 +40,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonStreamParser;
 
-import io.openems.device.protocol.interfaces.ElementUpdateListener;
+import io.openems.device.protocol.interfaces.ElementOnChangeListener;
 import io.openems.monitoring.MonitoringWorker;
 
-public class FeneconMonitoringWorker extends MonitoringWorker implements ElementUpdateListener {
+public class FeneconMonitoringWorker extends MonitoringWorker implements ElementOnChangeListener {
 	public String getDevicekey() {
 		return devicekey;
 	}
@@ -67,12 +67,10 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 	private static ConcurrentLinkedQueue<TimedElementValue> queue = new ConcurrentLinkedQueue<>();
 
 	@Override
-	public void elementUpdated(String fullName, Object value) {
-		this.offer(new TimedElementValue(fullName, value));
-	}
-
-	public void offer(TimedElementValue tev) {
+	public void elementChanged(String fullName, Object newValue, Object oldValue) {
+		TimedElementValue tev = new TimedElementValue(fullName, newValue);
 		queue.offer(tev);
+		System.out.println("Queue: " + queue.size() + " - " + tev.getName() + ": " + tev.getValue());
 	}
 
 	@Override

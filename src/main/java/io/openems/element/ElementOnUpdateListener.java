@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.openems.device.protocol.interfaces;
+package io.openems.element;
 
-public interface ElementOnChangeListener {
-	public void elementChanged(String name, Object newValue, Object oldValue);
+import io.openems.element.type.Type;
+
+public interface ElementOnUpdateListener {
+	public void elementUpdated(String name, Type newValue);
 }

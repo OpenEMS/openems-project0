@@ -1,9 +1,9 @@
 package io.openems.controller;
 
+import java.util.HashMap;
+
 import io.openems.device.io.IO;
 import io.openems.device.io.Wago;
-
-import java.util.HashMap;
 
 public class IOController extends Controller {
 
@@ -27,10 +27,10 @@ public class IOController extends Controller {
 		System.out.println(wago.getBitElement("DigitalInput_1_2").getValue());
 		System.out.println(wago.getBitElement("DigitalOutput_1_1").getValue());
 		System.out.println(wago.getBitElement("DigitalOutput_1_2").getValue());
-		wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_1"), !wago.getBitElement("DigitalOutput_1_1")
-				.getValue());
-		wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_2"), !wago.getBitElement("DigitalOutput_1_2")
-				.getValue());
+		wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_1"),
+				!wago.getBitElement("DigitalOutput_1_1").getValue().toBoolean());
+		wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_2"),
+				!wago.getBitElement("DigitalOutput_1_2").getValue().toBoolean());
 		// try {
 		// SolarLog sl = (SolarLog) App.getConfig().getDevices().get("sl0");
 		// UnsignedIntegerDoublewordElement pac =

@@ -17,8 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.protocol.interfaces.WordElement;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -26,7 +24,10 @@ import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
-public class SignedIntegerWordElement extends NumberElement<Integer> implements WordElement {
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
+
+public class SignedIntegerWordElement extends NumberElement<IntegerType> implements WordElement {
 	final ByteOrder byteOrder;
 
 	public SignedIntegerWordElement(int address, int length, String name, int multiplier, int delta, String unit,
@@ -39,19 +40,19 @@ public class SignedIntegerWordElement extends NumberElement<Integer> implements 
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2).order(byteOrder);
 		buff.put(register.toBytes());
-		update((buff.order(byteOrder).getShort(0) * multiplier - delta));
+		update(new IntegerType((buff.order(byteOrder).getShort(0) * multiplier - delta)));
 	}
 
 	@Override
-	public Register[] toRegister(Integer value) {
+	public Register[] toRegister(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
-				.putShort(new Integer((value - delta) / multiplier).shortValue()).array();
+				.putShort(new Integer((value.toInteger() - delta) / multiplier).shortValue()).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]) };
 	}
 
 	@Override
 	public Register[] toRegister(JsonElement value) {
-		Integer i = value.getAsInt();
+		IntegerType i = new IntegerType(value.getAsInt());
 		return toRegister(i);
 	}
 }

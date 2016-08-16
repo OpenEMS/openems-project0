@@ -1,11 +1,5 @@
 package io.openems.device.io;
 
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -26,6 +20,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+
 public class Wago extends IO {
 
 	private InetAddress ip;
@@ -34,8 +34,8 @@ public class Wago extends IO {
 	private List<String> mainElements;
 	private HashMap<String, String> bitElementMapping;
 
-	public Wago(String name, String channel, int unitid, InetAddress ip) throws IOException,
-			ParserConfigurationException, SAXException {
+	public Wago(String name, String channel, int unitid, InetAddress ip)
+			throws IOException, ParserConfigurationException, SAXException {
 		super(name, channel, unitid);
 		this.ip = ip;
 	}
@@ -191,7 +191,7 @@ public class Wago extends IO {
 
 	@Override
 	public boolean readDigitalValue(String channel) {
-		return getBitElement(channel).getValue();
+		return getBitElement(channel).getValue().toBoolean();
 	}
 
 }

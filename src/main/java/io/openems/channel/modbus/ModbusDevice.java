@@ -30,10 +30,11 @@ import org.xml.sax.SAXException;
 import io.openems.device.Device;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.Element;
+import io.openems.device.protocol.ModbusElement;
 import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.interfaces.ElementOnChangeListener;
-import io.openems.device.protocol.interfaces.ElementOnUpdateListener;
+import io.openems.element.ElementOnChangeListener;
+import io.openems.element.ElementOnUpdateListener;
+import io.openems.element.type.Type;
 
 public abstract class ModbusDevice extends Device {
 	@SuppressWarnings("unused")
@@ -64,7 +65,7 @@ public abstract class ModbusDevice extends Device {
 
 		// Add listeners for OnUpdate and OnChange events
 		for (String id : allElements) {
-			Element<?> e = this.protocol.getElement(id);
+			ModbusElement<?> e = this.protocol.getElement(id);
 			if (e instanceof BitsElement) {
 				for (Map.Entry<String, BitElement> element : ((BitsElement) e).getBitElements().entrySet()) {
 					addListenersToElement(element.getValue());
@@ -105,16 +106,17 @@ public abstract class ModbusDevice extends Device {
 	 * 
 	 * @param element
 	 */
-	private void addListenersToElement(Element<?> element) {
+	private void addListenersToElement(ModbusElement<?> element) {
+		System.out.println("addListenersToElement " + element);
 		element.addOnUpdateListener(new ElementOnUpdateListener() {
 			@Override
-			public void elementUpdated(String name, Object newValue) {
+			public void elementUpdated(String name, Type newValue) {
 				notifyOnUpdateListeners(name, newValue);
 			}
 		});
 		element.addOnChangeListener(new ElementOnChangeListener() {
 			@Override
-			public void elementChanged(String name, Object newValue, Object oldValue) {
+			public void elementChanged(String name, Type newValue, Type oldValue) {
 				notifyOnChangeListeners(name, newValue, oldValue);
 			}
 		});
@@ -129,7 +131,7 @@ public abstract class ModbusDevice extends Device {
 	}
 
 	@Override
-	public Element<?> getElement(String id) {
+	public ModbusElement<?> getElement(String id) {
 		return protocol.getElement(id);
 	}
 

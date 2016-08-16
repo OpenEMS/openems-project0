@@ -1,12 +1,5 @@
 package io.openems.api.rest;
 
-import io.openems.App;
-import io.openems.channel.modbus.WritableModbusDevice;
-import io.openems.device.Device;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.Element;
-
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,6 +14,13 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+
+import io.openems.App;
+import io.openems.channel.modbus.WritableModbusDevice;
+import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ModbusElement;
 
 public class DeviceCurrentValueResource extends ServerResource {
 
@@ -40,7 +40,7 @@ public class DeviceCurrentValueResource extends ServerResource {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
 		WritableModbusDevice d = (WritableModbusDevice) App.getConfig().getDevices().get(device);
-		Element<?> e = findElement(parameterName, d);
+		ModbusElement<?> e = findElement(parameterName, d);
 		if (e instanceof BitElement) {
 			d.addToWriteQueue(e, jsonElement.getAsJsonObject().get("value").getAsBoolean());
 		} else {
@@ -48,12 +48,12 @@ public class DeviceCurrentValueResource extends ServerResource {
 		}
 	}
 
-	public Element<?> findElement(String name, Device d) {
+	public ModbusElement<?> findElement(String name, Device d) {
 		if (d.getElements().contains(name)) {
 			return d.getElement(name);
 		}
 		for (String s : d.getElements()) {
-			Element<?> e = d.getElement(s);
+			ModbusElement<?> e = d.getElement(s);
 			if (e instanceof BitsElement) {
 				BitsElement be = (BitsElement) e;
 				if (be.getBitElements().containsKey(name)) {
