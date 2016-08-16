@@ -107,7 +107,6 @@ public abstract class ModbusDevice extends Device {
 	 * @param element
 	 */
 	private void addListenersToElement(ModbusElement<?> element) {
-		System.out.println("addListenersToElement " + element);
 		element.addOnUpdateListener(new ElementOnUpdateListener() {
 			@Override
 			public void elementUpdated(String name, Type newValue) {

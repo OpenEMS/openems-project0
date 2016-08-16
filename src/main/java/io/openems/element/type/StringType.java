@@ -7,6 +7,7 @@ public class StringType extends Type {
 		this.value = value;
 	}
 
+	@Override
 	public String toString() {
 		return value;
 	}
@@ -16,5 +17,10 @@ public class StringType extends Type {
 		if (otherType == null || !(otherType instanceof StringType))
 			return false;
 		return ((StringType) otherType).toString() == value;
+	}
+
+	@Override
+	public String readable() {
+		return value;
 	}
 }

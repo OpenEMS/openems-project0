@@ -44,7 +44,10 @@ public class Element<T extends Type> {
 	}
 
 	public String readable() {
-		return String.format("%5d %s", getValue(), unit);
+		if (getValue() == null) {
+			return "<empty>";
+		}
+		return getValue().readable() + " " + unit;
 	}
 
 	public T getValue() {
@@ -79,9 +82,7 @@ public class Element<T extends Type> {
 		lastUpdate = DateTime.now();
 		T oldValue = this.value;
 		this.value = newValue;
-		System.out.println(this.name + " " + oldValue + " " + newValue);
-		if (!oldValue.isEqual(newValue)) {
-			System.out.println("changed");
+		if (oldValue == null || !oldValue.isEqual(newValue)) {
 			notifyOnChangeListeners(oldValue);
 		}
 		notifyOnUpdateListeners();

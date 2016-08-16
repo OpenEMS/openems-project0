@@ -17,4 +17,9 @@ public class LongType extends Type {
 			return false;
 		return ((LongType) otherType).toLong() == value;
 	}
+
+	@Override
+	public String readable() {
+		return String.format("%d", value);
+	}
 }

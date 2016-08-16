@@ -14,4 +14,9 @@ public class BooleanMapType extends Type {
 		return false;
 	}
 
+	@Override
+	public String readable() {
+		// TODO implement proper readable method
+		return "[BooleanMapType]";
+	}
 }

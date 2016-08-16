@@ -1,7 +1,7 @@
 package io.openems.element.type;
 
 public class DoubleType extends Type {
-	private final Double value;
+	private final double value;
 
 	public DoubleType(double value) {
 		this.value = value;
@@ -16,5 +16,10 @@ public class DoubleType extends Type {
 		if (otherType == null || !(otherType instanceof DoubleType))
 			return false;
 		return ((DoubleType) otherType).toDouble() == value;
+	}
+
+	@Override
+	public String readable() {
+		return String.format("%.3f", value);
 	}
 }

@@ -17,4 +17,9 @@ public class IntegerType extends Type {
 			return false;
 		return ((IntegerType) otherType).toInteger() == value;
 	}
+
+	@Override
+	public String readable() {
+		return String.format("%d", value);
+	}
 }

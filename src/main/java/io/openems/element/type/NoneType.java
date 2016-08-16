@@ -10,4 +10,9 @@ public class NoneType extends Type {
 			return false;
 		return equals(otherType);
 	}
+
+	@Override
+	public String readable() {
+		return "[None]";
+	}
 }
