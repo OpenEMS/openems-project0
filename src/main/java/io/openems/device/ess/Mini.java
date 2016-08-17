@@ -17,6 +17,12 @@
  */
 package io.openems.device.ess;
 
+import io.openems.device.ess.EssProtocol.GridStates;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.UnsignedShortWordElement;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -26,18 +32,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import io.openems.device.ess.EssProtocol.GridStates;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.UnsignedShortWordElement;
-
 public class Mini extends Ess {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Mini.class);
 
-	public Mini(String name, String channel, int unitid, int minSoc)
-			throws IOException, ParserConfigurationException, SAXException {
+	public Mini(String name, String channel, int unitid, int minSoc) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, channel, unitid, minSoc);
 	}
 
@@ -49,8 +49,8 @@ public class Mini extends Ess {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(
-				new ElementRange(4812, new ElementBuilder(4812).name(EssProtocol.BatteryStringSoc).unit("%").build()));
+		protocol.addElementRange(new ElementRange(4812, new ElementBuilder(4812, name)
+				.name(EssProtocol.BatteryStringSoc).unit("%").build()));
 		return protocol;
 	}
 

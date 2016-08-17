@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class ElementBuilder {
 	final int address;
-	String deviceName = "";
+	final String deviceName;
 	String name = "";
 	ElementType type = ElementType.INTEGER;
 	ElementLength length = ElementLength.WORD;
@@ -40,13 +40,9 @@ public class ElementBuilder {
 	boolean writable = false;
 	Map<String, BitElement> bitElements = new HashMap<>();
 
-	public ElementBuilder(int address) {
+	public ElementBuilder(int address, String deviceName) {
 		this.address = address;
-	}
-
-	public ElementBuilder device(String deviceName) {
 		this.deviceName = deviceName;
-		return this;
 	}
 
 	public ElementBuilder name(String name) {

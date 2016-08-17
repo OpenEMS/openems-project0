@@ -36,22 +36,22 @@ public class SolarLog extends WritableModbusDevice {
 	@Override
 	protected ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502).name(InverterProtocol.PAC.name())
-				.length(ElementLength.DOUBLEWORD).unit("W").build()));//
-		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504).name(InverterProtocol.PDC.name())
-				.length(ElementLength.DOUBLEWORD).unit("W").build(),//
-				new ElementBuilder(3506).name(InverterProtocol.UAC.name()).unit("V").build(),//
-				new ElementBuilder(3507).name(InverterProtocol.UDC.name()).unit("V").build(),//
-				new ElementBuilder(3508).name(InverterProtocol.DailyYield.name()).length(ElementLength.DOUBLEWORD)
-						.unit("Wh").build(),//
-				new ElementBuilder(3510).name(InverterProtocol.YesterdayYield.name()).length(ElementLength.DOUBLEWORD)
-						.unit("Wh").build(),//
-				new ElementBuilder(3512).name(InverterProtocol.MonthlyYield.name()).length(ElementLength.DOUBLEWORD)
-						.unit("Wh").build(),//
-				new ElementBuilder(3514).name(InverterProtocol.YearlyYield.name()).length(ElementLength.DOUBLEWORD)
-						.unit("Wh").build(),//
-				new ElementBuilder(3516).name(InverterProtocol.TotalYield.name()).length(ElementLength.DOUBLEWORD)
-						.unit("Wh").build()));//
+		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502, name)
+				.name(InverterProtocol.PAC.name()).length(ElementLength.DOUBLEWORD).unit("W").build()));//
+		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504, name)
+				.name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD).unit("W").build(),//
+				new ElementBuilder(3506, name).name(InverterProtocol.UAC.name()).unit("V").build(),//
+				new ElementBuilder(3507, name).name(InverterProtocol.UDC.name()).unit("V").build(),//
+				new ElementBuilder(3508, name).name(InverterProtocol.DailyYield.name())
+						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+				new ElementBuilder(3510, name).name(InverterProtocol.YesterdayYield.name())
+						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+				new ElementBuilder(3512, name).name(InverterProtocol.MonthlyYield.name())
+						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+				new ElementBuilder(3514, name).name(InverterProtocol.YearlyYield.name())
+						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name())
+						.length(ElementLength.DOUBLEWORD).unit("Wh").build()));//
 		// protocol.addElementRange(new ElementRange(10400, new
 		// ElementBuilder(10400)
 		// .name(InverterProtocol.SetLimit.name()).unit("%").build()));

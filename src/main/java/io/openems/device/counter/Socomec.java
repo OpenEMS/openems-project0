@@ -17,6 +17,13 @@
  */
 package io.openems.device.counter;
 
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementLength;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.SignedIntegerDoublewordElement;
+import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,17 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementLength;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.SignedIntegerDoublewordElement;
-import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-
 public class Socomec extends Counter {
 
-	public Socomec(String name, String channel, int unitid)
-			throws IOException, ParserConfigurationException, SAXException {
+	public Socomec(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, channel, unitid);
 	}
 
@@ -48,24 +48,21 @@ public class Socomec extends Counter {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(0xc568,
-				new ElementBuilder(0xc568).name(CounterProtocol.ActivePower).multiplier(10).signed(true)
-						.length(ElementLength.DOUBLEWORD).unit("W").build(),
-				new ElementBuilder(0xc56a).name(CounterProtocol.ReactivePower).multiplier(10).signed(true)
-						.length(ElementLength.DOUBLEWORD).unit("VA").build(),
-				new ElementBuilder(0xc56c).name(CounterProtocol.ApparentPower).multiplier(10)
-						.length(ElementLength.DOUBLEWORD).unit("Var").build()));
-		protocol.addElementRange(new ElementRange(0xc652,
-				new ElementBuilder(0xc652).name(CounterProtocol.ActivePositiveEnergy).length(ElementLength.DOUBLEWORD)
-						.unit("kWh").build(),
-				new ElementBuilder(0xc654).name(CounterProtocol.ReactivePositiveEnergy).length(ElementLength.DOUBLEWORD)
-						.unit("kvarh").build(),
-				new ElementBuilder(0xc656).name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD)
-						.unit("kVAh").build(),
-				new ElementBuilder(0xc658).name(CounterProtocol.ActiveNegativeEnergy).length(ElementLength.DOUBLEWORD)
-						.unit("kWh").build(),
-				new ElementBuilder(0xc65a).name(CounterProtocol.ReactiveNegativeEnergy).length(ElementLength.DOUBLEWORD)
-						.unit("kvarh").build()));
+		protocol.addElementRange(new ElementRange(0xc568, new ElementBuilder(0xc568, name)
+				.name(CounterProtocol.ActivePower).multiplier(10).signed(true).length(ElementLength.DOUBLEWORD)
+				.unit("W").build(), new ElementBuilder(0xc56a, name).name(CounterProtocol.ReactivePower).multiplier(10)
+				.signed(true).length(ElementLength.DOUBLEWORD).unit("VA").build(), new ElementBuilder(0xc56c, name)
+				.name(CounterProtocol.ApparentPower).multiplier(10).length(ElementLength.DOUBLEWORD).unit("Var")
+				.build()));
+		protocol.addElementRange(new ElementRange(0xc652, new ElementBuilder(0xc652, name)
+				.name(CounterProtocol.ActivePositiveEnergy).length(ElementLength.DOUBLEWORD).unit("kWh").build(),
+				new ElementBuilder(0xc654, name).name(CounterProtocol.ReactivePositiveEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kvarh").build(), new ElementBuilder(0xc656, name)
+						.name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD).unit("kVAh").build(),
+				new ElementBuilder(0xc658, name).name(CounterProtocol.ActiveNegativeEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kWh").build(), new ElementBuilder(0xc65a, name)
+						.name(CounterProtocol.ReactiveNegativeEnergy).length(ElementLength.DOUBLEWORD).unit("kvarh")
+						.build()));
 		return protocol;
 	}
 

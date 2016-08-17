@@ -1,5 +1,11 @@
 package io.openems.device.io;
 
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -20,12 +26,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-
 public class Wago extends IO {
 
 	private InetAddress ip;
@@ -34,8 +34,8 @@ public class Wago extends IO {
 	private List<String> mainElements;
 	private HashMap<String, String> bitElementMapping;
 
-	public Wago(String name, String channel, int unitid, InetAddress ip)
-			throws IOException, ParserConfigurationException, SAXException {
+	public Wago(String name, String channel, int unitid, InetAddress ip) throws IOException,
+			ParserConfigurationException, SAXException {
 		super(name, channel, unitid);
 		this.ip = ip;
 	}
@@ -121,7 +121,7 @@ public class Wago extends IO {
 							elements.add((BitsElement) (currentElementBuilder.build()));
 						}
 						name = "outputs" + (count / 16 + 1);
-						currentElementBuilder = new ElementBuilder(512 + count / 16).device(name).name(name);
+						currentElementBuilder = new ElementBuilder(512 + count / 16, name).name(name);
 						mainElements.add(name);
 						writeElements.add(name);
 					}
@@ -144,7 +144,7 @@ public class Wago extends IO {
 							elements.add((BitsElement) (currentElementBuilder.build()));
 						}
 						name = "inputs" + (count / 16 + 1);
-						currentElementBuilder = new ElementBuilder(count / 16).device(name).name(name);
+						currentElementBuilder = new ElementBuilder(count / 16, name).name(name);
 						mainElements.add(name);
 					}
 					bitElementMapping.put(channel, name);

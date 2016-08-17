@@ -87,20 +87,20 @@ public class Commercial extends Ess {
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		protocol.addElementRange(new ElementRange(0x0101,
-				new ElementBuilder(0x0101).device(name).name(EssProtocol.SystemState) //
+				new ElementBuilder(0x0101, name).name(EssProtocol.SystemState) //
 						.bit(new BitElement(1, EssProtocol.SystemStates.Stop.name())) //
 						.bit(new BitElement(2, EssProtocol.SystemStates.PvCharging.name())) //
 						.bit(new BitElement(3, EssProtocol.SystemStates.Standby.name())) //
 						.bit(new BitElement(4, EssProtocol.SystemStates.Running.name())) //
 						.bit(new BitElement(5, EssProtocol.SystemStates.Fault.name())) //
 						.bit(new BitElement(6, EssProtocol.SystemStates.Debug.name())).build(), //
-				new ElementBuilder(0x0102).device(name).name(EssProtocol.ControlMode)//
+				new ElementBuilder(0x0102, name).name(EssProtocol.ControlMode)//
 						.bit(new BitElement(0, EssProtocol.ControlModes.Remote.name()))//
 						.bit(new BitElement(1, EssProtocol.ControlModes.LocalManual.name())).build(),
-				new ElementBuilder(0x0103).device(name).name(EssProtocol.WorkMode)//
+				new ElementBuilder(0x0103, name).name(EssProtocol.WorkMode)//
 						.bit(new BitElement(9, EssProtocol.RemoteDispatch.name())).build(), //
-				new ElementBuilder(0x0104).device(name).name(EssProtocol.BatteryMaintananceState).build(), //
-				new ElementBuilder(0x0105).device(name).name(EssProtocol.InverterState)//
+				new ElementBuilder(0x0104, name).name(EssProtocol.BatteryMaintananceState).build(), //
+				new ElementBuilder(0x0105, name).name(EssProtocol.InverterState)//
 						.bit(new BitElement(0, EssProtocol.InverterStates.Initial.name()))//
 						.bit(new BitElement(1, EssProtocol.InverterStates.Fault.name()))//
 						.bit(new BitElement(2, EssProtocol.InverterStates.Stop.name()))//
@@ -109,39 +109,38 @@ public class Commercial extends Ess {
 						.bit(new BitElement(5, EssProtocol.InverterStates.Ready.name()))//
 						.bit(new BitElement(6, EssProtocol.InverterStates.Running.name()))//
 						.bit(new BitElement(7, EssProtocol.InverterStates.Debug.name())).build(), //
-				new ElementBuilder(0x0106).device(name).name(EssProtocol.GridMode).build(), //
-				new ElementBuilder(0x0107).device(name).type(ElementType.PLACEHOLDER).intLength(0x0108 - 0x0107)
-						.build(), //
-				new ElementBuilder(0x0108).device(name).name(EssProtocol.ProtocolVersion).build(), //
-				new ElementBuilder(0x0109).device(name).name(EssProtocol.SystemManufacturer).build(), //
-				new ElementBuilder(0x010A).device(name).name(EssProtocol.SystemType).build()));
+				new ElementBuilder(0x0106, name).name(EssProtocol.GridMode).build(), //
+				new ElementBuilder(0x0107, name).type(ElementType.PLACEHOLDER).intLength(0x0108 - 0x0107).build(), //
+				new ElementBuilder(0x0108, name).name(EssProtocol.ProtocolVersion).build(), //
+				new ElementBuilder(0x0109, name).name(EssProtocol.SystemManufacturer).build(), //
+				new ElementBuilder(0x010A, name).name(EssProtocol.SystemType).build()));
 		protocol.addElementRange(new ElementRange(0x0110,//
-				new ElementBuilder(0x0110).device(name)//
+				new ElementBuilder(0x0110, name)//
 						.bit(new BitElement(2, EssProtocol.Information.EmergencyStop.name()))//
 						.bit(new BitElement(6, EssProtocol.Information.ManualStop.name())).build(),//
-				new ElementBuilder(0x0111).device(name)//
+				new ElementBuilder(0x0111, name)//
 						.bit(new BitElement(3, EssProtocol.Information.TransformertPH1TempSensInvalidation.name()))//
 						.bit(new BitElement(12, EssProtocol.Information.SDCardInvalidation.name())).build()));
 		protocol.addElementRange(new ElementRange(
 				0x0125,//
-				new ElementBuilder(0x0125).device(name)//
+				new ElementBuilder(0x0125, name)//
 						.bit(new BitElement(0, EssProtocol.Information.InverterCommunicationAbnormity.name()))//
 						.bit(new BitElement(1, EssProtocol.Information.BatteryCommunicationAbnormity.name()))//
 						.bit(new BitElement(2, EssProtocol.Information.AmmeterCommunicationAbnormity.name()))//
 						.bit(new BitElement(4, EssProtocol.Information.RemoteCommunicationAbnormity.name())).build(),
-				new ElementBuilder(0x0126).device(name)
+				new ElementBuilder(0x0126, name)
 						//
 						.bit(new BitElement(3, EssProtocol.Information.TransformerSevereOvertemperature.name()))
 						.build()));
 		protocol.addElementRange(new ElementRange(0x0150,//
-				new ElementBuilder(0x0150).device(name).name(EssProtocol.SwitchStates) //
+				new ElementBuilder(0x0150, name).name(EssProtocol.SwitchStates) //
 						.bit(new BitElement(1, EssProtocol.Switches.DCMain.name())) //
 						.bit(new BitElement(2, EssProtocol.Switches.DCPrecharge.name())) //
 						.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
 						.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
 						.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
 		protocol.addElementRange(new ElementRange(0x0180,//
-				new ElementBuilder(0x0180).device(name)
+				new ElementBuilder(0x0180, name)
 						.bit(new BitElement(0, EssProtocol.Abnormity.DCPrechargeContactorCloseUnsuccessfully.name()))
 						.bit(new BitElement(1, EssProtocol.Abnormity.ACPrechargeContactorCloseUnsuccessfully.name()))
 						.bit(new BitElement(2, EssProtocol.Abnormity.ACMainContactorCloseUnsuccessfully.name()))
@@ -156,8 +155,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(11, EssProtocol.Abnormity.HardwarePDPFault.name()))
 						.bit(new BitElement(12, EssProtocol.Abnormity.MasterStopSuddenly.name())).build()));
 		protocol.addElementRange(new ElementRange(0x0182,//
-				new ElementBuilder(0x0182)
-						.device(name)
+				new ElementBuilder(0x0182, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Abnormity.DCShortCircuitProtection.name()))
 						.bit(new BitElement(1, EssProtocol.Abnormity.DCOvervoltageProtection.name()))
@@ -176,8 +175,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(14, EssProtocol.Abnormity.Phase2GridVoltageSamplingInvalidation.name()))
 						.bit(new BitElement(15, EssProtocol.Abnormity.Phase3GridVoltageSamplingInvalidation.name()))
 						.build(),//
-				new ElementBuilder(0x0183)
-						.device(name)
+				new ElementBuilder(0x0183, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1InverterVoltageSamplingInvalidation.name()))
 						.bit(new BitElement(1, EssProtocol.Abnormity.Phase2InverterVoltageSamplingInvalidation.name()))
@@ -195,7 +194,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13, EssProtocol.Abnormity.Phase3PrechargeUnmetProtection.name()))
 						.bit(new BitElement(14, EssProtocol.Abnormity.UnadaptablePhaseSequenceErrorProtection.name()))
 						.bit(new BitElement(15, EssProtocol.Abnormity.DSPProtection.name())).build(),
-				new ElementBuilder(0x0184).device(name)
+				new ElementBuilder(0x0184, name)
 						//
 						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1GridVoltageSevereOvervoltageProtection
 								.name()))//
@@ -226,8 +225,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(14, EssProtocol.Abnormity.SevereUnderfrequencyProtection.name()))//
 						.bit(new BitElement(15, EssProtocol.Abnormity.GeneralUnderPrequencyProtection.name()))//
 						.build(),//
-				new ElementBuilder(0x0185)
-						.device(name)
+				new ElementBuilder(0x0185, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Abnormity.Phase1GridLoss.name()))
 						.bit(new BitElement(1, EssProtocol.Abnormity.Phase2GridLoss.name()))
@@ -251,8 +250,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13,
 								EssProtocol.Abnormity.InverterPeakVoltageHighProtectionCauseByACDisconnect.name()))
 						.build(),//
-				new ElementBuilder(0x0186)
-						.device(name)
+				new ElementBuilder(0x0186, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Information.DCPrechargeContactorInspectionAbnormity.name()))
 						.bit(new BitElement(1, EssProtocol.Information.DCBreaker1InspectionAbnormity.name()))
@@ -272,8 +271,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13, EssProtocol.Information.EmergencyStop2.name()))
 						.bit(new BitElement(14, EssProtocol.Information.ACBreakerCloseUnsuccessfully.name()))
 						.bit(new BitElement(15, EssProtocol.Information.ControlSwitchStop.name())).build(),//
-				new ElementBuilder(0x0187)
-						.device(name)
+				new ElementBuilder(0x0187, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Information.GeneralOverload.name()))
 						.bit(new BitElement(1, EssProtocol.Information.SevereOverload.name()))
@@ -291,8 +290,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(12, EssProtocol.Information.EEPROMParametersOverRange.name()))
 						.bit(new BitElement(13, EssProtocol.Information.EEPROMParametersBackupFailed.name()))
 						.bit(new BitElement(14, EssProtocol.Information.DCBreakerCloseUnsuccessfully.name())).build(),//
-				new ElementBuilder(0x0188)
-						.device(name)
+				new ElementBuilder(0x0188, name)
+
 						//
 						.bit(new BitElement(0, EssProtocol.Information.CommunicationBetweenInverterAndBSMUDisconnected
 								.name()))
@@ -307,84 +306,78 @@ public class Commercial extends Ess {
 						.bit(new BitElement(7, EssProtocol.Information.SyncSignalSeveralTimesCaptureFault.name()))
 						.build()//
 		));
-		protocol.addElementRange(new ElementRange(0x0200, new ElementBuilder(0x0200).device(name)
-				.name(EssProtocol.DcVoltage).unit("mV").multiplier(100).build(),//
-				new ElementBuilder(0x0201).device(name).name(EssProtocol.DcCurrent).unit("mA").multiplier(100).build(),//
-				new ElementBuilder(0x0202).device(name).name(EssProtocol.DcPower).unit("W").multiplier(100).build(),//
-				new ElementBuilder(0x0203).device(name).type(ElementType.PLACEHOLDER).intLength(0x0208 - 0x0203)
-						.build(), //
-				new ElementBuilder(0x0208).device(name).name(EssProtocol.ChargeEnergy).unit("Wh")
+		protocol.addElementRange(new ElementRange(0x0200, new ElementBuilder(0x0200, name).name(EssProtocol.DcVoltage)
+				.unit("mV").multiplier(100).build(),//
+				new ElementBuilder(0x0201, name).name(EssProtocol.DcCurrent).unit("mA").multiplier(100).build(),//
+				new ElementBuilder(0x0202, name).name(EssProtocol.DcPower).unit("W").multiplier(100).build(),//
+				new ElementBuilder(0x0203, name).type(ElementType.PLACEHOLDER).intLength(0x0208 - 0x0203).build(), //
+				new ElementBuilder(0x0208, name).name(EssProtocol.ChargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).multiplier(100).build(), //
-				new ElementBuilder(0x020A).device(name).name(EssProtocol.DischargeEnergy).unit("Wh").multiplier(100)
+				new ElementBuilder(0x020A, name).name(EssProtocol.DischargeEnergy).unit("Wh").multiplier(100)
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build()));
-		protocol.addElementRange(new ElementRange(0x0210, new ElementBuilder(0x0210).name(EssProtocol.ActivePower)
-				.multiplier(100).signed(true).unit("W").build(), new ElementBuilder(0x0211)
-				.name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("Var").build(), //
-				new ElementBuilder(0x0212).name(EssProtocol.ApparentPower).multiplier(100).unit("VA").build(), //
-				new ElementBuilder(0x0213).name(EssProtocol.CurrentPhase1).signed(true).multiplier(100).unit("mA")
+		protocol.addElementRange(new ElementRange(0x0210, new ElementBuilder(0x0210, name)
+				.name(EssProtocol.ActivePower).multiplier(100).signed(true).unit("W").build(), new ElementBuilder(
+				0x0211, name).name(EssProtocol.ReactivePower).multiplier(100).signed(true).unit("Var").build(), //
+				new ElementBuilder(0x0212, name).name(EssProtocol.ApparentPower).multiplier(100).unit("VA").build(), //
+				new ElementBuilder(0x0213, name).name(EssProtocol.CurrentPhase1).signed(true).multiplier(100)
+						.unit("mA").build(), //
+				new ElementBuilder(0x0214, name).name(EssProtocol.CurrentPhase2).signed(true).multiplier(100)
+						.unit("mA").build(), //
+				new ElementBuilder(0x0215, name).name(EssProtocol.CurrentPhase3).signed(true).multiplier(100)
+						.unit("mA").build(), //
+				new ElementBuilder(0x0216, name).type(ElementType.PLACEHOLDER).intLength(0x219 - 0x216).build(), //
+				new ElementBuilder(0x0219, name).name(EssProtocol.VoltagePhase1).multiplier(100).unit("mV").build(), //
+				new ElementBuilder(0x021A, name).name(EssProtocol.VoltagePhase2).multiplier(100).unit("mV").build(), //
+				new ElementBuilder(0x021B, name).name(EssProtocol.VoltagePhase3).multiplier(100).unit("mV").build(), //
+				new ElementBuilder(0x021C, name).name(EssProtocol.Frequency).multiplier(100).unit("mHZ").build(), //
+				new ElementBuilder(0x021D, name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x21D).build(), //
+				new ElementBuilder(0x0230, name).name(EssProtocol.AllowedCharge).multiplier(100).signed(true).unit("W")
 						.build(), //
-				new ElementBuilder(0x0214).name(EssProtocol.CurrentPhase2).signed(true).multiplier(100).unit("mA")
-						.build(), //
-				new ElementBuilder(0x0215).name(EssProtocol.CurrentPhase3).signed(true).multiplier(100).unit("mA")
-						.build(), //
-				new ElementBuilder(0x0216).device(name).type(ElementType.PLACEHOLDER).intLength(0x219 - 0x216).build(), //
-				new ElementBuilder(0x0219).name(EssProtocol.VoltagePhase1).multiplier(100).unit("mV").build(), //
-				new ElementBuilder(0x021A).name(EssProtocol.VoltagePhase2).multiplier(100).unit("mV").build(), //
-				new ElementBuilder(0x021B).name(EssProtocol.VoltagePhase3).multiplier(100).unit("mV").build(), //
-				new ElementBuilder(0x021C).name(EssProtocol.Frequency).multiplier(100).unit("mHZ").build(), //
-				new ElementBuilder(0x021D).device(name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x21D).build(), //
-				new ElementBuilder(0x0230).device(name).name(EssProtocol.AllowedCharge).multiplier(100).signed(true)
-						.unit("W").build(), //
-				new ElementBuilder(0x0231).device(name).name(EssProtocol.AllowedDischarge).multiplier(100).unit("W")
-						.build(), //
-				new ElementBuilder(0x0232).device(name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var")
+				new ElementBuilder(0x0231, name).name(EssProtocol.AllowedDischarge).multiplier(100).unit("W").build(), //
+				new ElementBuilder(0x0232, name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var").build()));
+		protocol.addElementRange(new ElementRange(
+				0x0240,//
+				new ElementBuilder(0x0240, name).name(EssProtocol.IPMPhase1Temperature).unit("°C").signed(true).build(),//
+				new ElementBuilder(0x0241, name).name(EssProtocol.IPMPhase2Temperature).unit("°C").signed(true).build(),//
+				new ElementBuilder(0x0242, name).name(EssProtocol.IPMPhase3Temperature).unit("°C").signed(true).build(),//
+				new ElementBuilder(0x0243, name).type(ElementType.PLACEHOLDER).intLength(0x0249 - 0x0243).build(),//
+				new ElementBuilder(0x0249, name).name(EssProtocol.TransformerPhase1Temperature).unit("°C").signed(true)
 						.build()));
-		protocol.addElementRange(new ElementRange(0x0240,//
-				new ElementBuilder(0x0240).device(name).name(EssProtocol.IPMPhase1Temperature).unit("°C").signed(true)
-						.build(),//
-				new ElementBuilder(0x0241).device(name).name(EssProtocol.IPMPhase2Temperature).unit("°C").signed(true)
-						.build(),//
-				new ElementBuilder(0x0242).device(name).name(EssProtocol.IPMPhase3Temperature).unit("°C").signed(true)
-						.build(),//
-				new ElementBuilder(0x0243).device(name).type(ElementType.PLACEHOLDER).intLength(0x0249 - 0x0243)
-						.build(),//
-				new ElementBuilder(0x0249).device(name).name(EssProtocol.TransformerPhase1Temperature).unit("°C")
-						.signed(true).build()));
 		protocol.addElementRange(new ElementRange(0x0300,//
-				new ElementBuilder(0x0300).device(name).name(EssProtocol.TotalEnergy).unit("kWh")
+				new ElementBuilder(0x0300, name).name(EssProtocol.TotalEnergy).unit("kWh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
-				new ElementBuilder(0x0302).device(name).name(EssProtocol.TotalYearEnergy).unit("kWh")
+				new ElementBuilder(0x0302, name).name(EssProtocol.TotalYearEnergy).unit("kWh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
-				new ElementBuilder(0x0304).device(name).name(EssProtocol.TotalMonthEnergy).unit("kWh")
+				new ElementBuilder(0x0304, name).name(EssProtocol.TotalMonthEnergy).unit("kWh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
-				new ElementBuilder(0x0306).device(name).name(EssProtocol.TotalDateEnergy).unit("kWh").build()));
-		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500).device(name)
+				new ElementBuilder(0x0306, name).name(EssProtocol.TotalDateEnergy).unit("kWh").build()));
+		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500, name)
 				.name(EssProtocol.SetWorkState) //
 				.signed(true)//
 				.build()));
 		protocol.addElementRange(new ElementRange(0x0501, //
-				new ElementBuilder(0x0501).device(name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
+				new ElementBuilder(0x0501, name).name(EssProtocol.SetActivePower).multiplier(100).signed(true)
 						.unit("W").build()));
-		protocol.addElementRange(new ElementRange(0x0502, new ElementBuilder(0x0502).device(name)
+		protocol.addElementRange(new ElementRange(0x0502, new ElementBuilder(0x0502, name)
 				.name(EssProtocol.SetReactivePower).multiplier(100).signed(true).unit("var").build()));
 		protocol.addElementRange(new ElementRange(
 				0x1100,//
-				new ElementBuilder(0x1100).device(name).name(EssProtocol.BatteryState)//
+				new ElementBuilder(0x1100, name).name(EssProtocol.BatteryState)//
 						.bit(new BitElement(0, EssProtocol.BatteryStates.Initial.name()))//
 						.bit(new BitElement(1, EssProtocol.BatteryStates.Stop.name()))//
 						.bit(new BitElement(2, EssProtocol.BatteryStates.StartingUp.name()))//
 						.bit(new BitElement(3, EssProtocol.BatteryStates.Running.name()))//
 						.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build(),//
-				new ElementBuilder(0x1101).device(name).name(EssProtocol.BatterySwitchState)
+				new ElementBuilder(0x1101, name).name(EssProtocol.BatterySwitchState)
 						.bit(new BitElement(0, EssProtocol.BatterySwitches.MainContactor.name()))
 						.bit(new BitElement(1, EssProtocol.BatterySwitches.PrechargeContactor.name()))
 						.bit(new BitElement(2, EssProtocol.BatterySwitches.FANContactor.name()))
 						.bit(new BitElement(3, EssProtocol.BatterySwitches.BMUPowerSupplyRelay.name()))
 						.bit(new BitElement(4, EssProtocol.BatterySwitches.MiddleRelay.name())).build(),//
-				new ElementBuilder(0x1102).device(name).name(EssProtocol.BatteryPeripheralIOState)
+				new ElementBuilder(0x1102, name).name(EssProtocol.BatteryPeripheralIOState)
 						.bit(new BitElement(0, EssProtocol.PheripheralIOs.Fuse.name()))
 						.bit(new BitElement(4, EssProtocol.PheripheralIOs.IsolatedSwitch.name())).build(),//
-				new ElementBuilder(0x1103).device(name)
+				new ElementBuilder(0x1103, name)
 						.bit(new BitElement(0, EssProtocol.BatteryInformation.ChargeGeneralOvercurrent.name()))
 						.bit(new BitElement(1, EssProtocol.BatteryInformation.DischargeGeneralOvercurrent.name()))
 						.bit(new BitElement(2, EssProtocol.BatteryInformation.ChargeCurrentOverLimit.name()))
@@ -399,10 +392,9 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13, EssProtocol.BatteryInformation.ChargeSevereOvercurrent.name()))
 						.bit(new BitElement(14, EssProtocol.BatteryInformation.DischargeSevereOvercurrent.name()))
 						.bit(new BitElement(15, EssProtocol.BatteryInformation.CapacityAbnormity.name())).build(),//
-				new ElementBuilder(0x1104).device(name).type(ElementType.PLACEHOLDER).intLength(0x1105 - 0x1104)
-						.build(),
-				new ElementBuilder(0x1105)
-						.device(name)
+				new ElementBuilder(0x1104, name).type(ElementType.PLACEHOLDER).intLength(0x1105 - 0x1104).build(),
+				new ElementBuilder(0x1105, name)
+
 						.bit(new BitElement(2, EssProtocol.BatteryAbnormity.VoltageSamplingRouteInvalidation.name()))
 						.bit(new BitElement(4, EssProtocol.BatteryAbnormity.VoltageSamplingRouteDisconnected.name()))
 						.bit(new BitElement(5, EssProtocol.BatteryAbnormity.TemperatureSamplingRouteDisconnected.name()))
@@ -417,8 +409,8 @@ public class Commercial extends Ess {
 						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
 								.name()))
 						.bit(new BitElement(15, EssProtocol.BatteryAbnormity.MiddleRelayAbnormity.name())).build(),//
-				new ElementBuilder(0x1106)
-						.device(name)
+				new ElementBuilder(0x1106, name)
+
 						.bit(new BitElement(2, EssProtocol.BatteryAbnormity.SevereOvertemperature.name()))
 						.bit(new BitElement(7, EssProtocol.BatteryAbnormity.SmogFault.name()))
 						.bit(new BitElement(8, EssProtocol.BatteryAbnormity.BlownFuseIndicatorFault.name()))
@@ -428,36 +420,30 @@ public class Commercial extends Ess {
 						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
 								.name())).build()));
 		protocol.addElementRange(new ElementRange(0x1400,//
-				new ElementBuilder(0x1400).device(name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100)
-						.build(),//
-				new ElementBuilder(0x1401).device(name).name(EssProtocol.BatteryAmperage).unit("mA").signed(true)
+				new ElementBuilder(0x1400, name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100).build(),//
+				new ElementBuilder(0x1401, name).name(EssProtocol.BatteryAmperage).unit("mA").signed(true)
 						.multiplier(100).build(), //
-				new ElementBuilder(0x1402).device(name).name(EssProtocol.BatteryStringSoc).unit("%").build(), //
-				new ElementBuilder(0x1403).device(name).name(EssProtocol.BatteryStringSOH).unit("%").build(), //
-				new ElementBuilder(0x1404).device(name).name(EssProtocol.BatteryCellAverageTemperature).signed(true)
+				new ElementBuilder(0x1402, name).name(EssProtocol.BatteryStringSoc).unit("%").build(), //
+				new ElementBuilder(0x1403, name).name(EssProtocol.BatteryStringSOH).unit("%").build(), //
+				new ElementBuilder(0x1404, name).name(EssProtocol.BatteryCellAverageTemperature).signed(true)
 						.unit("°C").build(),//
-				new ElementBuilder(0x1405).device(name).type(ElementType.PLACEHOLDER).intLength(0x1406 - 0x1405)
+				new ElementBuilder(0x1405, name).type(ElementType.PLACEHOLDER).intLength(0x1406 - 0x1405).build(),//
+				new ElementBuilder(0x1406, name).name(EssProtocol.BatteryChargeCurrentLimit).unit("mA").multiplier(100)
 						.build(),//
-				new ElementBuilder(0x1406).device(name).name(EssProtocol.BatteryChargeCurrentLimit).unit("mA")
+				new ElementBuilder(0x1407, name).name(EssProtocol.BatteryDischargeCurrentLimit).unit("mA")
 						.multiplier(100).build(),//
-				new ElementBuilder(0x1407).device(name).name(EssProtocol.BatteryDischargeCurrentLimit).unit("mA")
-						.multiplier(100).build(),//
-				new ElementBuilder(0x1408).device(name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408)
-						.build(),//
-				new ElementBuilder(0x140A).device(name).name(EssProtocol.ChargeDischargeTimes)
+				new ElementBuilder(0x1408, name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408).build(),//
+				new ElementBuilder(0x140A, name).name(EssProtocol.ChargeDischargeTimes)
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
-				new ElementBuilder(0x140C).device(name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x140C)
-						.build(), //
-				new ElementBuilder(0x1418).device(name).name(EssProtocol.BatteryChargeEnergy).unit("Wh")
+				new ElementBuilder(0x140C, name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x140C).build(), //
+				new ElementBuilder(0x1418, name).name(EssProtocol.BatteryChargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
-				new ElementBuilder(0x141A).device(name).name(EssProtocol.BatteryDischargeEnergy).unit("Wh")
+				new ElementBuilder(0x141A, name).name(EssProtocol.BatteryDischargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
-				new ElementBuilder(0x141C).device(name).type(ElementType.PLACEHOLDER).intLength(0x1420 - 0x141C)
-						.build(), //
-				new ElementBuilder(0x1420).device(name).name(EssProtocol.BatteryPower).unit("W").signed(true)
-						.multiplier(100).build()));
-		protocol.addElementRange(new ElementRange(0xA600, new ElementBuilder(0xA600).device(name)
-				.name(EssProtocol.Pv1State) //
+				new ElementBuilder(0x141C, name).type(ElementType.PLACEHOLDER).intLength(0x1420 - 0x141C).build(), //
+				new ElementBuilder(0x1420, name).name(EssProtocol.BatteryPower).unit("W").signed(true).multiplier(100)
+						.build()));
+		protocol.addElementRange(new ElementRange(0xA600, new ElementBuilder(0xA600, name).name(EssProtocol.Pv1State) //
 				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
 				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
 				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
@@ -465,24 +451,23 @@ public class Commercial extends Ess {
 				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
 				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
 				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xA730, new ElementBuilder(0xA730).device(name)
+		protocol.addElementRange(new ElementRange(0xA730, new ElementBuilder(0xA730, name)
 				.name(EssProtocol.Pv1OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
-				new ElementBuilder(0xA731).device(name).name(EssProtocol.Pv1OutputCurrent).multiplier(10).signed(true)
+				new ElementBuilder(0xA731, name).name(EssProtocol.Pv1OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
-				new ElementBuilder(0xA732).device(name).name(EssProtocol.Pv1OutputPower).multiplier(100).signed(true)
+				new ElementBuilder(0xA732, name).name(EssProtocol.Pv1OutputPower).multiplier(100).signed(true)
 						.unit("W").build(), //
-				new ElementBuilder(0xA733).device(name).name(EssProtocol.Pv1InputVoltage).multiplier(10).signed(true)
+				new ElementBuilder(0xA733, name).name(EssProtocol.Pv1InputVoltage).multiplier(10).signed(true)
 						.unit("V").build(), //
-				new ElementBuilder(0xA734).device(name).name(EssProtocol.Pv1InputCurrent).multiplier(10).signed(true)
+				new ElementBuilder(0xA734, name).name(EssProtocol.Pv1InputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
-				new ElementBuilder(0xA735).device(name).name(EssProtocol.Pv1InputPower).multiplier(100).signed(true)
-						.unit("W").build(), //
-				new ElementBuilder(0xA736).device(name).name(EssProtocol.Pv1InputEnergy).multiplier(100).signed(true)
+				new ElementBuilder(0xA735, name).name(EssProtocol.Pv1InputPower).multiplier(100).signed(true).unit("W")
+						.build(), //
+				new ElementBuilder(0xA736, name).name(EssProtocol.Pv1InputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build(), //
-				new ElementBuilder(0xA737).device(name).name(EssProtocol.Pv1OutputEnergy).multiplier(100).signed(true)
+				new ElementBuilder(0xA737, name).name(EssProtocol.Pv1OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
-		protocol.addElementRange(new ElementRange(0xA900, new ElementBuilder(0xA900).device(name)
-				.name(EssProtocol.Pv2State) //
+		protocol.addElementRange(new ElementRange(0xA900, new ElementBuilder(0xA900, name).name(EssProtocol.Pv2State) //
 				.bit(new BitElement(1, EssProtocol.DcStates.Initial.name())) //
 				.bit(new BitElement(2, EssProtocol.DcStates.Stop.name())) //
 				.bit(new BitElement(3, EssProtocol.DcStates.Ready.name())) //
@@ -490,29 +475,29 @@ public class Commercial extends Ess {
 				.bit(new BitElement(5, EssProtocol.DcStates.Fault.name())) //
 				.bit(new BitElement(6, EssProtocol.DcStates.Debug.name())) //
 				.bit(new BitElement(7, EssProtocol.DcStates.Locked.name())).build()));
-		protocol.addElementRange(new ElementRange(0xAA30, new ElementBuilder(0xAA30).device(name)
+		protocol.addElementRange(new ElementRange(0xAA30, new ElementBuilder(0xAA30, name)
 				.name(EssProtocol.Pv2OutputVoltage).multiplier(10).signed(true).unit("V").build(), //
-				new ElementBuilder(0xAA31).device(name).name(EssProtocol.Pv2OutputCurrent).multiplier(10).signed(true)
+				new ElementBuilder(0xAA31, name).name(EssProtocol.Pv2OutputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
-				new ElementBuilder(0xAA32).device(name).name(EssProtocol.Pv2OutputPower).multiplier(100).signed(true)
+				new ElementBuilder(0xAA32, name).name(EssProtocol.Pv2OutputPower).multiplier(100).signed(true)
 						.unit("W").build(), //
-				new ElementBuilder(0xAA33).device(name).name(EssProtocol.Pv2InputVoltage).multiplier(10).signed(true)
+				new ElementBuilder(0xAA33, name).name(EssProtocol.Pv2InputVoltage).multiplier(10).signed(true)
 						.unit("V").build(), //
-				new ElementBuilder(0xAA34).device(name).name(EssProtocol.Pv2InputCurrent).multiplier(10).signed(true)
+				new ElementBuilder(0xAA34, name).name(EssProtocol.Pv2InputCurrent).multiplier(10).signed(true)
 						.unit("A").build(), //
-				new ElementBuilder(0xAA35).device(name).name(EssProtocol.Pv2InputPower).multiplier(100).signed(true)
-						.unit("W").build(), //
-				new ElementBuilder(0xAA36).device(name).name(EssProtocol.Pv2InputEnergy).multiplier(100).signed(true)
+				new ElementBuilder(0xAA35, name).name(EssProtocol.Pv2InputPower).multiplier(100).signed(true).unit("W")
+						.build(), //
+				new ElementBuilder(0xAA36, name).name(EssProtocol.Pv2InputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build(), //
-				new ElementBuilder(0xAA37).device(name).name(EssProtocol.Pv2OutputEnergy).multiplier(100).signed(true)
+				new ElementBuilder(0xAA37, name).name(EssProtocol.Pv2OutputEnergy).multiplier(100).signed(true)
 						.unit("Wh").build()));
 		int index = 0;
 		List<ModbusElement<?>> voltageElements = new ArrayList<>();
 		List<ModbusElement<?>> temperatureElements = new ArrayList<>();
 		while (index < 224) {
-			voltageElements.add(new ElementBuilder(0x1500 + index).unit("mV").device(name)
+			voltageElements.add(new ElementBuilder(0x1500 + index, name).unit("mV")
 					.name("Cell" + (index + 1) + "Voltage").build());
-			temperatureElements.add(new ElementBuilder(0x1700 + index).unit("°C").device(name)
+			temperatureElements.add(new ElementBuilder(0x1700 + index, name).unit("°C")
 					.name("Cell" + (index + 1) + "Temperature").build());
 			if (voltageElements.size() == 85) {
 				protocol.addElementRange(new ElementRange(voltageElements.get(0).getAddress(), voltageElements
