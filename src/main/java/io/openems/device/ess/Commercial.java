@@ -514,7 +514,7 @@ public class Commercial extends Ess {
 					.name("Cell" + (index + 1) + "Voltage").build());
 			temperatureElements.add(new ElementBuilder(0x1700 + index).unit("°C").device(name)
 					.name("Cell" + (index + 1) + "Temperature").build());
-			if (voltageElements.size() == 20) {
+			if (voltageElements.size() == 85) {
 				protocol.addElementRange(new ElementRange(voltageElements.get(0).getAddress(), voltageElements
 						.toArray(new ModbusElement<?>[voltageElements.size()])));
 				voltageElements.clear();

@@ -1,19 +1,20 @@
 package io.openems.controller;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EnBAGController extends Controller {
 
@@ -33,8 +34,8 @@ public class EnBAGController extends Controller {
 	private List<Ess> aviableEss;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
-			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch, Map<String, String> essOffGridSwitches,
-			String primaryOffGridEss, IO io) {
+			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
+			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
@@ -71,7 +72,35 @@ public class EnBAGController extends Controller {
 	public void run() {
 		ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
 		if (isOnGrid()) {
-			// TODO check if all storages switched to onGrid
+			// OnGrid
+			// switch all ESS and PV to onGrid
+			if (activeEss != null) {
+				// Switch all Ess off
+				for (Ess ess : allEss) {
+					if (ess.getName() != primaryOffGridEss) {
+						io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
+					}
+				}
+				// sleep 3 sec
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					log.error("Sleep interrupted", e);
+				}
+				// switch primary Ess On
+				io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
+				// Switch Pv to OnGrid
+				io.writeDigitalValue(pvOffGridSwitch, false);
+				// TODO SetSolarLog to max power
+				// sleep 3 sec
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					log.error("Sleep interrupted", e);
+				}
+				// OnGridSwitch is inverted
+				io.writeDigitalValue(pvOnGridSwitch, false);
+			}
 			int calculatedEssActivePower = gridCounter.getActivePower();
 			int allowedCharge = 0;
 			int[] activePower = new int[allEss.size()];
@@ -79,6 +108,7 @@ public class EnBAGController extends Controller {
 			int sumUseableSoc = 0;
 			int sumChargeableSoc = 0;
 
+			// Collect data of all Ess devices
 			for (Ess ess : allEss) {
 				io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
 				calculatedEssActivePower += ess.getActivePower();
@@ -121,7 +151,7 @@ public class EnBAGController extends Controller {
 			} else {
 				// TODO increase PV power
 			}
-
+			// Write new calculated ActivePower to Ess device
 			for (int i = 0; i < allEss.size(); i++) {
 				Ess ess = allEss.get(i);
 				// round to 100: ess can only be controlled with precision 100 W
@@ -131,28 +161,45 @@ public class EnBAGController extends Controller {
 			}
 			lastActivePower = calculatedEssActivePower;
 		} else {
+			// OffGrid
 			if (activeEss == null) {
 				// Switch first Ess to OffGrid
 				activeEss = essDevices.get(primaryOffGridEss);
 				aviableEss = new LinkedList<>(essDevices.values());
 				aviableEss.remove(activeEss);
+				// switch primary Ess On
+				io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
+				// Switch Solar to OffGrid (OnGridSwitch is inverted)
+				io.writeDigitalValue(pvOnGridSwitch, true);
+				// TODO SetSolarLog max power to 35kW
+				// sleep 3 sec
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					log.error("Sleep interrupted", e);
+				}
+				io.writeDigitalValue(pvOffGridSwitch, true);
 			} else {
 				// Check soc of activeEss
 				if (activeEss.getSOC() <= 1) {
+					// switch primary Ess off (is seperately needed because
+					// primary Ess output is inverted)
+					io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
 					// switch active Ess off
 					io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), false);
 					// sleep 3 sec
 					try {
 						Thread.sleep(3000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						log.error("Sleep interrupted", e);
 					}
 					// switch to next Ess
-					activeEss = aviableEss.iterator().next();
-					if (activeEss != null) {
+					try {
+						activeEss = aviableEss.iterator().next();
 						aviableEss.remove(activeEss);
 						io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), true);
+					} catch (NoSuchElementException ex) {
+
 					}
 				}
 			}
