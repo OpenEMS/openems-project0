@@ -31,6 +31,8 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.IeBinaryCounterReading;
+import org.openmuc.j60870.IeTime56;
 import org.openmuc.j60870.InformationElement;
 import org.xml.sax.SAXException;
 
@@ -111,7 +113,24 @@ public class Socomec extends Counter {
 
 	@Override
 	public InformationElement[][] getIecValues() {
-		// TODO Auto-generated method stub
-		return null;
+		return new InformationElement[][] {
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name()))
+										.getValue().toInteger(), 0, false, false, false),
+						new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ReactivePower.name()))
+										.getValue().toInteger(), 0, false, false, false),
+						new IeTime56(System.currentTimeMillis()) },
+		// {
+		// new IeBinaryCounterReading(
+		// ((UnsignedIntegerDoublewordElement)
+		// getElement(CounterProtocol.ApparentPower.name()))
+		// .getValue().toLong(), 0, false, false, false),
+		// new IeTime56(System.currentTimeMillis()) },
+
+		};
 	}
 }
