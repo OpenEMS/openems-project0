@@ -21,12 +21,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.InformationElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public class Wago extends IO {
+
+	private final static Logger log = LoggerFactory.getLogger(IO.class);
 
 	private InetAddress ip;
 
@@ -97,6 +102,9 @@ public class Wago extends IO {
 								break;
 							case "DI":
 								channelName = "DigitalInput_" + moduleCounter.get(channelType) + "_" + index;
+								break;
+							default:
+								log.debug("ChannelType: " + channelName + " nicht erkannt");
 								break;
 							}
 							channels.get(channelType).add(channelName);
@@ -192,6 +200,12 @@ public class Wago extends IO {
 	@Override
 	public boolean readDigitalValue(String channel) {
 		return getBitElement(channel).getValue().toBoolean();
+	}
+
+	@Override
+	public InformationElement[][] getIecValues() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -17,6 +17,7 @@
  */
 package io.openems;
 
+import io.openems.api.iec.Iec60870Server;
 import io.openems.api.rest.RestWorker;
 import io.openems.channel.ChannelWorker;
 import io.openems.config.Config;
@@ -56,6 +57,14 @@ public class App {
 	public static void main(String[] args) throws Exception {
 		config = new Config(Config.readJsonFile());
 		updateConfig(config);
+		// Run all api's
+		try {
+			RestWorker.startWorker();
+		} catch (Exception e) {
+			log.warn("Unable to start REST-Api");
+			e.printStackTrace();
+		}
+		new Iec60870Server().start();
 	}
 
 	/**
@@ -67,12 +76,6 @@ public class App {
 		}
 		for (MonitoringWorker monitoringWorker : monitoringWorkers.values()) {
 			monitoringWorker.start();
-		}
-		try {
-			RestWorker.startWorker();
-		} catch (Exception e) {
-			log.warn("Unable to start REST-Api");
-			e.printStackTrace();
 		}
 	}
 
@@ -86,12 +89,6 @@ public class App {
 		for (MonitoringWorker monitoringWorker : monitoringWorkers.values()) {
 			monitoringWorker.interrupt();
 		}
-		// try {
-		// RestWorker.stopWorker();
-		// } catch (Exception e) {
-		// log.warn("Unable to stop REST-Api");
-		// e.printStackTrace();
-		// }
 	}
 
 	/**

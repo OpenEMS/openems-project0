@@ -1,6 +1,6 @@
 {
 	"channel": {
-		/*"usb0": {
+		"usb0": {
 			"type": "io.openems.channel.modbus.ModbusRtuConnection",
 			"serialinterface": "/dev/ttyUSB0",
 			"baudrate": "38400",
@@ -23,7 +23,7 @@
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "192.168.178.122",
 			"cycle": 500
-		}*/
+		},
 		"ssh0": {
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "127.0.0.1",
@@ -41,7 +41,7 @@
 			"channel": "ssh0",
 			"modbusUnit": 100,
 			"minSoc": 15
-		}	
+		}
 	},
 	"controller": {
 		/*"io0": {
@@ -50,7 +50,7 @@
 		}*/
 		"controller0": {
 			"type": "io.openems.controller.MiniTest",
-			"ess": ["ess0"]
+			"ess": ["ess0","ess0"]
 		}
 	},
 	"monitor":{

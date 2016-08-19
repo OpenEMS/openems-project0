@@ -1,17 +1,18 @@
 package io.openems.device;
 
+import io.openems.device.protocol.ModbusElement;
+import io.openems.element.ElementOnChangeListener;
+import io.openems.element.ElementOnUpdateListener;
+import io.openems.element.type.Type;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.InformationElement;
 import org.xml.sax.SAXException;
-
-import io.openems.device.protocol.ModbusElement;
-import io.openems.element.ElementOnChangeListener;
-import io.openems.element.ElementOnUpdateListener;
-import io.openems.element.type.Type;
 
 public abstract class Device {
 	private final String channel;
@@ -73,4 +74,6 @@ public abstract class Device {
 	}
 
 	public abstract String getCurrentDataAsString();
+
+	public abstract InformationElement[][] getIecValues();
 }

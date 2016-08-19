@@ -39,6 +39,9 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.IeBinaryCounterReading;
+import org.openmuc.j60870.IeTime56;
+import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -272,8 +275,6 @@ public class Commercial extends Ess {
 						.bit(new BitElement(14, EssProtocol.Information.ACBreakerCloseUnsuccessfully.name()))
 						.bit(new BitElement(15, EssProtocol.Information.ControlSwitchStop.name())).build(),//
 				new ElementBuilder(0x0187, name)
-
-						//
 						.bit(new BitElement(0, EssProtocol.Information.GeneralOverload.name()))
 						.bit(new BitElement(1, EssProtocol.Information.SevereOverload.name()))
 						.bit(new BitElement(2, EssProtocol.Information.BatteryCurrentOverLimit.name()))
@@ -421,7 +422,7 @@ public class Commercial extends Ess {
 								.name())).build()));
 		protocol.addElementRange(new ElementRange(0x1400,//
 				new ElementBuilder(0x1400, name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100).build(),//
-				new ElementBuilder(0x1401, name).name(EssProtocol.BatteryAmperage).unit("mA").signed(true)
+				new ElementBuilder(0x1401, name).name(EssProtocol.BatteryCurrent).unit("mA").signed(true)
 						.multiplier(100).build(), //
 				new ElementBuilder(0x1402, name).name(EssProtocol.BatteryStringSoc).unit("%").build(), //
 				new ElementBuilder(0x1403, name).name(EssProtocol.BatteryStringSOH).unit("%").build(), //
@@ -631,5 +632,96 @@ public class Commercial extends Ess {
 				+ getElement(EssProtocol.ApparentPower.name()).readable() + "] DCPV: ["
 				+ getElement(EssProtocol.Pv1OutputPower.name()).readable()
 				+ getElement(EssProtocol.Pv2OutputPower.name()).readable() + "] ";
+	}
+
+	@Override
+	public InformationElement[][] getIecValues() {
+		return new InformationElement[][] {
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.ActivePower.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.ReactivePower.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.ApparentPower.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.CurrentPhase1.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.CurrentPhase2.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.CurrentPhase3.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.VoltagePhase1.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.VoltagePhase2.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.VoltagePhase3.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.Frequency.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.AllowedCharge.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.AllowedApparent.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.AllowedDischarge.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.BatteryVoltage.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.BatteryCurrent.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((SignedIntegerWordElement) getElement(EssProtocol.BatteryPower.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.BatteryStringSoc.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{
+						new IeBinaryCounterReading(
+								((UnsignedShortWordElement) getElement(EssProtocol.BatteryStringSOH.name())).getValue()
+										.toInteger(), 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				{ new IeBinaryCounterReading(minSoc, 0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+		// {
+		// new IeBinaryCounterReading(
+		// ((UnsignedIntegerDoublewordElement)
+		// getElement(EssProtocol.ChargeEnergy.name()))
+		// .getValue().toLong(), 0, false, false, false),
+		// new IeQuality(false, false, false, false, false) },
+		// {
+		// new IeBinaryCounterReading(
+		// ((UnsignedIntegerDoublewordElement)
+		// getElement(EssProtocol.DischargeEnergy.name()))
+		// .getValue().to()), new IeQuality(false, false, false, false, false) }
+
+		};
 	}
 }

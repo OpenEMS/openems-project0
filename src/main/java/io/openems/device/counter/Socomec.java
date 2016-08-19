@@ -31,13 +31,14 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.InformationElement;
 import org.xml.sax.SAXException;
 
 public class Socomec extends Counter {
 
-	public Socomec(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
-			SAXException {
-		super(name, channel, unitid);
+	public Socomec(String name, String channel, int unitid, boolean inverted) throws IOException,
+			ParserConfigurationException, SAXException {
+		super(name, channel, unitid, inverted);
 	}
 
 	@Override
@@ -80,7 +81,7 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public int getActivePower() {
+	public int getPower() {
 		return ((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name())).getValue().toInteger();
 	}
 
@@ -102,10 +103,15 @@ public class Socomec extends Counter {
 
 	@Override
 	public String getCurrentDataAsString() {
-		return "COUNTER: [" + getElement(CounterProtocol.ActivePower.name()).readable() + " "
-				+ getElement(CounterProtocol.ReactivePower.name()).readable() + " "
-				+ getElement(CounterProtocol.ApparentPower.name()).readable() + " +"
+		return "COUNTER: [" + getActivePower() + "W " + getElement(CounterProtocol.ReactivePower.name()).readable()
+				+ " " + getElement(CounterProtocol.ApparentPower.name()).readable() + " +"
 				+ getElement(CounterProtocol.ActivePositiveEnergy.name()).readable() + " -"
 				+ getElement(CounterProtocol.ActiveNegativeEnergy.name()).readable() + "] ";
+	}
+
+	@Override
+	public InformationElement[][] getIecValues() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -126,6 +127,12 @@ public class Mini extends Ess {
 
 	@Override
 	public String getCurrentDataAsString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
 	}

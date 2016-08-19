@@ -13,6 +13,7 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.InformationElement;
 import org.xml.sax.SAXException;
 
 public class SolarLog extends WritableModbusDevice {
@@ -86,6 +87,12 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public String getCurrentDataAsString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
 	}

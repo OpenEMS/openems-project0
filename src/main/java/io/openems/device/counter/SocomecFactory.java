@@ -12,7 +12,8 @@ public class SocomecFactory extends DeviceFactory {
 
 	@Override
 	public Device getDevice(String name, JsonObject device, HashMap<String, ChannelWorker> channels) throws Exception {
-		Socomec socomec = new Socomec(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt());
+		Socomec socomec = new Socomec(name, device.get("channel").getAsString(), device.get("modbusUnit").getAsInt(),
+				device.get("inverted").getAsBoolean());
 		return socomec;
 	}
 
@@ -24,6 +25,7 @@ public class SocomecFactory extends DeviceFactory {
 			jo.addProperty("type", s.getClass().getName());
 			jo.addProperty("channel", s.getChannel());
 			jo.addProperty("modbusUnit", s.getUnitid());
+			jo.addProperty("inverted", s.isInverted());
 			return jo;
 		}
 		return null;

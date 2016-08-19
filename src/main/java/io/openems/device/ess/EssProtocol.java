@@ -24,7 +24,7 @@ public enum EssProtocol {
 
 	AllowedCharge, AllowedDischarge, AllowedApparent,
 
-	BatteryVoltage, BatteryAmperage, BatteryPower, BatteryStringSoc, BatteryStringSOH,
+	BatteryVoltage, BatteryCurrent, BatteryPower, BatteryStringSoc, BatteryStringSOH,
 
 	SetActivePower, SetReactivePower, SetWorkState,
 
