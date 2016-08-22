@@ -38,9 +38,9 @@ import org.xml.sax.SAXException;
 
 public class Socomec extends Counter {
 
-	public Socomec(String name, String channel, int unitid, boolean inverted) throws IOException,
-			ParserConfigurationException, SAXException {
-		super(name, channel, unitid, inverted);
+	public Socomec(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
+			SAXException {
+		super(name, channel, unitid);
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public int getPower() {
+	public int getActivePower() {
 		return ((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name())).getValue().toInteger();
 	}
 

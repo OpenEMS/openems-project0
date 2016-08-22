@@ -27,12 +27,9 @@ import org.xml.sax.SAXException;
 
 public abstract class Counter extends ModbusDevice {
 
-	private boolean inverted = false;
-
-	public Counter(String name, String channel, int unitid, boolean inverted) throws IOException,
-			ParserConfigurationException, SAXException {
+	public Counter(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
+			SAXException {
 		super(name, channel, unitid);
-		this.inverted = inverted;
 	}
 
 	@Override
@@ -40,16 +37,5 @@ public abstract class Counter extends ModbusDevice {
 		return "Counter [name=" + name + ", unitid=" + unitid + "]";
 	}
 
-	public int getActivePower() {
-		if (inverted) {
-			return getPower() * -1;
-		}
-		return getPower();
-	}
-
-	public abstract int getPower();
-
-	public boolean isInverted() {
-		return inverted;
-	}
+	public abstract int getActivePower();
 }

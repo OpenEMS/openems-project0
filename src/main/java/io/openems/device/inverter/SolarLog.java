@@ -5,6 +5,7 @@ import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.WordOrder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,36 +29,35 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public Set<String> getWriteElements() {
-		return new HashSet<String>(
-		// Arrays.asList( //
-		// InverterProtocol.SetLimit.name())
-		);
+		return new HashSet<String>(Arrays.asList( //
+				InverterProtocol.SetLimit.name()));
 	}
 
 	@Override
 	protected ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException {
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502, name)
-				.name(InverterProtocol.PAC.name()).length(ElementLength.DOUBLEWORD).unit("W").build()));//
+				.name(InverterProtocol.PAC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
+				.unit("W").build()));//
 		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504, name)
-				.name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD).unit("W").build(),//
+				.name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
+				.unit("W").build(),//
 				new ElementBuilder(3506, name).name(InverterProtocol.UAC.name()).unit("V").build(),//
 				new ElementBuilder(3507, name).name(InverterProtocol.UDC.name()).unit("V").build(),//
 				new ElementBuilder(3508, name).name(InverterProtocol.DailyYield.name())
-						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
 				new ElementBuilder(3510, name).name(InverterProtocol.YesterdayYield.name())
-						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
 				new ElementBuilder(3512, name).name(InverterProtocol.MonthlyYield.name())
-						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
 				new ElementBuilder(3514, name).name(InverterProtocol.YearlyYield.name())
-						.length(ElementLength.DOUBLEWORD).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
 				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name())
-						.length(ElementLength.DOUBLEWORD).unit("Wh").build()));//
-		// protocol.addElementRange(new ElementRange(10400, new
-		// ElementBuilder(10400)
-		// .name(InverterProtocol.SetLimit.name()).unit("%").build()));
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build()));//
+		protocol.addElementRange(new ElementRange(10400, new ElementBuilder(10400, name)
+				.name(InverterProtocol.SetLimit.name()).unit("%").build()));
 		// protocol.addElementRange(new ElementRange(10401, new
-		// ElementBuilder(10401).name(
+		// ElementBuilder(10401, name).name(
 		// InverterProtocol.SetLimitType.name()).build()));
 		return protocol;
 	}
