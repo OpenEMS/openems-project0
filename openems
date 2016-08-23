@@ -27,7 +27,7 @@
 		"ssh0": {
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "127.0.0.1",
-			"cycle": 1000
+			"cycle": 60000
 		}
 	},
 	"device": {
@@ -35,30 +35,31 @@
 			"type": "io.openems.device.io.Wago",
 			"channel": "lan1",
 			"modbusUnit": 0
-		}
+		}*/
 		"ess0": {
 			"type": "io.openems.device.ess.Commercial",
 			"channel": "ssh0",
 			"modbusUnit": 100,
 			"minSoc": 15
-		},*/
-		"sl0":{
+		}
+		/*"sl0":{
 			"type": "io.openems.device.inverter.SolarLog",
 			"channel": "lan2",
 			"modbusUnit": 100,
 			"totalPower": 100
-		}
+		}*/
 	},
 	"controller": {
-		"io0": {
+		/*"io0": {
 			"type": "io.openems.controller.IOController",
 			"io":["io0"]
 		}
-		/*
+		*/
+		
 		"controller0": {
 			"type": "io.openems.controller.MiniTest",
 			"ess": ["ess0","ess0"]
-		}*/
+		}
 	},
 	"monitor":{
 		"monitor0":{
