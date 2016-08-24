@@ -4,9 +4,6 @@ import io.openems.App;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-import io.openems.device.protocol.UnsignedShortWordElement;
-import io.openems.element.type.IntegerType;
-import io.openems.element.type.LongType;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,14 +37,7 @@ public class IOController extends Controller {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		UnsignedShortWordElement setLimitType = (UnsignedShortWordElement) sl.getElement("SetLimitType");
-		sl.addToWriteQueue(setLimitType, setLimitType.toRegister(new IntegerType(2)));
-		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) sl.getElement("SetLimit");
-		sl.addToWriteQueue(setLimit, setLimit.toRegister(new IntegerType(35)));
-		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) sl.getElement("Placeholder");
-		sl.addToWriteQueue(placeholder, placeholder.toRegister(new LongType(0)));
-		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) sl.getElement("WatchDog");
-		sl.addToWriteQueue(watchdog, watchdog.toRegister(new LongType(System.currentTimeMillis())));
+		sl.setPVLimit(500);
 	}
 
 	@Override
@@ -66,16 +56,6 @@ public class IOController extends Controller {
 		System.out.print(pac.readable());
 		UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl.getElement("DailyYield");
 		System.out.println("\t" + dailyYield.readable());
-
-		// UnsignedShortWordElement setLimit = (UnsignedShortWordElement)
-		// sl.getElement("SetLimit");
-		// sl.addToWriteQueue(setLimit, setLimit.toRegister(new
-		// IntegerType((int) (25 + count))));
-		// UnsignedIntegerDoublewordElement watchdog =
-		// (UnsignedIntegerDoublewordElement) sl.getElement("WatchDog");
-		// sl.addToWriteQueue(watchdog, watchdog.toRegister(new
-		// LongType(count)));
-		// count++;
 	}
 
 	public HashMap<String, IO> getIo() {

@@ -5,7 +5,11 @@ import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
+import io.openems.element.type.IntegerType;
+import io.openems.element.type.LongType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,6 +35,19 @@ public class SolarLog extends WritableModbusDevice {
 	public Set<String> getWriteElements() {
 		return new HashSet<String>(Arrays.asList( //
 				InverterProtocol.SetLimit.name(), InverterProtocol.SetLimitType.name()));
+	}
+
+	@Override
+	public void init() throws IOException, ParserConfigurationException, SAXException {
+		super.init();
+		// Set SolarLog PLimit_Type to remote PV limitation
+		UnsignedShortWordElement setLimitType = (UnsignedShortWordElement) getElement("SetLimitType");
+		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
+		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) getElement("Placeholder");
+		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) getElement("WatchDog");
+		addToWriteQueue(setLimitType.createWriteRequest(new IntegerType(2)),
+				setLimit.createWriteRequest(new IntegerType(100)), placeholder.createWriteRequest(new LongType(0)),
+				watchdog.createWriteRequest(new LongType(System.currentTimeMillis())));
 	}
 
 	@Override
@@ -69,16 +86,12 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public Set<String> getInitElements() {
-		return new HashSet<String>(
-		// Arrays.asList( //
-		// InverterProtocol.SetLimitType.name())
-		);
+		return new HashSet<String>();
 	}
 
 	@Override
 	public Set<String> getMainElements() {
 		return new HashSet<String>(Arrays.asList( //
-				// InverterProtocol.SetLimit.name(),//
 				InverterProtocol.PAC.name()));
 	}
 
@@ -100,6 +113,16 @@ public class SolarLog extends WritableModbusDevice {
 	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void setPVLimit(int power) {
+		int limitPercent = (int) ((double) power / (double) totalPower * 100.0);
+		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
+		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) getElement("Placeholder");
+		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) getElement("WatchDog");
+		addToWriteQueue(setLimit.createWriteRequest(new IntegerType(limitPercent)),
+				placeholder.createWriteRequest(new LongType(0)),
+				watchdog.createWriteRequest(new LongType(System.currentTimeMillis())));
 	}
 
 }
