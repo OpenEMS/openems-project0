@@ -17,14 +17,15 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.channel.modbus.ModbusWriteRequest;
+import io.openems.element.Element;
+import io.openems.element.type.Type;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
-
-import io.openems.element.Element;
-import io.openems.element.type.Type;
 
 public abstract class ModbusElement<T extends Type> extends Element<T> {
 	@SuppressWarnings("unused")
@@ -56,7 +57,7 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 		return elementRange;
 	}
 
-	public abstract Register[] toRegister(T value);
+	protected abstract Register[] toRegister(T value);
 
 	@Override
 	public String toString() {
@@ -64,5 +65,7 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 				+ ", lastUpdate=" + getLastUpdate() + ", value=" + getValue() + "]";
 	}
 
-	public abstract Register[] toRegister(JsonElement value);
+	public abstract ModbusWriteRequest createWriteRequest(T value);
+
+	public abstract ModbusWriteRequest createWriteRequest(JsonElement value);
 }

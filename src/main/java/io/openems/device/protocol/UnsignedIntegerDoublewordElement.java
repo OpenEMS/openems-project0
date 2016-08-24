@@ -17,6 +17,7 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.channel.modbus.ModbusWriteRequest;
 import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.element.type.LongType;
 
@@ -52,7 +53,7 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> im
 	}
 
 	@Override
-	public Register[] toRegister(LongType value) {
+	protected Register[] toRegister(LongType value) {
 		byte[] b = ByteBuffer.allocate(4).order(byteOrder)
 				.putInt((int) new Long((value.toLong() - delta) / multiplier).longValue()).array();
 		if (wordOrder == WordOrder.MSWLSW) {
@@ -63,8 +64,13 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> im
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public ModbusWriteRequest createWriteRequest(LongType value) {
+		return new ModbusWriteRequest(this, toRegister(value));
+	}
+
+	@Override
+	public ModbusWriteRequest createWriteRequest(JsonElement value) {
 		LongType l = new LongType(value.getAsLong());
-		return toRegister(l);
+		return createWriteRequest(l);
 	}
 }

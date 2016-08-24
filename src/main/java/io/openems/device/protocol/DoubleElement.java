@@ -17,10 +17,11 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.channel.modbus.ModbusWriteRequest;
+import io.openems.element.type.DoubleType;
+
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
-
-import io.openems.element.type.DoubleType;
 
 public class DoubleElement extends NumberElement<DoubleType> {
 	public DoubleElement(int address, int length, String name, short multiplier, short delta, String unit) {
@@ -28,13 +29,18 @@ public class DoubleElement extends NumberElement<DoubleType> {
 	}
 
 	@Override
-	public Register[] toRegister(DoubleType value) {
+	protected Register[] toRegister(DoubleType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public ModbusWriteRequest createWriteRequest(DoubleType value) {
+		return new ModbusWriteRequest(this, toRegister(value));
+	}
+
+	@Override
+	public ModbusWriteRequest createWriteRequest(JsonElement value) {
 		DoubleType d = new DoubleType(value.getAsDouble());
-		return toRegister(d);
+		return createWriteRequest(d);
 	}
 }

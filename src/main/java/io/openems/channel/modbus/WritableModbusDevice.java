@@ -24,6 +24,7 @@ import io.openems.device.protocol.ModbusProtocol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,7 +42,7 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	private final static Logger log = LoggerFactory.getLogger(WritableModbusDevice.class);
 
 	private ModbusProtocol writeProtocol;
-	protected final Map<ModbusElement<?>, Register[]> writeRegisterQueue = new HashMap<ModbusElement<?>, Register[]>();
+	protected final List<ModbusWriteRequest> writeRegisterQueue = new ArrayList<>();
 	protected final Map<ModbusElement<?>, Boolean> writeBooleanQueue = new HashMap<ModbusElement<?>, Boolean>();
 
 	public WritableModbusDevice(String name, String channel, int unitid) throws IOException,
@@ -65,14 +66,9 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 		}
 	}
 
-	public void addToWriteQueue(ModbusElement<?> element, Register[] registers) {
-		writeRegisterQueue.put(element, registers);
-	}
-
-	public void addToWriteQueue(String id, Register[] registers) {
-		ModbusElement<?> element = writeProtocol.getElement(id);
-		if (element != null) {
-			writeRegisterQueue.put(element, registers);
+	public void addToWriteQueue(ModbusWriteRequest... requests) {
+		for (ModbusWriteRequest req : requests) {
+			writeRegisterQueue.add(req);
 		}
 	}
 
@@ -85,12 +81,12 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	public void executeModbusWrite(ModbusConnection modbusConnection) throws Exception {
 		// Write multiple registers (Words) in one write combined by sequential
 		// addresses
-		HashMap<Integer, Entry<ModbusElement<?>, Register[]>> entries = new HashMap<>();
+		HashMap<Integer, ModbusWriteRequest> entries = new HashMap<>();
 		int firstAddress = Integer.MAX_VALUE;
-		for (Entry<ModbusElement<?>, Register[]> entry : writeRegisterQueue.entrySet()) {
-			entries.put(entry.getKey().getAddress(), entry);
-			if (firstAddress > entry.getKey().getAddress()) {
-				firstAddress = entry.getKey().getAddress();
+		for (ModbusWriteRequest entry : writeRegisterQueue) {
+			entries.put(entry.getElement().getAddress(), entry);
+			if (firstAddress > entry.getElement().getAddress()) {
+				firstAddress = entry.getElement().getAddress();
 			}
 		}
 		int nextAddress = firstAddress;
@@ -99,16 +95,16 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 		int currentStartAddress = firstAddress;
 		while (entries.size() > 0) {
 			if (entries.containsKey(nextAddress)) {
-				Entry<ModbusElement<?>, Register[]> entry = entries.get(nextAddress);
+				ModbusWriteRequest entry = entries.get(nextAddress);
 				if (registers.isEmpty()) {
-					currentStartAddress = entry.getKey().getAddress();
+					currentStartAddress = entry.getElement().getAddress();
 				}
-				Register[] r = entry.getValue();
+				Register[] r = entry.getRegisters();
 				for (int i = 0; i < r.length; i++) {
 					registers.add(r[i]);
 				}
 				entries.remove(nextAddress);
-				nextAddress += entry.getKey().getLength();
+				nextAddress += entry.getElement().getLength();
 			} else {
 				// add registers to RegisterSet
 				if (!registers.isEmpty()) {

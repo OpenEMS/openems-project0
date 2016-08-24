@@ -17,6 +17,7 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.channel.modbus.ModbusWriteRequest;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.type.IntegerType;
 
@@ -49,15 +50,20 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 	}
 
 	@Override
-	public Register[] toRegister(IntegerType value) {
+	protected Register[] toRegister(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
 				.putShort((short) new Integer((value.toInteger() - delta) / multiplier).intValue()).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]) };
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public ModbusWriteRequest createWriteRequest(IntegerType value) {
+		return new ModbusWriteRequest(this, toRegister(value));
+	}
+
+	@Override
+	public ModbusWriteRequest createWriteRequest(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return toRegister(i);
+		return createWriteRequest(i);
 	}
 }

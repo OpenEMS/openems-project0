@@ -1,5 +1,12 @@
 package io.openems.api.rest;
 
+import io.openems.App;
+import io.openems.channel.modbus.WritableModbusDevice;
+import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ModbusElement;
+
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,13 +21,6 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-
-import io.openems.App;
-import io.openems.channel.modbus.WritableModbusDevice;
-import io.openems.device.Device;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ModbusElement;
 
 public class DeviceCurrentValueResource extends ServerResource {
 
@@ -44,7 +44,7 @@ public class DeviceCurrentValueResource extends ServerResource {
 		if (e instanceof BitElement) {
 			d.addToWriteQueue(e, jsonElement.getAsJsonObject().get("value").getAsBoolean());
 		} else {
-			d.addToWriteQueue(e, e.toRegister(jsonElement.getAsJsonObject().get("value")));
+			d.addToWriteQueue(e.createWriteRequest(jsonElement.getAsJsonObject().get("value")));
 		}
 	}
 

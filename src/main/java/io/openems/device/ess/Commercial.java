@@ -606,7 +606,7 @@ public class Commercial extends Ess {
 
 	@Override
 	public void setActivePower(int power) {
-		addToWriteQueue(getSetActivePower(), getSetActivePower().toRegister(new IntegerType(power)));
+		addToWriteQueue(getSetActivePower().createWriteRequest(new IntegerType(power)));
 	}
 
 	@Override
@@ -616,12 +616,12 @@ public class Commercial extends Ess {
 
 	@Override
 	public void start() {
-		addToWriteQueue(getSetWorkState(), getSetWorkState().toRegister(new IntegerType(64)));
+		addToWriteQueue(getSetWorkState().createWriteRequest(new IntegerType(64)));
 	}
 
 	@Override
 	public void stop() {
-		addToWriteQueue(getSetWorkState(), getSetWorkState().toRegister(new IntegerType(4)));
+		addToWriteQueue(getSetWorkState().createWriteRequest(new IntegerType(4)));
 	}
 
 	@Override
