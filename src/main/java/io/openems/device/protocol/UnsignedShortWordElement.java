@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
 public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement {
@@ -49,7 +50,9 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 
 	@Override
 	public Register[] toRegister(IntegerType value) {
-		throw new UnsupportedOperationException("not implemented");
+		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
+				.putShort((short) new Integer((value.toInteger() - delta) / multiplier).intValue()).array();
+		return new Register[] { new SimpleRegister(b[0], b[1]) };
 	}
 
 	@Override

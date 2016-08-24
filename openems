@@ -45,7 +45,7 @@
 		"sl0":{
 			"type": "io.openems.device.inverter.SolarLog",
 			"channel": "lan2",
-			"modbusUnit": 100,
+			"modbusUnit": 1,
 			"totalPower": 100
 		}
 	},

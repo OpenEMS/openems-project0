@@ -30,7 +30,7 @@ public class SolarLog extends WritableModbusDevice {
 	@Override
 	public Set<String> getWriteElements() {
 		return new HashSet<String>(Arrays.asList( //
-				InverterProtocol.SetLimit.name()));
+				InverterProtocol.SetLimit.name(), InverterProtocol.SetLimitType.name()));
 	}
 
 	@Override
@@ -55,10 +55,15 @@ public class SolarLog extends WritableModbusDevice {
 				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name())
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build()));//
 		protocol.addElementRange(new ElementRange(10400, new ElementBuilder(10400, name)
-				.name(InverterProtocol.SetLimit.name()).unit("%").build()));
-		// protocol.addElementRange(new ElementRange(10401, new
-		// ElementBuilder(10401, name).name(
-		// InverterProtocol.SetLimitType.name()).build()));
+				.name(InverterProtocol.SetLimitType.name()).unit("%").build()));
+		protocol.addElementRange(new ElementRange(10401, new ElementBuilder(10401, name).name(
+				InverterProtocol.SetLimit.name()).build()));
+		protocol.addElementRange(new ElementRange(10402, new ElementBuilder(10402, name)
+				.name(InverterProtocol.Placeholder.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
+				.build()));
+		protocol.addElementRange(new ElementRange(10404, new ElementBuilder(10404, name)
+				.name(InverterProtocol.WatchDog.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
+				.build()));
 		return protocol;
 	}
 

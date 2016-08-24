@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
 public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> implements DoublewordElement {
@@ -52,7 +53,13 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> im
 
 	@Override
 	public Register[] toRegister(LongType value) {
-		throw new UnsupportedOperationException("not implemented");
+		byte[] b = ByteBuffer.allocate(4).order(byteOrder)
+				.putInt((int) new Long((value.toLong() - delta) / multiplier).longValue()).array();
+		if (wordOrder == WordOrder.MSWLSW) {
+			return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
+		} else {
+			return new Register[] { new SimpleRegister(b[2], b[3]), new SimpleRegister(b[0], b[1]) };
+		}
 	}
 
 	@Override
