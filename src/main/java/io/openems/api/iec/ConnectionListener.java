@@ -1,16 +1,9 @@
 package io.openems.api.iec;
 
-import io.openems.App;
-import io.openems.device.Device;
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
@@ -20,7 +13,11 @@ import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+
+import io.openems.App;
+import io.openems.device.Device;
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
 
 public class ConnectionListener implements ConnectionEventListener {
 
@@ -57,7 +54,8 @@ public class ConnectionListener implements ConnectionEventListener {
 				InformationObject[] values = new InformationObject[devices.size()];
 				for (Device d : devices) {
 					if (d instanceof Ess) {
-						values[index] = new InformationObject(STARTADDRESS + essCount * ADDRESSOFFSET, d.getIecValues());
+						values[index] = new InformationObject(STARTADDRESS + essCount * ADDRESSOFFSET,
+								d.getIecValues());
 						essCount++;
 					} else if (d instanceof Counter) {
 						values[index] = new InformationObject(STARTADDRESS + 1000 + counterCount * ADDRESSOFFSET,
@@ -68,8 +66,8 @@ public class ConnectionListener implements ConnectionEventListener {
 				}
 				// TODO send all values
 				// Meassured values
-				connection.send(new ASdu(TypeId.M_IT_TB_1, true, CauseOfTransmission.SPONTANEOUS, false, false, 0, aSdu
-						.getCommonAddress(), values));
+				connection.send(new ASdu(TypeId.M_IT_TB_1, true, CauseOfTransmission.SPONTANEOUS, false, false, 0,
+						aSdu.getCommonAddress(), values));
 
 				break;
 			default:
@@ -77,19 +75,12 @@ public class ConnectionListener implements ConnectionEventListener {
 			}
 
 		} catch (EOFException e) {
-			System.out.println("Will quit listening for commands on connection (" + connectionId
-					+ ") because socket was closed.");
+			System.out.println(
+					"Will quit listening for commands on connection (" + connectionId + ") because socket was closed.");
 		} catch (IOException e) {
 			System.out.println("Will quit listening for commands on connection (" + connectionId
 					+ ") because of error: \"" + e.getMessage() + "\".");
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-
 	}
 
 	@Override

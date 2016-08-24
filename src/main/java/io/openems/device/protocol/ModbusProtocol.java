@@ -61,15 +61,6 @@ public class ModbusProtocol {
 		}
 	}
 
-	public void removeElementRange(ElementRange elementRange) {
-		elementRanges.remove(elementRange);
-		for (ModbusElement<?> element : elementRange.getElements()) {
-			if (!(element instanceof NoneElement)) {
-				elements.remove(element.getName());
-			}
-		}
-	}
-
 	public ModbusElement<?> getElement(String id) {
 		return elements.get(id);
 	}

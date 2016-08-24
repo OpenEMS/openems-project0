@@ -1,19 +1,24 @@
 package io.openems.channel.modbus;
 
-import io.openems.channel.ChannelFactory;
-import io.openems.channel.ChannelWorker;
-
 import java.net.InetAddress;
 
 import com.google.gson.JsonObject;
 
+import io.openems.channel.ChannelFactory;
+import io.openems.channel.ChannelWorker;
+import io.openems.config.ConfigUtil;
+import io.openems.config.exception.ConfigException;
+
 public class ModbusTcpConnectionFactory extends ChannelFactory {
 
 	@Override
-	public ChannelWorker getChannelWorker(String name, JsonObject channel) throws Exception {
-		return new ModbusChannelWorker(name, new ModbusTcpConnection(//
-				InetAddress.getByName(channel.get("inetAddress").getAsString()), //
-				channel.get("cycle").getAsInt()));
+	public ChannelWorker getChannelWorker(String name, JsonObject channel) throws ConfigException {
+		InetAddress inetAddress = ConfigUtil.getAsInetAddress(channel, "inetAddress");
+		int cycle = ConfigUtil.getAsInt(channel, "cycle");
+		return new ModbusChannelWorker(name,
+				new ModbusTcpConnection(//
+						inetAddress, //
+						cycle));
 	}
 
 	@Override

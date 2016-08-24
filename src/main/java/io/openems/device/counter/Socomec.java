@@ -17,6 +17,14 @@
  */
 package io.openems.device.counter;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.openmuc.j60870.IeBinaryCounterReading;
+import org.openmuc.j60870.IeTime56;
+import org.openmuc.j60870.InformationElement;
+
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
@@ -24,22 +32,9 @@ import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.openmuc.j60870.IeBinaryCounterReading;
-import org.openmuc.j60870.IeTime56;
-import org.openmuc.j60870.InformationElement;
-import org.xml.sax.SAXException;
-
 public class Socomec extends Counter {
 
-	public Socomec(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
-			SAXException {
+	public Socomec(String name, String channel, int unitid) {
 		super(name, channel, unitid);
 	}
 
@@ -51,21 +46,24 @@ public class Socomec extends Counter {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(0xc568, new ElementBuilder(0xc568, name)
-				.name(CounterProtocol.ActivePower).multiplier(10).signed(true).length(ElementLength.DOUBLEWORD)
-				.unit("W").build(), new ElementBuilder(0xc56a, name).name(CounterProtocol.ReactivePower).multiplier(10)
-				.signed(true).length(ElementLength.DOUBLEWORD).unit("VA").build(), new ElementBuilder(0xc56c, name)
-				.name(CounterProtocol.ApparentPower).multiplier(10).length(ElementLength.DOUBLEWORD).unit("Var")
-				.build()));
-		protocol.addElementRange(new ElementRange(0xc652, new ElementBuilder(0xc652, name)
-				.name(CounterProtocol.ActivePositiveEnergy).length(ElementLength.DOUBLEWORD).unit("kWh").build(),
+		protocol.addElementRange(new ElementRange(0xc568,
+				new ElementBuilder(0xc568, name).name(CounterProtocol.ActivePower).multiplier(10).signed(true)
+						.length(ElementLength.DOUBLEWORD).unit("W").build(),
+				new ElementBuilder(0xc56a, name).name(CounterProtocol.ReactivePower).multiplier(10).signed(true)
+						.length(ElementLength.DOUBLEWORD).unit("VA").build(),
+				new ElementBuilder(0xc56c, name).name(CounterProtocol.ApparentPower).multiplier(10)
+						.length(ElementLength.DOUBLEWORD).unit("Var").build()));
+		protocol.addElementRange(new ElementRange(0xc652,
+				new ElementBuilder(0xc652, name).name(CounterProtocol.ActivePositiveEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kWh").build(),
 				new ElementBuilder(0xc654, name).name(CounterProtocol.ReactivePositiveEnergy)
-						.length(ElementLength.DOUBLEWORD).unit("kvarh").build(), new ElementBuilder(0xc656, name)
-						.name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD).unit("kVAh").build(),
+						.length(ElementLength.DOUBLEWORD).unit("kvarh").build(),
+				new ElementBuilder(0xc656, name).name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD)
+						.unit("kVAh").build(),
 				new ElementBuilder(0xc658, name).name(CounterProtocol.ActiveNegativeEnergy)
-						.length(ElementLength.DOUBLEWORD).unit("kWh").build(), new ElementBuilder(0xc65a, name)
-						.name(CounterProtocol.ReactiveNegativeEnergy).length(ElementLength.DOUBLEWORD).unit("kvarh")
-						.build()));
+						.length(ElementLength.DOUBLEWORD).unit("kWh").build(),
+				new ElementBuilder(0xc65a, name).name(CounterProtocol.ReactiveNegativeEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kvarh").build()));
 		return protocol;
 	}
 
@@ -113,23 +111,22 @@ public class Socomec extends Counter {
 
 	@Override
 	public InformationElement[][] getIecValues() {
-		return new InformationElement[][] {
-				{
-						new IeBinaryCounterReading(
-								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name()))
-										.getValue().toInteger(), 0, false, false, false),
-						new IeTime56(System.currentTimeMillis()) },
-				{
-						new IeBinaryCounterReading(
-								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ReactivePower.name()))
-										.getValue().toInteger(), 0, false, false, false),
-						new IeTime56(System.currentTimeMillis()) },
-		// {
-		// new IeBinaryCounterReading(
-		// ((UnsignedIntegerDoublewordElement)
-		// getElement(CounterProtocol.ApparentPower.name()))
-		// .getValue().toLong(), 0, false, false, false),
-		// new IeTime56(System.currentTimeMillis()) },
+		return new InformationElement[][] { { new IeBinaryCounterReading(
+				((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name())).getValue()
+						.toInteger(),
+				0, false, false, false),
+				new IeTime56(
+						System.currentTimeMillis()) },
+				{ new IeBinaryCounterReading(
+						((SignedIntegerDoublewordElement) getElement(CounterProtocol.ReactivePower.name())).getValue()
+								.toInteger(),
+						0, false, false, false), new IeTime56(System.currentTimeMillis()) },
+				// {
+				// new IeBinaryCounterReading(
+				// ((UnsignedIntegerDoublewordElement)
+				// getElement(CounterProtocol.ApparentPower.name()))
+				// .getValue().toLong(), 0, false, false, false),
+				// new IeTime56(System.currentTimeMillis()) },
 
 		};
 	}

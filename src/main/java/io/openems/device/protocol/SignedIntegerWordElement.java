@@ -17,16 +17,15 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.IntegerType;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
+
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
 
 public class SignedIntegerWordElement extends NumberElement<IntegerType> implements WordElement {
 	final ByteOrder byteOrder;
@@ -45,20 +44,15 @@ public class SignedIntegerWordElement extends NumberElement<IntegerType> impleme
 	}
 
 	@Override
-	protected Register[] toRegister(IntegerType value) {
+	public Register[] toRegister(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
 				.putShort(new Integer((value.toInteger() - delta) / multiplier).shortValue()).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]) };
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(IntegerType value) {
-		return new ModbusWriteRequest(this, toRegister(value));
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register[] toRegister(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return createWriteRequest(i);
+		return toRegister(i);
 	}
 }

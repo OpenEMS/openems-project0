@@ -1,12 +1,5 @@
 package io.openems.controller;
 
-import io.openems.channel.ChannelWorker;
-import io.openems.device.Device;
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-import io.openems.device.inverter.SolarLog;
-import io.openems.device.io.IO;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,13 +8,21 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import io.openems.channel.ChannelWorker;
+import io.openems.config.ConfigUtil;
+import io.openems.config.exception.ConfigException;
+import io.openems.device.Device;
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
+import io.openems.device.io.IO;
+
 public class EnBAGControllerFactory extends ControllerFactory {
 
 	@Override
 	public ControllerWorker getControllerWorker(String name, JsonObject controllerJson, Map<String, Device> devices,
-			Map<String, ChannelWorker> channelWorkers) throws Exception {
+			Map<String, ChannelWorker> channelWorkers) throws ConfigException {
 		Map<String, Ess> ess = new HashMap<>();
-		JsonArray essJsonArray = controllerJson.get("ess").getAsJsonArray();
+		JsonArray essJsonArray = ConfigUtil.getAsJsonArray(controllerJson, "ess");
 		for (JsonElement essJsonElement : essJsonArray) {
 			String essDevice = essJsonElement.getAsString();
 			Device device = devices.get(essDevice);
@@ -29,20 +30,23 @@ public class EnBAGControllerFactory extends ControllerFactory {
 				ess.put(essDevice, (Ess) device);
 			}
 		}
-		Counter counter = (Counter) devices.get(controllerJson.get("gridCounter").getAsString());
-		boolean chargeFromAc = controllerJson.get("chargeFromAc").getAsBoolean();
+		String channel = ConfigUtil.getAsString(controllerJson, "gridCounter");
+		Counter counter = (Counter) devices.get(channel);
+		boolean chargeFromAc = ConfigUtil.getAsBoolean(controllerJson, "chargeFromAc");
 
 		Gson gson = new Gson();
 		Map<String, String> essOffGridSwitches = new HashMap<String, String>();
-		essOffGridSwitches = gson.fromJson(controllerJson.get("essOffGridSwitches").toString(),
+		essOffGridSwitches = gson.fromJson(ConfigUtil.getAsString(controllerJson, "essOffGridSwitches"),
 				essOffGridSwitches.getClass());
 
-		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess,
-				chargeFromAc, controllerJson.get("maxGridFeedPower").getAsInt(), controllerJson.get("pvOnGridSwitch")
-						.getAsString(), controllerJson.get("pvOffGridSwitch").getAsString(), essOffGridSwitches,
-				controllerJson.get("primaryEss").getAsString(),
-				(IO) devices.get(controllerJson.get("io").getAsString()), (SolarLog) devices.get(controllerJson.get(
-						"solarlog").getAsString())));
+		int maxGridFeedPower = ConfigUtil.getAsInt(controllerJson, "maxGridFeedPower");
+		String pvOnGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOnGridSwitch");
+		String pvOffGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOffGridSwitch");
+		String primaryEss = ConfigUtil.getAsString(controllerJson, "primaryEss");
+		IO io = (IO) devices.get(ConfigUtil.getAsString(controllerJson, "io"));
+
+		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc,
+				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io));
 	}
 
 	@Override

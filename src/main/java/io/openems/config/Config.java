@@ -17,21 +17,10 @@
  */
 package io.openems.config;
 
-import io.openems.channel.ChannelFactory;
-import io.openems.channel.ChannelWorker;
-import io.openems.channel.modbus.ModbusChannelWorker;
-import io.openems.controller.ControllerFactory;
-import io.openems.controller.ControllerWorker;
-import io.openems.device.Device;
-import io.openems.device.DeviceFactory;
-import io.openems.monitoring.MonitorFactory;
-import io.openems.monitoring.MonitoringWorker;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +36,18 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+
+import io.openems.channel.ChannelFactory;
+import io.openems.channel.ChannelWorker;
+import io.openems.channel.modbus.ModbusChannelWorker;
+import io.openems.config.exception.ConfigException;
+import io.openems.config.exception.ConfigInstantiateException;
+import io.openems.controller.ControllerFactory;
+import io.openems.controller.ControllerWorker;
+import io.openems.device.Device;
+import io.openems.device.DeviceFactory;
+import io.openems.monitoring.MonitorFactory;
+import io.openems.monitoring.MonitoringWorker;
 
 public class Config {
 	private final static Logger log = LoggerFactory.getLogger(Config.class);
@@ -64,18 +65,18 @@ public class Config {
 	private HashMap<String, ControllerFactory> controllerFactories = new HashMap<>();
 	private HashMap<String, MonitorFactory> monitorFactories = new HashMap<>();
 
-	public Config(JsonObject obj) throws Exception {
+	public Config(JsonObject obj) throws ConfigException {
 		if (obj.has("channel")) {
-			readChannelsFromJson(obj.get("channel").getAsJsonObject());
+			readChannelsFromJson(ConfigUtil.getAsJsonObject(obj, "channel"));
 		}
 		if (obj.has("device")) {
-			readDevicesFromJson(obj.get("device").getAsJsonObject());
+			readDevicesFromJson(ConfigUtil.getAsJsonObject(obj, "device"));
 		}
 		if (obj.has("controller")) {
-			readControllersFromJson(obj.get("controller").getAsJsonObject());
+			readControllersFromJson(ConfigUtil.getAsJsonObject(obj, "controller"));
 		}
 		if (obj.has("monitor")) {
-			readMonitorFromJson(obj.get("monitor").getAsJsonObject());
+			readMonitorFromJson(ConfigUtil.getAsJsonObject(obj, "monitor"));
 		}
 	}
 
@@ -120,21 +121,28 @@ public class Config {
 	 * }
 	 * </pre>
 	 * 
-	 * @throws Exception
+	 * @throws ConfigException
 	 */
-	private void readChannelsFromJson(JsonElement jsonElement) throws Exception {
+	private void readChannelsFromJson(JsonElement jsonElement) throws ConfigException {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject channel = entry.getValue().getAsJsonObject();
 				ChannelFactory cf = null;
-				if (channelFactories.containsKey(channel.get("type").getAsString())) {
-					cf = channelFactories.get(channel.get("type").getAsString());
+				String type = ConfigUtil.getAsString(channel, "type");
+				if (channelFactories.containsKey(type)) {
+					cf = channelFactories.get(type);
 				} else {
-					Class<ChannelFactory> factory = (Class<ChannelFactory>) Class.forName(channel.get("type")
-							.getAsString() + "Factory");
-					cf = factory.newInstance();
-					channelFactories.put(channel.get("type").getAsString(), cf);
+					String factoryClass = type + "Factory";
+					try {
+						@SuppressWarnings("unchecked")
+						Class<ChannelFactory> factory = (Class<ChannelFactory>) Class.forName(factoryClass);
+						cf = factory.newInstance();
+						channelFactories.put(type, cf);
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+							| ClassCastException e) {
+						throw new ConfigInstantiateException(factoryClass, jsonElement);
+					}
 				}
 				channels.put(entry.getKey(), cf.getChannelWorker(entry.getKey(), channel));
 			}
@@ -146,21 +154,28 @@ public class Config {
 	 * monitor into a hashmap
 	 * 
 	 * @param jsonElement
-	 * @throws Exception
+	 * @throws ConfigException
 	 */
-	private void readMonitorFromJson(JsonObject jsonElement) throws Exception {
+	private void readMonitorFromJson(JsonObject jsonElement) throws ConfigException {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject monitor = entry.getValue().getAsJsonObject();
 				MonitorFactory mf = null;
-				if (monitorFactories.containsKey(monitor.get("type").getAsString())) {
-					mf = monitorFactories.get(monitor.get("type").getAsString());
+				String type = ConfigUtil.getAsString(monitor, "type");
+				if (monitorFactories.containsKey(type)) {
+					mf = monitorFactories.get(type);
 				} else {
-					Class<MonitorFactory> factory = (Class<MonitorFactory>) Class.forName(monitor.get("type")
-							.getAsString() + "Factory");
-					mf = factory.newInstance();
-					monitorFactories.put(monitor.get("type").getAsString(), mf);
+					String factoryClass = type + "Factory";
+					try {
+						@SuppressWarnings("unchecked")
+						Class<MonitorFactory> factory = (Class<MonitorFactory>) Class.forName(factoryClass);
+						mf = factory.newInstance();
+						monitorFactories.put(type, mf);
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+							| ClassCastException e) {
+						throw new ConfigInstantiateException(factoryClass, jsonElement);
+					}
 				}
 				monitors.put(entry.getKey(), mf.getMonitoringWorker(entry.getKey(), monitor, devices));
 			}
@@ -188,21 +203,28 @@ public class Config {
 	 * },
 	 * </pre>
 	 * 
-	 * @throws Exception
+	 * @throws ConfigException
 	 */
-	private void readDevicesFromJson(JsonElement jsonElement) throws Exception {
+	private void readDevicesFromJson(JsonElement jsonElement) throws ConfigException {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject device = entry.getValue().getAsJsonObject();
 				DeviceFactory df = null;
-				if (deviceFactories.containsKey(device.get("type").getAsString())) {
-					df = deviceFactories.get(device.get("type").getAsString());
+				String type = ConfigUtil.getAsString(device, "type");
+				if (deviceFactories.containsKey(type)) {
+					df = deviceFactories.get(type);
 				} else {
-					Class<DeviceFactory> factory = (Class<DeviceFactory>) Class.forName(device.get("type")
-							.getAsString() + "Factory");
-					df = factory.newInstance();
-					deviceFactories.put(device.get("type").getAsString(), df);
+					String factoryClass = type + "Factory";
+					try {
+						@SuppressWarnings("unchecked")
+						Class<DeviceFactory> factory = (Class<DeviceFactory>) Class.forName(factoryClass);
+						df = factory.newInstance();
+						deviceFactories.put(type, df);
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+							| ClassCastException e) {
+						throw new ConfigInstantiateException(factoryClass, jsonElement);
+					}
 				}
 				devices.put(entry.getKey(), df.getDevice(entry.getKey(), device, channels));
 			}
@@ -233,21 +255,30 @@ public class Config {
 	 * }
 	 * </pre>
 	 * 
+	 * @throws ConfigException
+	 * 
 	 * @throws Exception
 	 */
-	private void readControllersFromJson(JsonElement jsonElement) throws Exception {
+	private void readControllersFromJson(JsonElement jsonElement) throws ConfigException {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
 				JsonObject controller = entry.getValue().getAsJsonObject();
 				ControllerFactory cf = null;
-				if (controllerFactories.containsKey(controller.get("type").getAsString())) {
-					cf = controllerFactories.get(controller.get("type").getAsString());
+				String type = ConfigUtil.getAsString(controller, "type");
+				if (controllerFactories.containsKey(type)) {
+					cf = controllerFactories.get(type);
 				} else {
-					Class<ControllerFactory> factory = (Class<ControllerFactory>) Class.forName(controller.get("type")
-							.getAsString() + "Factory");
-					cf = factory.newInstance();
-					controllerFactories.put(controller.get("type").getAsString(), cf);
+					String factoryClass = type + "Factory";
+					try {
+						@SuppressWarnings("unchecked")
+						Class<ControllerFactory> factory = (Class<ControllerFactory>) Class.forName(factoryClass);
+						cf = factory.newInstance();
+						controllerFactories.put(type, cf);
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+							| ClassCastException e) {
+						throw new ConfigInstantiateException(factoryClass, jsonElement);
+					}
 				}
 				controllers.put(entry.getKey(), cf.getControllerWorker(entry.getKey(), controller, devices, channels));
 			}
@@ -257,7 +288,7 @@ public class Config {
 	/**
 	 * returns {@link ModbusChannelWorker}s per channel:
 	 */
-	public HashMap<String, ChannelWorker> getChannelWorkers() throws UnknownHostException {
+	public HashMap<String, ChannelWorker> getChannelWorkers() {
 		return channels;
 	}
 
@@ -268,7 +299,7 @@ public class Config {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public HashMap<String, Device> getDevices() throws IOException, ParserConfigurationException, SAXException {
+	public HashMap<String, Device> getDevices() {
 		return devices;
 	}
 
@@ -278,7 +309,8 @@ public class Config {
 	 * @param devices
 	 * @param channelWorkers
 	 */
-	public void registerDevicesToChannelWorkers(Map<String, Device> devices, Map<String, ChannelWorker> channelWorkers) {
+	public void registerDevicesToChannelWorkers(Map<String, Device> devices,
+			Map<String, ChannelWorker> channelWorkers) {
 		for (Device device : devices.values()) {
 			channelWorkers.get(device.getChannel()).registerDevice(device);
 		}
@@ -335,8 +367,8 @@ public class Config {
 	public Map<String, JsonObject> getJsonCannels() {
 		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
 		for (Map.Entry<String, ChannelWorker> entry : channels.entrySet()) {
-			ChannelFactory cf = channelFactories.get(((ModbusChannelWorker) entry.getValue()).getModbusConnection()
-					.getClass().getName());
+			ChannelFactory cf = channelFactories
+					.get(((ModbusChannelWorker) entry.getValue()).getModbusConnection().getClass().getName());
 			JsonObject obj = cf.getConfig(entry.getValue());
 			jsonDevices.put(entry.getKey(), obj);
 		}

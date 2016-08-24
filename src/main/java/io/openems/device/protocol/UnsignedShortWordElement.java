@@ -17,7 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.type.IntegerType;
 
@@ -28,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
-import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
 public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement {
@@ -50,20 +48,13 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 	}
 
 	@Override
-	protected Register[] toRegister(IntegerType value) {
-		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
-				.putShort((short) new Integer((value.toInteger() - delta) / multiplier).intValue()).array();
-		return new Register[] { new SimpleRegister(b[0], b[1]) };
+	public Register[] toRegister(IntegerType value) {
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(IntegerType value) {
-		return new ModbusWriteRequest(this, toRegister(value));
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register[] toRegister(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return createWriteRequest(i);
+		return toRegister(i);
 	}
 }

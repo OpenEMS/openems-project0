@@ -19,16 +19,9 @@ package io.openems.device.counter;
 
 import io.openems.channel.modbus.ModbusDevice;
 
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
 public abstract class Counter extends ModbusDevice {
 
-	public Counter(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
-			SAXException {
+	public Counter(String name, String channel, int unitid) {
 		super(name, channel, unitid);
 	}
 

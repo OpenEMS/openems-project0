@@ -19,12 +19,6 @@ package io.openems.device.ess;
 
 import io.openems.channel.modbus.WritableModbusDevice;
 
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
 public abstract class Ess extends WritableModbusDevice {
 
 	protected int minSoc = 10;
@@ -34,8 +28,7 @@ public abstract class Ess extends WritableModbusDevice {
 	private int lowSocCounter = HYSTERESIS;
 	private int lastSoc = 100;
 
-	public Ess(String name, String modbusid, int unitid, int minSoc) throws IOException, ParserConfigurationException,
-			SAXException {
+	public Ess(String name, String modbusid, int unitid, int minSoc) {
 		super(name, modbusid, unitid);
 		this.minSoc = minSoc;
 	}

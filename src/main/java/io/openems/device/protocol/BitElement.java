@@ -17,15 +17,14 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.BooleanType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
+
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.BooleanType;
 
 /**
  * This represents an Element that is only one bit long.
@@ -54,17 +53,12 @@ public class BitElement extends ModbusElement<BooleanType> implements WordElemen
 	}
 
 	@Override
-	protected Register[] toRegister(BooleanType value) {
+	public Register[] toRegister(BooleanType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(BooleanType value) {
-		throw new UnsupportedOperationException("not implemented");
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register[] toRegister(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 }

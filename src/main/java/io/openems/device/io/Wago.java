@@ -1,11 +1,5 @@
 package io.openems.device.io;
 
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -29,6 +23,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import io.openems.config.exception.ConfigException;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+
 public class Wago extends IO {
 
 	private final static Logger log = LoggerFactory.getLogger(IO.class);
@@ -39,8 +40,7 @@ public class Wago extends IO {
 	private List<String> mainElements;
 	private HashMap<String, String> bitElementMapping;
 
-	public Wago(String name, String channel, int unitid, InetAddress ip) throws IOException,
-			ParserConfigurationException, SAXException {
+	public Wago(String name, String channel, int unitid, InetAddress ip) {
 		super(name, channel, unitid);
 		this.ip = ip;
 	}
@@ -55,7 +55,7 @@ public class Wago extends IO {
 	}
 
 	@Override
-	protected ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException {
+	protected ModbusProtocol getProtocol() {
 		writeElements = new ArrayList<String>();
 		mainElements = new ArrayList<String>();
 		bitElementMapping = new HashMap<String, String>();
@@ -64,14 +64,20 @@ public class Wago extends IO {
 		String username = "admin";
 		String password = "wago";
 		int ftpPort = 21;
-		URL url = new URL("ftp://" + username + ":" + password + "@" + ip.getHostAddress() + ":" + ftpPort
-				+ "/etc/EA-config.xml;type=i");
-		URLConnection urlc = url.openConnection();
-		InputStream is = urlc.getInputStream();
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(is);
-		doc.getDocumentElement().normalize();
+		URL url;
+		Document doc;
+		try {
+			url = new URL("ftp://" + username + ":" + password + "@" + ip.getHostAddress() + ":" + ftpPort
+					+ "/etc/EA-config.xml;type=i");
+			URLConnection urlc = url.openConnection();
+			InputStream is = urlc.getInputStream();
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(is);
+			doc.getDocumentElement().normalize();
+		} catch (IOException | SAXException | ParserConfigurationException e) {
+			throw new ConfigException(e.getMessage());
+		}
 
 		Node wagoNode = doc.getElementsByTagName("WAGO").item(0);
 		if (wagoNode != null) {

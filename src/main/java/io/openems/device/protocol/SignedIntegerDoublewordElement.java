@@ -17,7 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
 import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.element.type.IntegerType;
 
@@ -53,19 +52,14 @@ public class SignedIntegerDoublewordElement extends NumberElement<IntegerType> i
 	}
 
 	@Override
-	protected Register[] toRegister(IntegerType value) {
+	public Register[] toRegister(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(4).order(byteOrder).putInt((value.toInteger() - delta) / multiplier).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(IntegerType value) {
-		return new ModbusWriteRequest(this, toRegister(value));
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register[] toRegister(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return createWriteRequest(i);
+		return toRegister(i);
 	}
 }

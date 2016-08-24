@@ -17,8 +17,8 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusElement;
+import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.device.protocol.interfaces.WordElement;
