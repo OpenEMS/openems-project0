@@ -81,6 +81,9 @@ public class SolarLog extends WritableModbusDevice {
 		protocol.addElementRange(new ElementRange(10404, new ElementBuilder(10404, name)
 				.name(InverterProtocol.WatchDog.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
 				.build()));
+		protocol.addElementRange(new ElementRange(10900, new ElementBuilder(10900, name).name(
+				InverterProtocol.Status.name()).build(), new ElementBuilder(10901, name)
+				.name(InverterProtocol.GetLimit.name()).unit("%").build()));
 		return protocol;
 	}
 
@@ -123,6 +126,11 @@ public class SolarLog extends WritableModbusDevice {
 		addToWriteQueue(setLimit.createWriteRequest(new IntegerType(limitPercent)),
 				placeholder.createWriteRequest(new LongType(0)),
 				watchdog.createWriteRequest(new LongType(System.currentTimeMillis())));
+	}
+
+	public int getPVLimit() {
+		return totalPower / 100
+				* ((UnsignedShortWordElement) getElement(InverterProtocol.GetLimit.name())).getValue().toInteger();
 	}
 
 }

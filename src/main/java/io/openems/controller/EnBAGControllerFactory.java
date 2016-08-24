@@ -4,6 +4,7 @@ import io.openems.channel.ChannelWorker;
 import io.openems.device.Device;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
+import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 
 import java.util.HashMap;
@@ -40,7 +41,8 @@ public class EnBAGControllerFactory extends ControllerFactory {
 				chargeFromAc, controllerJson.get("maxGridFeedPower").getAsInt(), controllerJson.get("pvOnGridSwitch")
 						.getAsString(), controllerJson.get("pvOffGridSwitch").getAsString(), essOffGridSwitches,
 				controllerJson.get("primaryEss").getAsString(),
-				(IO) devices.get(controllerJson.get("io").getAsString())));
+				(IO) devices.get(controllerJson.get("io").getAsString()), (SolarLog) devices.get(controllerJson.get(
+						"solarlog").getAsString())));
 	}
 
 	@Override
