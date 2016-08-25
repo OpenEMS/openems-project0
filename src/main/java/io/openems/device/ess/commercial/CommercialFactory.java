@@ -1,4 +1,4 @@
-package io.openems.device.ess;
+package io.openems.device.ess.commercial;
 
 import java.util.HashMap;
 

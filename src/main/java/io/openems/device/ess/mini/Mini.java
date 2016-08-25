@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.openems.device.ess;
+package io.openems.device.ess.mini;
 
 import java.util.Set;
 
@@ -23,11 +23,16 @@ import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
+import io.openems.device.ess.Ess;
+import io.openems.device.ess.EssProtocol;
 import io.openems.device.ess.EssProtocol.GridStates;
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedShortWordElement;
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
 
 public class Mini extends Ess {
 	@SuppressWarnings("unused")
@@ -45,13 +50,22 @@ public class Mini extends Ess {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(4812,
+		protocol.addElementRange(new ElementRange(4812, //
 				new ElementBuilder(4812, name).name(EssProtocol.BatteryStringSoc).unit("%").build()));
+		protocol.addElementRange(new ElementRange(30157, //
+				new ElementBuilder(30157, name).name(MiniProtocol.ParameterSetting).build()));
+		protocol.addElementRange(new ElementRange(30558, //
+				new ElementBuilder(30558, name).name(MiniProtocol.SetParameterSetting).build()));
 		return protocol;
 	}
 
 	public UnsignedShortWordElement getSoc() {
 		return (UnsignedShortWordElement) getElement(EssProtocol.BatteryStringSoc.name());
+	}
+
+	@SuppressWarnings("unchecked")
+	private WordElement<IntegerType> getSetParameterSetting() {
+		return (WordElement<IntegerType>) getElement(MiniProtocol.SetParameterSetting.name());
 	}
 
 	@Override
@@ -130,5 +144,15 @@ public class Mini extends Ess {
 	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void startParameterSettingMode() {
+		int START = 1;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetParameterSetting(), START));
+	}
+
+	public void stopParameterSettingMode() {
+		int STOP = 0;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetParameterSetting(), STOP));
 	}
 }
