@@ -10,7 +10,7 @@ import org.restlet.service.ConverterService;
 
 import io.openems.config.exception.ConfigException;
 
-public class ExceptionConverterService extends ConverterService {
+public class RestConverterService extends ConverterService {
 
 	@Override
 	public Representation toRepresentation(Object source, Variant target, Resource resource) throws IOException {
