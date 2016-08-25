@@ -51,13 +51,13 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> im
 	}
 
 	@Override
-	public Register[] toRegister(LongType value) {
+	public Register[] toRegisters(LongType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
 		LongType l = new LongType(value.getAsLong());
-		return toRegister(l);
+		return toRegisters(l);
 	}
 }

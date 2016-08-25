@@ -28,12 +28,12 @@ public class NoneElement extends ModbusElement<NoneType> implements PlaceholderE
 	}
 
 	@Override
-	public Register[] toRegister(NoneType value) {
+	public Register[] toRegisters(NoneType value) {
 		return null;
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
 		return null;
 	}
 }

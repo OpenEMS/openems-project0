@@ -17,17 +17,13 @@
  */
 package io.openems.channel.modbus;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ghgande.j2mod.modbus.procimg.Register;
-
-import io.openems.device.protocol.ModbusElement;
+import io.openems.channel.modbus.write.ModbusWriteRequest;
 import io.openems.device.protocol.ModbusProtocol;
 
 public abstract class WritableModbusDevice extends ModbusDevice {
@@ -35,8 +31,8 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	private final static Logger log = LoggerFactory.getLogger(WritableModbusDevice.class);
 
 	private ModbusProtocol writeProtocol;
-	protected final Map<ModbusElement<?>, Register[]> writeRegisterQueue = new HashMap<ModbusElement<?>, Register[]>();
-	protected final Map<ModbusElement<?>, Boolean> writeBooleanQueue = new HashMap<ModbusElement<?>, Boolean>();
+	// Queue of ModbusWriteRequests, naturally ordered by address
+	protected final Set<ModbusWriteRequest> writeRequestQueue = new TreeSet<>();
 
 	public WritableModbusDevice(String name, String channel, int unitid) {
 		super(name, channel, unitid);
@@ -56,47 +52,15 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 		}
 	}
 
-	public void addToWriteQueue(ModbusElement<?> element, Register[] registers) {
-		writeRegisterQueue.put(element, registers);
-	}
-
-	public void addToWriteQueue(String id, Register[] registers) {
-		ModbusElement<?> element = writeProtocol.getElement(id);
-		if (element != null) {
-			writeRegisterQueue.put(element, registers);
-		}
-	}
-
-	public void addToWriteQueue(ModbusElement<?> element, Boolean value) {
-		writeBooleanQueue.put(element, value);
+	public void addToWriteRequestQueue(ModbusWriteRequest req) {
+		writeRequestQueue.add(req);
 	}
 
 	public abstract Set<String> getWriteElements();
 
 	public void executeModbusWrite(ModbusConnection modbusConnection) throws Exception {
-		// Write registers (Words)
-		for (Entry<ModbusElement<?>, Register[]> entry : writeRegisterQueue.entrySet()) {
-			// TODO: combine writes to one write
-			if (entry.getValue().length > 1) {
-				/*
-				 * log.info("Writing Multiple " + entry.getKey().getName() +
-				 * ", 0x" + Integer.toHexString(entry.getKey().getAddress()) +
-				 * ", " + entry.getValue()[0].getValue() + ", " +
-				 * entry.getValue()[1].getValue());
-				 */
-				modbusConnection.write(this.unitid, entry.getKey().getAddress(), entry.getValue());
-			} else {
-				/*
-				 * log.info("Writing Single " + entry.getKey().getName() +
-				 * ", 0x" + Integer.toHexString(entry.getKey().getAddress()) +
-				 * ", " + entry.getValue()[0].getValue());
-				 */
-				modbusConnection.write(this.unitid, entry.getKey().getAddress(), entry.getValue()[0]);
-			}
-		}
-		// Write booleans (Coils)
-		for (Entry<ModbusElement<?>, Boolean> entry : writeBooleanQueue.entrySet()) {
-			modbusConnection.write(this.unitid, entry.getKey().getAddress(), entry.getValue());
+		for (ModbusWriteRequest req : writeRequestQueue) {
+			req.write(modbusConnection, this.unitid);
 		}
 	}
 

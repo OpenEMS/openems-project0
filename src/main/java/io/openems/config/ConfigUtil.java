@@ -13,7 +13,11 @@ import io.openems.config.exception.ConfigNotFoundException;
 import io.openems.config.exception.ConfigParseException;
 
 public class ConfigUtil {
-	private static JsonElement getJsonElement(JsonObject jsonObject, String memberName) throws ConfigException {
+	public static JsonElement getAsJsonElement(JsonElement jsonElement, String memberName) throws ConfigException {
+		return getAsJsonElement(getAsJsonObject(jsonElement, memberName), memberName);
+	}
+
+	public static JsonElement getAsJsonElement(JsonObject jsonObject, String memberName) throws ConfigException {
 		if (jsonObject.has(memberName)) {
 			return jsonObject.get(memberName);
 		}
@@ -22,7 +26,7 @@ public class ConfigUtil {
 
 	public static String getAsString(JsonObject jsonObject, String memberName) throws ConfigException {
 		try {
-			return getJsonElement(jsonObject, memberName).getAsString();
+			return getAsJsonElement(jsonObject, memberName).getAsString();
 		} catch (ClassCastException | IllegalStateException e) {
 			throw new ConfigParseException(memberName, jsonObject);
 		}
@@ -30,15 +34,23 @@ public class ConfigUtil {
 
 	public static int getAsInt(JsonObject jsonObject, String memberName) throws ConfigException {
 		try {
-			return getJsonElement(jsonObject, memberName).getAsInt();
+			return getAsJsonElement(jsonObject, memberName).getAsInt();
 		} catch (ClassCastException | IllegalStateException e) {
 			throw new ConfigParseException(memberName, jsonObject);
 		}
 	}
 
+	public static boolean getAsBoolean(JsonElement jsonElement, String memberName) throws ConfigException {
+		try {
+			return jsonElement.getAsBoolean();
+		} catch (ClassCastException | IllegalStateException e) {
+			throw new ConfigParseException(memberName, jsonElement);
+		}
+	}
+
 	public static boolean getAsBoolean(JsonObject jsonObject, String memberName) throws ConfigException {
 		try {
-			return getJsonElement(jsonObject, memberName).getAsBoolean();
+			return getAsBoolean(getAsJsonElement(jsonObject, memberName), memberName);
 		} catch (ClassCastException | IllegalStateException e) {
 			throw new ConfigParseException(memberName, jsonObject);
 		}
@@ -46,17 +58,17 @@ public class ConfigUtil {
 
 	public static JsonArray getAsJsonArray(JsonObject jsonObject, String memberName) throws ConfigException {
 		try {
-			return getJsonElement(jsonObject, memberName).getAsJsonArray();
+			return getAsJsonElement(jsonObject, memberName).getAsJsonArray();
 		} catch (ClassCastException | IllegalStateException e) {
 			throw new ConfigParseException(memberName, jsonObject);
 		}
 	}
 
-	public static JsonObject getAsJsonObject(JsonObject jsonObject, String memberName) throws ConfigException {
+	public static JsonObject getAsJsonObject(JsonElement jsonElement, String memberName) throws ConfigException {
 		try {
-			return getJsonElement(jsonObject, memberName).getAsJsonObject();
+			return getAsJsonElement(jsonElement, memberName).getAsJsonObject();
 		} catch (ClassCastException | IllegalStateException e) {
-			throw new ConfigParseException(memberName, jsonObject);
+			throw new ConfigParseException(memberName, jsonElement);
 		}
 	}
 

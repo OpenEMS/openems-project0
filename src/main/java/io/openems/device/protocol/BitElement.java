@@ -31,7 +31,7 @@ import io.openems.element.type.BooleanType;
  * 
  * @author stefan.feilmeier
  */
-public class BitElement extends ModbusElement<BooleanType> implements WordElement {
+public class BitElement extends ModbusElement<BooleanType> implements WordElement<BooleanType> {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitElement.class);
 
@@ -53,12 +53,22 @@ public class BitElement extends ModbusElement<BooleanType> implements WordElemen
 	}
 
 	@Override
-	public Register[] toRegister(BooleanType value) {
+	public Register[] toRegisters(BooleanType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(BooleanType value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 }

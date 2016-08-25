@@ -31,7 +31,8 @@ import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.type.BooleanMapType;
 
-public class BitsElement extends ModbusElement<BooleanMapType> implements WordElement, DoublewordElement {
+public class BitsElement extends ModbusElement<BooleanMapType>
+		implements WordElement<BooleanMapType>, DoublewordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitsElement.class);
 
@@ -62,7 +63,7 @@ public class BitsElement extends ModbusElement<BooleanMapType> implements WordEl
 	}
 
 	@Override
-	public Register[] toRegister(BooleanMapType value) {
+	public Register[] toRegisters(BooleanMapType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
@@ -83,7 +84,17 @@ public class BitsElement extends ModbusElement<BooleanMapType> implements WordEl
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(BooleanMapType value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 }

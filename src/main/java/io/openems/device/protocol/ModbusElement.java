@@ -40,6 +40,10 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 		this.length = length;
 	}
 
+	public abstract Register[] toRegisters(T value);
+
+	public abstract Register[] toRegisters(JsonElement value);
+
 	public int getAddress() {
 		return address;
 	}
@@ -56,13 +60,9 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 		return elementRange;
 	}
 
-	public abstract Register[] toRegister(T value);
-
 	@Override
 	public String toString() {
 		return "Element [address=0x" + Integer.toHexString(address) + ", name=" + getName() + ", unit=" + getUnit()
 				+ ", lastUpdate=" + getLastUpdate() + ", value=" + getValue() + "]";
 	}
-
-	public abstract Register[] toRegister(JsonElement value);
 }

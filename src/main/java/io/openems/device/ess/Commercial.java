@@ -29,6 +29,7 @@ import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.ElementBuilder;
@@ -40,7 +41,6 @@ import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.SignedIntegerWordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
-import io.openems.element.type.IntegerType;
 
 public class Commercial extends Ess {
 	@SuppressWarnings("unused")
@@ -621,7 +621,7 @@ public class Commercial extends Ess {
 
 	@Override
 	public void setActivePower(int power) {
-		addToWriteQueue(getSetActivePower(), getSetActivePower().toRegister(new IntegerType(power)));
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
 	}
 
 	@Override
@@ -631,12 +631,14 @@ public class Commercial extends Ess {
 
 	@Override
 	public void start() {
-		addToWriteQueue(getSetWorkState(), getSetWorkState().toRegister(new IntegerType(64)));
+		int START = 64;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetWorkState(), START));
 	}
 
 	@Override
 	public void stop() {
-		addToWriteQueue(getSetWorkState(), getSetWorkState().toRegister(new IntegerType(4)));
+		int STOP = 4;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetWorkState(), STOP));
 	}
 
 	@Override

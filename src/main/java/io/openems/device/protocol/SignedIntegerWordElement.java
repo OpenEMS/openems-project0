@@ -27,7 +27,7 @@ import com.google.gson.JsonElement;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.type.IntegerType;
 
-public class SignedIntegerWordElement extends NumberElement<IntegerType> implements WordElement {
+public class SignedIntegerWordElement extends NumberElement<IntegerType> implements WordElement<IntegerType> {
 	final ByteOrder byteOrder;
 
 	public SignedIntegerWordElement(int address, int length, String name, int multiplier, int delta, String unit,
@@ -44,14 +44,25 @@ public class SignedIntegerWordElement extends NumberElement<IntegerType> impleme
 	}
 
 	@Override
-	public Register[] toRegister(IntegerType value) {
-		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
-				.putShort(new Integer((value.toInteger() - delta) / multiplier).shortValue()).array();
-		return new Register[] { new SimpleRegister(b[0], b[1]) };
+	public Register[] toRegisters(IntegerType value) {
+		return new Register[] { toRegister(value) };
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register toRegister(IntegerType value) {
+		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
+				.putShort(new Integer((value.toInteger() - delta) / multiplier).shortValue()).array();
+		return new SimpleRegister(b[0], b[1]);
+	}
+
+	@Override
+	public Register[] toRegisters(JsonElement value) {
+		IntegerType i = new IntegerType(value.getAsInt());
+		return toRegisters(i);
+	}
+
+	@Override
+	public Register toRegister(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
 		return toRegister(i);
 	}

@@ -18,7 +18,16 @@
 package io.openems.device.protocol.interfaces;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.google.gson.JsonElement;
 
-public interface WordElement {
+import io.openems.element.type.Type;
+
+public interface WordElement<T extends Type> {
+	public int getAddress();
+
 	public void update(Register register);
+
+	public Register toRegister(T value);
+
+	public Register toRegister(JsonElement value);
 }

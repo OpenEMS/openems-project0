@@ -23,6 +23,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
 import io.openems.config.exception.ConfigException;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
@@ -200,7 +201,7 @@ public class Wago extends IO {
 
 	@Override
 	public void writeDigitalValue(String output, boolean value) {
-		this.addToWriteQueue(getBitElement(output), value);
+		addToWriteRequestQueue(new ModbusCoilWriteRequest(getBitElement(output), value));
 	}
 
 	@Override

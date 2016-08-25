@@ -52,14 +52,14 @@ public class SignedIntegerDoublewordElement extends NumberElement<IntegerType> i
 	}
 
 	@Override
-	public Register[] toRegister(IntegerType value) {
+	public Register[] toRegisters(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(4).order(byteOrder).putInt((value.toInteger() - delta) / multiplier).array();
 		return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return toRegister(i);
+		return toRegisters(i);
 	}
 }

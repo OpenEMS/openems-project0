@@ -28,13 +28,13 @@ public class DoubleElement extends NumberElement<DoubleType> {
 	}
 
 	@Override
-	public Register[] toRegister(DoubleType value) {
+	public Register[] toRegisters(DoubleType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public Register[] toRegister(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
 		DoubleType d = new DoubleType(value.getAsDouble());
-		return toRegister(d);
+		return toRegisters(d);
 	}
 }
