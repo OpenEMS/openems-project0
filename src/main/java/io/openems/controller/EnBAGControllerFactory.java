@@ -38,7 +38,6 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		Map<String, String> essOffGridSwitches = new HashMap<String, String>();
 		essOffGridSwitches = gson.fromJson(ConfigUtil.getAsString(controllerJson, "essOffGridSwitches"),
 				essOffGridSwitches.getClass());
-
 		int maxGridFeedPower = ConfigUtil.getAsInt(controllerJson, "maxGridFeedPower");
 		String pvOnGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOnGridSwitch");
 		String pvOffGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOffGridSwitch");
@@ -51,7 +50,31 @@ public class EnBAGControllerFactory extends ControllerFactory {
 
 	@Override
 	public JsonObject getConfig(ControllerWorker worker) {
-		// TODO Auto-generated method stub
+		if (worker.getController() instanceof EnBAGController) {
+			JsonObject jo = new JsonObject();
+			EnBAGController bal = (EnBAGController) worker.getController();
+			jo.addProperty("type", bal.getClass().getName());
+			jo.addProperty("chargeFromAc", bal.isAllowChargeFromAC());
+			jo.addProperty("gridCounter", bal.getGridCounter().getName());
+			JsonArray arr = new JsonArray();
+			jo.add("ess", arr);
+			for (Map.Entry<String, Ess> ess : bal.getEssDevices().entrySet()) {
+				arr.add(ess.getKey());
+			}
+			JsonObject offGridSwitches = new JsonObject();
+			jo.add("essOffGridSwitches", offGridSwitches);
+			for (Map.Entry<String, String> value : bal.getEssOffGridSwitches().entrySet()) {
+				offGridSwitches.addProperty(value.getKey(), value.getValue());
+			}
+			jo.addProperty("maxGridFeedPower", bal.getMaxGridFeedPower());
+			jo.addProperty("pvOnGridSwitch", bal.getPvOnGridSwitch());
+			jo.addProperty("pvOffGridSwitch", bal.getPvOffGridSwitch());
+			jo.addProperty("primaryEss", bal.getPrimaryOffGridEss());
+			jo.addProperty("io", bal.getIo().getName());
+			jo.addProperty("solarLog", bal.getSolarLog().getName());
+
+			return jo;
+		}
 		return null;
 	}
 

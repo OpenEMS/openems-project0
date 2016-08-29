@@ -48,6 +48,42 @@ public class EnBAGController extends Controller {
 		this.io = io;
 	}
 
+	public Counter getGridCounter() {
+		return gridCounter;
+	}
+
+	public Map<String, Ess> getEssDevices() {
+		return essDevices;
+	}
+
+	public boolean isAllowChargeFromAC() {
+		return allowChargeFromAC;
+	}
+
+	public String getPvOnGridSwitch() {
+		return pvOnGridSwitch;
+	}
+
+	public String getPvOffGridSwitch() {
+		return pvOffGridSwitch;
+	}
+
+	public Map<String, String> getEssOffGridSwitches() {
+		return essOffGridSwitches;
+	}
+
+	public String getPrimaryOffGridEss() {
+		return primaryOffGridEss;
+	}
+
+	public IO getIo() {
+		return io;
+	}
+
+	public SolarLog getSolarLog() {
+		return solarLog;
+	}
+
 	@Override
 	public void init() {
 		for (Ess ess : essDevices.values()) {
