@@ -44,7 +44,7 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2).order(byteOrder);
 		buff.put(register.toBytes());
-		update(new IntegerType(Short.toUnsignedInt((short) (buff.getShort(0) * multiplier - delta))));
+		setValue(new IntegerType(Short.toUnsignedInt((short) (buff.getShort(0) * multiplier - delta))));
 	}
 
 	@Override

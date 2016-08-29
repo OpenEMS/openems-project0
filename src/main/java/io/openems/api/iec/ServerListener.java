@@ -1,5 +1,7 @@
 package io.openems.api.iec;
 
+import io.openems.App;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -44,6 +46,8 @@ public class ServerListener implements ServerEventListener {
 	}
 
 	public void registerElementChangedListener(Connection connection) {
-
+		for (IecControllable d : App.getConfig().getDevices().values()) {
+			// d.createChangeListeners(startAddress, connection);
+		}
 	}
 }

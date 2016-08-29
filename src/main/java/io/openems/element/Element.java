@@ -78,7 +78,7 @@ public class Element<T extends Type> {
 	 * "update" method
 	 * 
 	 */
-	protected void update(T newValue) {
+	public void setValue(T newValue) {
 		lastUpdate = DateTime.now();
 		T oldValue = this.value;
 		this.value = newValue;
