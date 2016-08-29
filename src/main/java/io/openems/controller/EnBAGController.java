@@ -3,6 +3,7 @@ package io.openems.controller;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
+import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
@@ -31,11 +32,12 @@ public class EnBAGController extends Controller {
 	private Map<String, String> essOffGridSwitches;
 	private String primaryOffGridEss;
 	private IO io;
-	private List<Ess> aviableEss;
+	private List<Ess> availableEss;
+	private SolarLog solarLog;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
-			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io) {
+			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io, SolarLog solarLog) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
@@ -46,6 +48,7 @@ public class EnBAGController extends Controller {
 		this.essOffGridSwitches = essOffGridSwitches;
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
+		this.solarLog = solarLog;
 	}
 
 	@Override
@@ -91,7 +94,8 @@ public class EnBAGController extends Controller {
 				io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
 				// Switch Pv to OnGrid
 				io.writeDigitalValue(pvOffGridSwitch, false);
-				// TODO SetSolarLog to max power
+				// SetSolarLog to max power
+				solarLog.setPVLimit(solarLog.getTotalPower());
 				// sleep 3 sec
 				try {
 					Thread.sleep(3000);
@@ -146,10 +150,11 @@ public class EnBAGController extends Controller {
 			}
 
 			// Reduce PV power
-			if (gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower) >= maxGridFeedPower) {
-				// TODO Reduce PV power
-			} else {
-				// TODO increase PV power
+			int toGridPower = gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower);
+			if (toGridPower >= maxGridFeedPower || solarLog.getPVLimit() < solarLog.getTotalPower()) {
+				// set PV power
+				int pvlimit = solarLog.getPVLimit() - (toGridPower - maxGridFeedPower);
+				solarLog.setPVLimit(pvlimit);
 			}
 			// Write new calculated ActivePower to Ess device
 			for (int i = 0; i < allEss.size(); i++) {
@@ -165,8 +170,8 @@ public class EnBAGController extends Controller {
 			if (activeEss == null) {
 				// Switch first Ess to OffGrid
 				activeEss = essDevices.get(primaryOffGridEss);
-				aviableEss = new LinkedList<>(essDevices.values());
-				aviableEss.remove(activeEss);
+				availableEss = new LinkedList<>(essDevices.values());
+				availableEss.remove(activeEss);
 				// switch primary Ess On
 				io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
 				// Switch Solar to OffGrid (OnGridSwitch is inverted)
@@ -195,8 +200,8 @@ public class EnBAGController extends Controller {
 					}
 					// switch to next Ess
 					try {
-						activeEss = aviableEss.iterator().next();
-						aviableEss.remove(activeEss);
+						activeEss = availableEss.iterator().next();
+						availableEss.remove(activeEss);
 						io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), true);
 					} catch (NoSuchElementException ex) {
 

@@ -1,5 +1,14 @@
 package io.openems.controller;
 
+import io.openems.channel.ChannelWorker;
+import io.openems.config.ConfigUtil;
+import io.openems.config.exception.ConfigException;
+import io.openems.device.Device;
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
+import io.openems.device.inverter.SolarLog;
+import io.openems.device.io.IO;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,14 +16,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import io.openems.channel.ChannelWorker;
-import io.openems.config.ConfigUtil;
-import io.openems.config.exception.ConfigException;
-import io.openems.device.Device;
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-import io.openems.device.io.IO;
 
 public class EnBAGControllerFactory extends ControllerFactory {
 
@@ -44,9 +45,11 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		String pvOffGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOffGridSwitch");
 		String primaryEss = ConfigUtil.getAsString(controllerJson, "primaryEss");
 		IO io = (IO) devices.get(ConfigUtil.getAsString(controllerJson, "io"));
+		SolarLog solarLog = (SolarLog) devices.get(ConfigUtil.getAsString(controllerJson, "solarLog"));
 
-		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc,
-				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io));
+		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess,
+				chargeFromAc, maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io,
+				solarLog));
 	}
 
 	@Override
