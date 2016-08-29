@@ -17,15 +17,11 @@
  */
 package io.openems.channel.modbus;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import io.openems.device.Device;
 import io.openems.device.protocol.BitElement;
@@ -58,7 +54,7 @@ public abstract class ModbusDevice extends Device {
 	}
 
 	@Override
-	public void init() throws IOException, ParserConfigurationException, SAXException {
+	public void init() {
 		// Initialize protocols
 		this.protocol = getProtocol();
 		Set<String> allElements = this.protocol.getElementIds();
@@ -151,7 +147,7 @@ public abstract class ModbusDevice extends Device {
 		}
 	}
 
-	protected abstract ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException;
+	protected abstract ModbusProtocol getProtocol();
 
 	@Override
 	public String toString() {

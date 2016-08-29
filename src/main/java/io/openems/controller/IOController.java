@@ -1,22 +1,16 @@
 package io.openems.controller;
 
+import java.util.HashMap;
+
 import io.openems.App;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 
-import java.io.IOException;
-import java.util.HashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
 public class IOController extends Controller {
 
 	private final HashMap<String, IO> io;
 	private SolarLog sl;
-	private long count = 0;
 
 	public IOController(String name, HashMap<String, IO> io) {
 		super(name);
@@ -25,19 +19,15 @@ public class IOController extends Controller {
 
 	@Override
 	public void init() {
-		try {
-			sl = (SolarLog) App.getConfig().getDevices().get("sl0");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		sl.setPVLimit(500);
+		sl = (SolarLog) App.getConfig().getDevices().get("sl0");
+		// UnsignedShortWordElement setLimitType = (UnsignedShortWordElement)
+		// sl.getElement("SetLimitType");
+		// sl.addToWriteQueue(setLimitType, setLimitType.toRegister(new
+		// IntegerType(2)));
+		// UnsignedShortWordElement setLimit = (UnsignedShortWordElement)
+		// sl.getElement("SetLimit");
+		// sl.addToWriteQueue(setLimit, setLimit.toRegister(new
+		// IntegerType(30)));
 	}
 
 	@Override
@@ -56,6 +46,7 @@ public class IOController extends Controller {
 		System.out.print(pac.readable());
 		UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl.getElement("DailyYield");
 		System.out.println("\t" + dailyYield.readable());
+
 	}
 
 	public HashMap<String, IO> getIo() {

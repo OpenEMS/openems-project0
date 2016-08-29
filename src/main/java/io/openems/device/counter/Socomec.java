@@ -25,23 +25,18 @@ import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 import io.openems.element.ElementOnChangeListener;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
 import org.openmuc.j60870.InformationObject;
-import org.xml.sax.SAXException;
 
 public class Socomec extends Counter {
 
-	public Socomec(String name, String channel, int unitid) throws IOException, ParserConfigurationException,
-			SAXException {
+	public Socomec(String name, String channel, int unitid) {
 		super(name, channel, unitid);
 	}
 

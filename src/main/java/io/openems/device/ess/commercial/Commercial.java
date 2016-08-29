@@ -15,10 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.openems.device.ess;
+package io.openems.device.ess.commercial;
 
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.api.iec.IecValueParameter;
+import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
+import io.openems.device.ess.Ess;
+import io.openems.device.ess.EssProtocol;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.ElementBuilder;
@@ -34,16 +37,12 @@ import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
 import io.openems.element.Element;
 import io.openems.element.ElementOnChangeListener;
-import io.openems.element.type.IntegerType;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoublePointWithQuality;
@@ -55,7 +54,6 @@ import org.openmuc.j60870.InformationElement;
 import org.openmuc.j60870.InformationObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 public class Commercial extends Ess {
 	@SuppressWarnings("unused")
@@ -86,8 +84,7 @@ public class Commercial extends Ess {
 		// Message Elements
 	}
 
-	public Commercial(String name, String channel, int unitid, int minSoc) throws IOException,
-			ParserConfigurationException, SAXException {
+	public Commercial(String name, String channel, int unitid, int minSoc) {
 		super(name, channel, unitid, minSoc);
 	}
 
@@ -153,15 +150,15 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x0108, name).name(EssProtocol.ProtocolVersion).build(), //
 				new ElementBuilder(0x0109, name).name(EssProtocol.SystemManufacturer).build(), //
 				new ElementBuilder(0x010A, name).name(EssProtocol.SystemType).build()));
-		protocol.addElementRange(new ElementRange(0x0110,//
+		protocol.addElementRange(new ElementRange(0x0110, //
 				new ElementBuilder(0x0110, name)//
 						.bit(new BitElement(2, EssProtocol.Information.EmergencyStop.name()))//
-						.bit(new BitElement(6, EssProtocol.Information.ManualStop.name())).build(),//
+						.bit(new BitElement(6, EssProtocol.Information.ManualStop.name())).build(), //
 				new ElementBuilder(0x0111, name)//
 						.bit(new BitElement(3, EssProtocol.Information.TransformertPH1TempSensInvalidation.name()))//
 						.bit(new BitElement(12, EssProtocol.Information.SDCardInvalidation.name())).build()));
 		protocol.addElementRange(new ElementRange(
-				0x0125,//
+				0x0125, //
 				new ElementBuilder(0x0125, name)//
 						.bit(new BitElement(0, EssProtocol.Information.InverterCommunicationAbnormity.name()))//
 						.bit(new BitElement(1, EssProtocol.Information.BatteryCommunicationAbnormity.name()))//
@@ -171,14 +168,14 @@ public class Commercial extends Ess {
 						//
 						.bit(new BitElement(3, EssProtocol.Information.TransformerSevereOvertemperature.name()))
 						.build()));
-		protocol.addElementRange(new ElementRange(0x0150,//
+		protocol.addElementRange(new ElementRange(0x0150, //
 				new ElementBuilder(0x0150, name).name(EssProtocol.SwitchStates) //
 						.bit(new BitElement(1, EssProtocol.Switches.DCMain.name())) //
 						.bit(new BitElement(2, EssProtocol.Switches.DCPrecharge.name())) //
 						.bit(new BitElement(3, EssProtocol.Switches.ACBreaker.name())) //
 						.bit(new BitElement(4, EssProtocol.Switches.ACMain.name())) //
 						.bit(new BitElement(5, EssProtocol.Switches.ACPrecharge.name())).build()));
-		protocol.addElementRange(new ElementRange(0x0180,//
+		protocol.addElementRange(new ElementRange(0x0180, //
 				new ElementBuilder(0x0180, name)
 						.bit(new BitElement(0, EssProtocol.Abnormity.DCPrechargeContactorCloseUnsuccessfully.name()))
 						.bit(new BitElement(1, EssProtocol.Abnormity.ACPrechargeContactorCloseUnsuccessfully.name()))
@@ -193,7 +190,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(10, EssProtocol.Abnormity.DCMainContactorOpenUnsuccessFully.name()))
 						.bit(new BitElement(11, EssProtocol.Abnormity.HardwarePDPFault.name()))
 						.bit(new BitElement(12, EssProtocol.Abnormity.MasterStopSuddenly.name())).build()));
-		protocol.addElementRange(new ElementRange(0x0182,//
+		protocol.addElementRange(new ElementRange(0x0182, //
 				new ElementBuilder(0x0182, name)
 
 						//
@@ -213,7 +210,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13, EssProtocol.Abnormity.Phase1GridVoltageSamplingInvalidation.name()))
 						.bit(new BitElement(14, EssProtocol.Abnormity.Phase2GridVoltageSamplingInvalidation.name()))
 						.bit(new BitElement(15, EssProtocol.Abnormity.Phase3GridVoltageSamplingInvalidation.name()))
-						.build(),//
+						.build(), //
 				new ElementBuilder(0x0183, name)
 
 						//
@@ -263,7 +260,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(13, EssProtocol.Abnormity.GeneralOverfrequencyProtection.name()))//
 						.bit(new BitElement(14, EssProtocol.Abnormity.SevereUnderfrequencyProtection.name()))//
 						.bit(new BitElement(15, EssProtocol.Abnormity.GeneralUnderPrequencyProtection.name()))//
-						.build(),//
+						.build(), //
 				new ElementBuilder(0x0185, name)
 
 						//
@@ -288,7 +285,7 @@ public class Commercial extends Ess {
 								.name()))
 						.bit(new BitElement(13,
 								EssProtocol.Abnormity.InverterPeakVoltageHighProtectionCauseByACDisconnect.name()))
-						.build(),//
+						.build(), //
 				new ElementBuilder(0x0186, name)
 
 						//
@@ -309,7 +306,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(12, EssProtocol.Information.WorkDoorOpen.name()))
 						.bit(new BitElement(13, EssProtocol.Information.EmergencyStop2.name()))
 						.bit(new BitElement(14, EssProtocol.Information.ACBreakerCloseUnsuccessfully.name()))
-						.bit(new BitElement(15, EssProtocol.Information.ControlSwitchStop.name())).build(),//
+						.bit(new BitElement(15, EssProtocol.Information.ControlSwitchStop.name())).build(), //
 				new ElementBuilder(0x0187, name)
 						.bit(new BitElement(0, EssProtocol.Information.GeneralOverload.name()))
 						.bit(new BitElement(1, EssProtocol.Information.SevereOverload.name()))
@@ -326,7 +323,7 @@ public class Commercial extends Ess {
 								.name()))
 						.bit(new BitElement(12, EssProtocol.Information.EEPROMParametersOverRange.name()))
 						.bit(new BitElement(13, EssProtocol.Information.EEPROMParametersBackupFailed.name()))
-						.bit(new BitElement(14, EssProtocol.Information.DCBreakerCloseUnsuccessfully.name())).build(),//
+						.bit(new BitElement(14, EssProtocol.Information.DCBreakerCloseUnsuccessfully.name())).build(), //
 				new ElementBuilder(0x0188, name)
 
 						//
@@ -344,9 +341,9 @@ public class Commercial extends Ess {
 						.build()//
 		));
 		protocol.addElementRange(new ElementRange(0x0200, new ElementBuilder(0x0200, name).name(EssProtocol.DcVoltage)
-				.unit("mV").multiplier(100).build(),//
-				new ElementBuilder(0x0201, name).name(EssProtocol.DcCurrent).unit("mA").multiplier(100).build(),//
-				new ElementBuilder(0x0202, name).name(EssProtocol.DcPower).unit("W").multiplier(100).build(),//
+				.unit("mV").multiplier(100).build(), //
+				new ElementBuilder(0x0201, name).name(EssProtocol.DcCurrent).unit("mA").multiplier(100).build(), //
+				new ElementBuilder(0x0202, name).name(EssProtocol.DcPower).unit("W").multiplier(100).build(), //
 				new ElementBuilder(0x0203, name).type(ElementType.PLACEHOLDER).intLength(0x0208 - 0x0203).build(), //
 				new ElementBuilder(0x0208, name).name(EssProtocol.ChargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).multiplier(100).build(), //
@@ -373,20 +370,20 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x0231, name).name(EssProtocol.AllowedDischarge).multiplier(100).unit("W").build(), //
 				new ElementBuilder(0x0232, name).name(EssProtocol.AllowedApparent).multiplier(100).unit("Var").build()));
 		protocol.addElementRange(new ElementRange(
-				0x0240,//
-				new ElementBuilder(0x0240, name).name(EssProtocol.IPMPhase1Temperature).unit("°C").signed(true).build(),//
-				new ElementBuilder(0x0241, name).name(EssProtocol.IPMPhase2Temperature).unit("°C").signed(true).build(),//
-				new ElementBuilder(0x0242, name).name(EssProtocol.IPMPhase3Temperature).unit("°C").signed(true).build(),//
-				new ElementBuilder(0x0243, name).type(ElementType.PLACEHOLDER).intLength(0x0249 - 0x0243).build(),//
+				0x0240, //
+				new ElementBuilder(0x0240, name).name(EssProtocol.IPMPhase1Temperature).unit("°C").signed(true).build(), //
+				new ElementBuilder(0x0241, name).name(EssProtocol.IPMPhase2Temperature).unit("°C").signed(true).build(), //
+				new ElementBuilder(0x0242, name).name(EssProtocol.IPMPhase3Temperature).unit("°C").signed(true).build(), //
+				new ElementBuilder(0x0243, name).type(ElementType.PLACEHOLDER).intLength(0x0249 - 0x0243).build(), //
 				new ElementBuilder(0x0249, name).name(EssProtocol.TransformerPhase1Temperature).unit("°C").signed(true)
 						.build()));
-		protocol.addElementRange(new ElementRange(0x0300,//
+		protocol.addElementRange(new ElementRange(0x0300, //
 				new ElementBuilder(0x0300, name).name(EssProtocol.TotalEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x0302, name).name(EssProtocol.TotalYearEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x0304, name).name(EssProtocol.TotalMonthEnergy).unit("kWh")
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x0306, name).name(EssProtocol.TotalDateEnergy).unit("kWh").build()));
 		protocol.addElementRange(new ElementRange(0x0500, new ElementBuilder(0x0500, name)
 				.name(EssProtocol.SetWorkState) //
@@ -398,22 +395,22 @@ public class Commercial extends Ess {
 		protocol.addElementRange(new ElementRange(0x0502, new ElementBuilder(0x0502, name)
 				.name(EssProtocol.SetReactivePower).multiplier(100).signed(true).unit("var").build()));
 		protocol.addElementRange(new ElementRange(
-				0x1100,//
+				0x1100, //
 				new ElementBuilder(0x1100, name).name(EssProtocol.BatteryState)//
 						.bit(new BitElement(0, EssProtocol.BatteryStates.Initial.name()))//
 						.bit(new BitElement(1, EssProtocol.BatteryStates.Stop.name()))//
 						.bit(new BitElement(2, EssProtocol.BatteryStates.StartingUp.name()))//
 						.bit(new BitElement(3, EssProtocol.BatteryStates.Running.name()))//
-						.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build(),//
+						.bit(new BitElement(4, EssProtocol.BatteryStates.Fault.name())).build(), //
 				new ElementBuilder(0x1101, name).name(EssProtocol.BatterySwitchState)
 						.bit(new BitElement(0, EssProtocol.BatterySwitches.MainContactor.name()))
 						.bit(new BitElement(1, EssProtocol.BatterySwitches.PrechargeContactor.name()))
 						.bit(new BitElement(2, EssProtocol.BatterySwitches.FANContactor.name()))
 						.bit(new BitElement(3, EssProtocol.BatterySwitches.BMUPowerSupplyRelay.name()))
-						.bit(new BitElement(4, EssProtocol.BatterySwitches.MiddleRelay.name())).build(),//
+						.bit(new BitElement(4, EssProtocol.BatterySwitches.MiddleRelay.name())).build(), //
 				new ElementBuilder(0x1102, name).name(EssProtocol.BatteryPeripheralIOState)
 						.bit(new BitElement(0, EssProtocol.PheripheralIOs.Fuse.name()))
-						.bit(new BitElement(4, EssProtocol.PheripheralIOs.IsolatedSwitch.name())).build(),//
+						.bit(new BitElement(4, EssProtocol.PheripheralIOs.IsolatedSwitch.name())).build(), //
 				new ElementBuilder(0x1103, name)
 						.bit(new BitElement(0, EssProtocol.BatteryInformation.ChargeGeneralOvercurrent.name()))
 						.bit(new BitElement(1, EssProtocol.BatteryInformation.DischargeGeneralOvercurrent.name()))
@@ -428,7 +425,7 @@ public class Commercial extends Ess {
 						.bit(new BitElement(12, EssProtocol.BatteryInformation.SevereUnderTemperature.name()))
 						.bit(new BitElement(13, EssProtocol.BatteryInformation.ChargeSevereOvercurrent.name()))
 						.bit(new BitElement(14, EssProtocol.BatteryInformation.DischargeSevereOvercurrent.name()))
-						.bit(new BitElement(15, EssProtocol.BatteryInformation.CapacityAbnormity.name())).build(),//
+						.bit(new BitElement(15, EssProtocol.BatteryInformation.CapacityAbnormity.name())).build(), //
 				new ElementBuilder(0x1104, name).type(ElementType.PLACEHOLDER).intLength(0x1105 - 0x1104).build(),
 				new ElementBuilder(0x1105, name)
 
@@ -445,7 +442,7 @@ public class Commercial extends Ess {
 								.name()))
 						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
 								.name()))
-						.bit(new BitElement(15, EssProtocol.BatteryAbnormity.MiddleRelayAbnormity.name())).build(),//
+						.bit(new BitElement(15, EssProtocol.BatteryAbnormity.MiddleRelayAbnormity.name())).build(), //
 				new ElementBuilder(0x1106, name)
 
 						.bit(new BitElement(2, EssProtocol.BatteryAbnormity.SevereOvertemperature.name()))
@@ -456,22 +453,22 @@ public class Commercial extends Ess {
 						.bit(new BitElement(12, EssProtocol.BatteryAbnormity.BecuToPeripheryCanDisconnected.name()))
 						.bit(new BitElement(14, EssProtocol.BatteryAbnormity.PowerSupplyRelayContactorDisconnected
 								.name())).build()));
-		protocol.addElementRange(new ElementRange(0x1400,//
-				new ElementBuilder(0x1400, name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100).build(),//
+		protocol.addElementRange(new ElementRange(0x1400, //
+				new ElementBuilder(0x1400, name).name(EssProtocol.BatteryVoltage).unit("mV").multiplier(100).build(), //
 				new ElementBuilder(0x1401, name).name(EssProtocol.BatteryCurrent).unit("mA").signed(true)
 						.multiplier(100).build(), //
 				new ElementBuilder(0x1402, name).name(EssProtocol.BatteryStringSoc).unit("%").build(), //
 				new ElementBuilder(0x1403, name).name(EssProtocol.BatteryStringSOH).unit("%").build(), //
 				new ElementBuilder(0x1404, name).name(EssProtocol.BatteryCellAverageTemperature).signed(true)
-						.unit("°C").build(),//
-				new ElementBuilder(0x1405, name).type(ElementType.PLACEHOLDER).intLength(0x1406 - 0x1405).build(),//
+						.unit("°C").build(), //
+				new ElementBuilder(0x1405, name).type(ElementType.PLACEHOLDER).intLength(0x1406 - 0x1405).build(), //
 				new ElementBuilder(0x1406, name).name(EssProtocol.BatteryChargeCurrentLimit).unit("mA").multiplier(100)
-						.build(),//
+						.build(), //
 				new ElementBuilder(0x1407, name).name(EssProtocol.BatteryDischargeCurrentLimit).unit("mA")
-						.multiplier(100).build(),//
-				new ElementBuilder(0x1408, name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408).build(),//
+						.multiplier(100).build(), //
+				new ElementBuilder(0x1408, name).type(ElementType.PLACEHOLDER).intLength(0x140A - 0x1408).build(), //
 				new ElementBuilder(0x140A, name).name(EssProtocol.ChargeDischargeTimes)
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
 				new ElementBuilder(0x140C, name).type(ElementType.PLACEHOLDER).intLength(0x1418 - 0x140C).build(), //
 				new ElementBuilder(0x1418, name).name(EssProtocol.BatteryChargeEnergy).unit("Wh")
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build(), //
@@ -642,7 +639,7 @@ public class Commercial extends Ess {
 
 	@Override
 	public void setActivePower(int power) {
-		addToWriteQueue(getSetActivePower().createWriteRequest(new IntegerType(power)));
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
 	}
 
 	@Override
@@ -652,12 +649,14 @@ public class Commercial extends Ess {
 
 	@Override
 	public void start() {
-		addToWriteQueue(getSetWorkState().createWriteRequest(new IntegerType(64)));
+		int START = 64;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetWorkState(), START));
 	}
 
 	@Override
 	public void stop() {
-		addToWriteQueue(getSetWorkState().createWriteRequest(new IntegerType(4)));
+		int STOP = 4;
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetWorkState(), STOP));
 	}
 
 	@Override

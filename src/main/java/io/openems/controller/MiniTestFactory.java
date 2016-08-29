@@ -8,6 +8,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.openems.channel.ChannelWorker;
+import io.openems.config.ConfigUtil;
+import io.openems.config.exception.ConfigException;
 import io.openems.device.Device;
 import io.openems.device.ess.Ess;
 import io.openems.device.io.IO;
@@ -16,9 +18,9 @@ public class MiniTestFactory extends ControllerFactory {
 
 	@Override
 	public ControllerWorker getControllerWorker(String name, JsonObject controllerJson, Map<String, Device> devices,
-			Map<String, ChannelWorker> channelWorkers) throws Exception {
+			Map<String, ChannelWorker> channelWorkers) throws ConfigException {
 		Map<String, Ess> ess = new HashMap<>();
-		JsonArray essJsonArray = controllerJson.get("ess").getAsJsonArray();
+		JsonArray essJsonArray = ConfigUtil.getAsJsonArray(controllerJson, "ess");
 		for (JsonElement essJsonElement : essJsonArray) {
 			String essDevice = essJsonElement.getAsString();
 			Device device = devices.get(essDevice);

@@ -1,12 +1,5 @@
 package io.openems.api.rest;
 
-import io.openems.App;
-import io.openems.channel.modbus.WritableModbusDevice;
-import io.openems.device.Device;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ModbusElement;
-
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,6 +14,18 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+
+import io.openems.App;
+import io.openems.channel.modbus.WritableModbusDevice;
+import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
+import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
+import io.openems.config.ConfigUtil;
+import io.openems.device.Device;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ModbusElement;
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.device.protocol.interfaces.WordElement;
 
 public class DeviceCurrentValueResource extends ServerResource {
 
@@ -42,9 +47,17 @@ public class DeviceCurrentValueResource extends ServerResource {
 		WritableModbusDevice d = (WritableModbusDevice) App.getConfig().getDevices().get(device);
 		ModbusElement<?> e = findElement(parameterName, d);
 		if (e instanceof BitElement) {
-			d.addToWriteQueue(e, jsonElement.getAsJsonObject().get("value").getAsBoolean());
+			BitElement be = (BitElement) e;
+			d.addToWriteRequestQueue(new ModbusCoilWriteRequest(be, ConfigUtil.getAsBoolean(jsonElement, "value")));
+		} else if (e instanceof WordElement<?>) {
+			WordElement<?> we = (WordElement<?>) e;
+			d.addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(we,
+					we.toRegister(ConfigUtil.getAsJsonElement(jsonElement, "value"))));
+		} else if (e instanceof DoublewordElement) {
+			// DoublewordElement dwe = (DoublewordElement) e;
+			throw new UnsupportedOperationException("not implemented");
 		} else {
-			d.addToWriteQueue(e.createWriteRequest(jsonElement.getAsJsonObject().get("value")));
+			throw new UnsupportedOperationException("not implemented");
 		}
 	}
 

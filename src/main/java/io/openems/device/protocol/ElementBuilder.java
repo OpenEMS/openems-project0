@@ -17,12 +17,13 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.device.counter.CounterProtocol;
-import io.openems.device.ess.EssProtocol;
-
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.openems.device.counter.CounterProtocol;
+import io.openems.device.ess.EssProtocol;
+import io.openems.device.ess.mini.MiniProtocol;
 
 public class ElementBuilder {
 	final int address;
@@ -56,6 +57,11 @@ public class ElementBuilder {
 	}
 
 	public ElementBuilder name(CounterProtocol name) {
+		this.name = name.name();
+		return this;
+	}
+
+	public ElementBuilder name(MiniProtocol name) {
 		this.name = name.name();
 		return this;
 	}
@@ -131,14 +137,16 @@ public class ElementBuilder {
 		} else if (type == ElementType.INTEGER) {
 			if (signed) {
 				if (length == ElementLength.WORD) {
-					element = new SignedIntegerWordElement(address, intLength, name, multiplier, delta, unit, byteOrder);
+					element = new SignedIntegerWordElement(address, intLength, name, multiplier, delta, unit,
+							byteOrder);
 				} else if (length == ElementLength.DOUBLEWORD) {
 					element = new SignedIntegerDoublewordElement(address, intLength, name, multiplier, delta, unit,
 							byteOrder, wordOrder);
 				}
 			} else {
 				if (length == ElementLength.WORD) {
-					element = new UnsignedShortWordElement(address, intLength, name, multiplier, delta, unit, byteOrder);
+					element = new UnsignedShortWordElement(address, intLength, name, multiplier, delta, unit,
+							byteOrder);
 				} else if (length == ElementLength.DOUBLEWORD) {
 					element = new UnsignedIntegerDoublewordElement(address, intLength, name, multiplier, delta, unit,
 							byteOrder, wordOrder);

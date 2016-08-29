@@ -3,7 +3,6 @@ package io.openems.controller;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
-import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
@@ -33,11 +32,10 @@ public class EnBAGController extends Controller {
 	private String primaryOffGridEss;
 	private IO io;
 	private List<Ess> aviableEss;
-	private SolarLog solarLog;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
-			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io, SolarLog solarLog) {
+			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
@@ -48,7 +46,6 @@ public class EnBAGController extends Controller {
 		this.essOffGridSwitches = essOffGridSwitches;
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
-		this.solarLog = solarLog;
 	}
 
 	@Override
@@ -94,8 +91,7 @@ public class EnBAGController extends Controller {
 				io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
 				// Switch Pv to OnGrid
 				io.writeDigitalValue(pvOffGridSwitch, false);
-				// SetSolarLog to max power
-				solarLog.setPVLimit(solarLog.getTotalPower());
+				// TODO SetSolarLog to max power
 				// sleep 3 sec
 				try {
 					Thread.sleep(3000);
@@ -150,11 +146,10 @@ public class EnBAGController extends Controller {
 			}
 
 			// Reduce PV power
-			int toGridPower = gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower);
-			if (toGridPower >= maxGridFeedPower || solarLog.getPVLimit() < solarLog.getTotalPower()) {
-				// set PV power
-				int pvlimit = solarLog.getPVLimit() - (toGridPower - maxGridFeedPower);
-				solarLog.setPVLimit(pvlimit);
+			if (gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower) >= maxGridFeedPower) {
+				// TODO Reduce PV power
+			} else {
+				// TODO increase PV power
 			}
 			// Write new calculated ActivePower to Ess device
 			for (int i = 0; i < allEss.size(); i++) {

@@ -17,11 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
-import io.openems.device.protocol.interfaces.DoublewordElement;
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.BooleanMapType;
-
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -32,7 +27,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class BitsElement extends ModbusElement<BooleanMapType> implements WordElement, DoublewordElement {
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.BooleanMapType;
+
+public class BitsElement extends ModbusElement<BooleanMapType>
+		implements WordElement<BooleanMapType>, DoublewordElement {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BitsElement.class);
 
@@ -63,7 +63,7 @@ public class BitsElement extends ModbusElement<BooleanMapType> implements WordEl
 	}
 
 	@Override
-	protected Register[] toRegister(BooleanMapType value) {
+	public Register[] toRegisters(BooleanMapType value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
@@ -84,12 +84,17 @@ public class BitsElement extends ModbusElement<BooleanMapType> implements WordEl
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(BooleanMapType value) {
+	public Register[] toRegisters(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register toRegister(BooleanMapType value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(JsonElement value) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 }

@@ -17,10 +17,6 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.IntegerType;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -28,10 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
-import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
 
-public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement {
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
+
+public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement<IntegerType> {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(UnsignedShortWordElement.class);
 	final ByteOrder byteOrder;
@@ -50,20 +48,24 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 	}
 
 	@Override
-	protected Register[] toRegister(IntegerType value) {
-		byte[] b = ByteBuffer.allocate(2).order(byteOrder)
-				.putShort((short) new Integer((value.toInteger() - delta) / multiplier).intValue()).array();
-		return new Register[] { new SimpleRegister(b[0], b[1]) };
+	public Register[] toRegisters(IntegerType value) {
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(IntegerType value) {
-		return new ModbusWriteRequest(this, toRegister(value));
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
+	public Register[] toRegisters(JsonElement value) {
 		IntegerType i = new IntegerType(value.getAsInt());
-		return createWriteRequest(i);
+		return toRegisters(i);
+	}
+
+	@Override
+	public Register toRegister(IntegerType value) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public Register toRegister(JsonElement value) {
+		IntegerType i = new IntegerType(value.getAsInt());
+		return toRegister(i);
 	}
 }

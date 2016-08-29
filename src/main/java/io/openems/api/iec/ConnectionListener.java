@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
 import org.openmuc.j60870.Connection;
@@ -19,7 +17,6 @@ import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 public class ConnectionListener implements ConnectionEventListener {
 
@@ -90,14 +87,7 @@ public class ConnectionListener implements ConnectionEventListener {
 		} catch (IOException e) {
 			System.out.println("Will quit listening for commands on connection (" + connectionId
 					+ ") because of error: \"" + e.getMessage() + "\".");
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-
 	}
 
 	@Override

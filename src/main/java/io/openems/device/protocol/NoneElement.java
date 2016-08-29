@@ -17,11 +17,10 @@
  */
 package io.openems.device.protocol;
 
-import io.openems.channel.modbus.ModbusWriteRequest;
-import io.openems.element.type.NoneType;
-
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
+
+import io.openems.element.type.NoneType;
 
 public class NoneElement extends ModbusElement<NoneType> implements PlaceholderElement {
 	public NoneElement(int address, int length, String name) {
@@ -29,17 +28,12 @@ public class NoneElement extends ModbusElement<NoneType> implements PlaceholderE
 	}
 
 	@Override
-	public Register[] toRegister(NoneType value) {
+	public Register[] toRegisters(NoneType value) {
 		return null;
 	}
 
 	@Override
-	public ModbusWriteRequest createWriteRequest(NoneType value) {
-		return new ModbusWriteRequest(this, toRegister(value));
-	}
-
-	@Override
-	public ModbusWriteRequest createWriteRequest(JsonElement value) {
-		throw new UnsupportedOperationException("not implemented");
+	public Register[] toRegisters(JsonElement value) {
+		return null;
 	}
 }

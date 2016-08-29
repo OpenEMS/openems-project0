@@ -1,6 +1,8 @@
 package io.openems.device.inverter;
 
 import io.openems.channel.modbus.WritableModbusDevice;
+import io.openems.channel.modbus.write.ModbusRegistersWriteRequest;
+import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
@@ -12,25 +14,20 @@ import io.openems.element.ElementOnChangeListener;
 import io.openems.element.type.IntegerType;
 import io.openems.element.type.LongType;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
 import org.openmuc.j60870.InformationObject;
-import org.xml.sax.SAXException;
 
 public class SolarLog extends WritableModbusDevice {
 
 	private int totalPower;
 
-	public SolarLog(String name, String channel, int unitid, int totalPower) throws IOException,
-			ParserConfigurationException, SAXException {
+	public SolarLog(String name, String channel, int unitid, int totalPower) {
 		super(name, channel, unitid);
 		this.setTotalPower(totalPower);
 	}
@@ -42,35 +39,34 @@ public class SolarLog extends WritableModbusDevice {
 	}
 
 	@Override
-	public void init() throws IOException, ParserConfigurationException, SAXException {
+	public void init() {
 		super.init();
 		// Set SolarLog PLimit_Type to remote PV limitation
 		UnsignedShortWordElement setLimitType = (UnsignedShortWordElement) getElement("SetLimitType");
-		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
-		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) getElement("Placeholder");
 		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) getElement("WatchDog");
-		addToWriteQueue(setLimitType.createWriteRequest(new IntegerType(2)),
-				setLimit.createWriteRequest(new IntegerType(100)), placeholder.createWriteRequest(new LongType(0)),
-				watchdog.createWriteRequest(new LongType(System.currentTimeMillis())));
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(setLimitType.getAddress(),
+				setLimitType.toRegister(new IntegerType(2))));
+		addToWriteRequestQueue(new ModbusRegistersWriteRequest(watchdog.getAddress(),
+				watchdog.toRegisters(new LongType(System.currentTimeMillis()))));
 	}
 
 	@Override
-	protected ModbusProtocol getProtocol() throws IOException, ParserConfigurationException, SAXException {
+	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502, name)
 				.name(InverterProtocol.PAC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
 				.unit("W").build()));//
 		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504, name)
 				.name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
-				.unit("W").build(),//
-				new ElementBuilder(3506, name).name(InverterProtocol.UAC.name()).unit("V").build(),//
-				new ElementBuilder(3507, name).name(InverterProtocol.UDC.name()).unit("V").build(),//
+				.unit("W").build(), //
+				new ElementBuilder(3506, name).name(InverterProtocol.UAC.name()).unit("V").build(), //
+				new ElementBuilder(3507, name).name(InverterProtocol.UDC.name()).unit("V").build(), //
 				new ElementBuilder(3508, name).name(InverterProtocol.DailyYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3510, name).name(InverterProtocol.YesterdayYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3512, name).name(InverterProtocol.MonthlyYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3514, name).name(InverterProtocol.YearlyYield.name())
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
 				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name())
@@ -79,9 +75,6 @@ public class SolarLog extends WritableModbusDevice {
 				.name(InverterProtocol.SetLimitType.name()).unit("%").build()));
 		protocol.addElementRange(new ElementRange(10401, new ElementBuilder(10401, name).name(
 				InverterProtocol.SetLimit.name()).build()));
-		protocol.addElementRange(new ElementRange(10402, new ElementBuilder(10402, name)
-				.name(InverterProtocol.Placeholder.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
-				.build()));
 		protocol.addElementRange(new ElementRange(10404, new ElementBuilder(10404, name)
 				.name(InverterProtocol.WatchDog.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
 				.build()));
@@ -121,9 +114,10 @@ public class SolarLog extends WritableModbusDevice {
 		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
 		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) getElement("Placeholder");
 		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) getElement("WatchDog");
-		addToWriteQueue(setLimit.createWriteRequest(new IntegerType(limitPercent)),
-				placeholder.createWriteRequest(new LongType(0)),
-				watchdog.createWriteRequest(new LongType(System.currentTimeMillis())));
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(setLimit.getAddress(),
+				setLimit.toRegister(new IntegerType(limitPercent))));
+		addToWriteRequestQueue(new ModbusRegistersWriteRequest(watchdog.getAddress(),
+				watchdog.toRegisters(new LongType(System.currentTimeMillis()))));
 	}
 
 	public int getPVLimit() {

@@ -21,6 +21,7 @@ public class RestWorker extends Application {
 		// TODO add URL of real web interface
 		corsService.setAllowedCredentials(true);
 		getServices().add(corsService);
+		getStatusService().setConverterService(new RestConverterService());
 	}
 
 	public static Component startWorker() throws Exception {
