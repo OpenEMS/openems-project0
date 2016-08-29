@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +124,7 @@ public class EnBAGController extends Controller {
 			int allowedDischargeSum = 0;
 			int sumUseableSoc = 0;
 			int sumChargeableSoc = 0;
+			int soc = 0;
 
 			// Collect data of all Ess devices
 			for (Ess ess : allEss) {
@@ -132,7 +134,9 @@ public class EnBAGController extends Controller {
 				allowedDischargeSum += ess.getMaxDischargePower();
 				sumUseableSoc += ess.getUseableSoc();
 				sumChargeableSoc += (100 - ess.getSOC());
+				soc += ess.getSOC();
 			}
+			soc /= allEss.size();
 
 			if (calculatedEssActivePower > 0) {
 				// discharge
@@ -147,9 +151,15 @@ public class EnBAGController extends Controller {
 			} else {
 				// charge
 				if (allowChargeFromAC) { // charging is allowed
-					if (calculatedEssActivePower < allowedCharge) {
-						// not allowed to charge with such high power
-						calculatedEssActivePower = allowedCharge;
+					// Reserve storage capacity for the Pv peak at midday
+					if (new DateTime().getHourOfDay() <= 11 && soc > 80
+							&& calculatedEssActivePower < getMaxGridFeedPower()) {
+						calculatedEssActivePower = 0;
+					} else {
+						if (calculatedEssActivePower < allowedCharge) {
+							// not allowed to charge with such high power
+							calculatedEssActivePower = allowedCharge;
+						}
 					}
 					for (int i = 0; i < allEss.size(); i++) {
 						activePower[i] = calculatedEssActivePower / sumChargeableSoc * (100 - allEss.get(i).getSOC());
