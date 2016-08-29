@@ -2,7 +2,6 @@ package io.openems.api.iec;
 
 import io.openems.App;
 import io.openems.device.Device;
-import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 
 import java.io.EOFException;
@@ -25,8 +24,8 @@ import org.xml.sax.SAXException;
 public class ConnectionListener implements ConnectionEventListener {
 
 	private final static Logger log = LoggerFactory.getLogger(ConnectionListener.class);
-	private final static int STARTADDRESS = 8193;
-	private final static int ADDRESSOFFSET = 200;
+	private final static int MEASSUREMENTSSTARTADDRESS = 9001;
+	private final static int ADDRESSOFFSET = 100;
 
 	private final Connection connection;
 	private final int connectionId;
@@ -41,7 +40,6 @@ public class ConnectionListener implements ConnectionEventListener {
 	@Override
 	public void newASdu(ASdu aSdu) {
 		try {
-
 			switch (aSdu.getTypeIdentification()) {
 			// interrogation command
 			// TODO add case for commands
@@ -54,22 +52,32 @@ public class ConnectionListener implements ConnectionEventListener {
 				int index = 0;
 				int essCount = 0;
 				int counterCount = 0;
-				InformationObject[] values = new InformationObject[devices.size()];
-				for (Device d : devices) {
+				List<InformationObject> informationObjects = new ArrayList<>();
+				for (IecControllable d : devices) {
 					if (d instanceof Ess) {
-						values[index] = new InformationObject(STARTADDRESS + essCount * ADDRESSOFFSET, d.getIecValues());
+						informationObjects.addAll(d.getMeassurements(MEASSUREMENTSSTARTADDRESS + 100 + essCount
+								* ADDRESSOFFSET));
 						essCount++;
-					} else if (d instanceof Counter) {
-						values[index] = new InformationObject(STARTADDRESS + 1000 + counterCount * ADDRESSOFFSET,
-								d.getIecValues());
-						counterCount++;
 					}
+					// else if (d instanceof Counter) {
+					// values[index] = new InformationObject(STARTADDRESS + 1000
+					// + counterCount * ADDRESSOFFSET,
+					// d.getIecValues());
+					// counterCount++;
+					// }
 					index++;
 				}
 				// TODO send all values
 				// Meassured values
-				connection.send(new ASdu(TypeId.M_IT_TB_1, true, CauseOfTransmission.SPONTANEOUS, false, false, 0, aSdu
-						.getCommonAddress(), values));
+				while (informationObjects.size() > 0) {
+					List<InformationObject> io = informationObjects;
+					if (informationObjects.size() > 16) {
+						io = informationObjects.subList(0, 16);
+					}
+					connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false, 0,
+							5101, io.toArray(new InformationObject[io.size()])));
+					informationObjects.removeAll(io);
+				}
 
 				break;
 			default:

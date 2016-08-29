@@ -8,17 +8,21 @@ import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
+import io.openems.element.ElementOnChangeListener;
 import io.openems.element.type.IntegerType;
 import io.openems.element.type.LongType;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
+import org.openmuc.j60870.InformationObject;
 import org.xml.sax.SAXException;
 
 public class SolarLog extends WritableModbusDevice {
@@ -112,12 +116,6 @@ public class SolarLog extends WritableModbusDevice {
 		return null;
 	}
 
-	@Override
-	public InformationElement[][] getIecValues() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public void setPVLimit(int power) {
 		int limitPercent = (int) ((double) power / (double) totalPower * 100.0);
 		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
@@ -131,6 +129,36 @@ public class SolarLog extends WritableModbusDevice {
 	public int getPVLimit() {
 		return totalPower / 100
 				* ((UnsignedShortWordElement) getElement(InverterProtocol.GetLimit.name())).getValue().toInteger();
+	}
+
+	@Override
+	public List<InformationObject> getMeassurements(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InformationObject> getMessages(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

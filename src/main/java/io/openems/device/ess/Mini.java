@@ -22,13 +22,17 @@ import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedShortWordElement;
+import io.openems.element.ElementOnChangeListener;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
+import org.openmuc.j60870.InformationObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -132,7 +136,31 @@ public class Mini extends Ess {
 	}
 
 	@Override
-	public InformationElement[][] getIecValues() {
+	public List<InformationObject> getMeassurements(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InformationObject> getMessages(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}

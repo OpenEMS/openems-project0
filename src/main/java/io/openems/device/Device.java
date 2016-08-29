@@ -1,5 +1,6 @@
 package io.openems.device;
 
+import io.openems.api.iec.IecControllable;
 import io.openems.device.protocol.ModbusElement;
 import io.openems.element.ElementOnChangeListener;
 import io.openems.element.ElementOnUpdateListener;
@@ -11,10 +12,9 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.openmuc.j60870.InformationElement;
 import org.xml.sax.SAXException;
 
-public abstract class Device {
+public abstract class Device implements IecControllable {
 	private final String channel;
 	protected Set<ElementOnUpdateListener> onUpdateListeners = new HashSet<>();
 	protected Set<ElementOnChangeListener> onChangeListeners = new HashSet<>();
@@ -75,5 +75,4 @@ public abstract class Device {
 
 	public abstract String getCurrentDataAsString();
 
-	public abstract InformationElement[][] getIecValues();
 }

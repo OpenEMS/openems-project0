@@ -27,7 +27,7 @@
 		"ssh0": {
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
 			"inetAddress": "127.0.0.1",
-			"cycle": 60000
+			"cycle": 1000
 		}
 	},
 	"device": {
@@ -35,13 +35,13 @@
 			"type": "io.openems.device.io.Wago",
 			"channel": "lan1",
 			"modbusUnit": 0
-		}
+		}*/
 		"ess0": {
 			"type": "io.openems.device.ess.Commercial",
 			"channel": "ssh0",
 			"modbusUnit": 100,
 			"minSoc": 15
-		}*/
+		},
 		"sl0":{
 			"type": "io.openems.device.inverter.SolarLog",
 			"channel": "lan2",

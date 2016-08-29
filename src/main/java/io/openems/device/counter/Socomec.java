@@ -23,17 +23,19 @@ import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import io.openems.element.ElementOnChangeListener;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.openmuc.j60870.IeBinaryCounterReading;
-import org.openmuc.j60870.IeTime56;
+import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
+import org.openmuc.j60870.InformationObject;
 import org.xml.sax.SAXException;
 
 public class Socomec extends Counter {
@@ -112,25 +114,32 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public InformationElement[][] getIecValues() {
-		return new InformationElement[][] {
-				{
-						new IeBinaryCounterReading(
-								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name()))
-										.getValue().toInteger(), 0, false, false, false),
-						new IeTime56(System.currentTimeMillis()) },
-				{
-						new IeBinaryCounterReading(
-								((SignedIntegerDoublewordElement) getElement(CounterProtocol.ReactivePower.name()))
-										.getValue().toInteger(), 0, false, false, false),
-						new IeTime56(System.currentTimeMillis()) },
-		// {
-		// new IeBinaryCounterReading(
-		// ((UnsignedIntegerDoublewordElement)
-		// getElement(CounterProtocol.ApparentPower.name()))
-		// .getValue().toLong(), 0, false, false, false),
-		// new IeTime56(System.currentTimeMillis()) },
+	public List<InformationObject> getMeassurements(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-		};
+	@Override
+	public List<InformationObject> getMessages(int startAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

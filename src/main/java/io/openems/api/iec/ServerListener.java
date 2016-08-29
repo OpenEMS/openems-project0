@@ -35,6 +35,7 @@ public class ServerListener implements ServerEventListener {
 		}
 
 		log.debug("Started data transfer on connection (" + myConnectionId + ") Will listen for incoming commands.");
+		registerElementChangedListener(connection);
 	}
 
 	@Override
@@ -42,4 +43,7 @@ public class ServerListener implements ServerEventListener {
 		log.debug("Connection attempt failed: " + arg0.getMessage());
 	}
 
+	public void registerElementChangedListener(Connection connection) {
+
+	}
 }
