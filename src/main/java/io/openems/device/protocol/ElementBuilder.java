@@ -24,6 +24,8 @@ import java.util.Map;
 import io.openems.device.counter.CounterProtocol;
 import io.openems.device.ess.EssProtocol;
 import io.openems.device.ess.mini.MiniProtocol;
+import io.openems.element.state.State;
+import io.openems.element.state.StringState;
 
 public class ElementBuilder {
 	final int address;
@@ -40,6 +42,7 @@ public class ElementBuilder {
 	WordOrder wordOrder = WordOrder.MSWLSW;
 	boolean writable = false;
 	Map<String, BitElement> bitElements = new HashMap<>();
+	Map<Integer, State> valueMap = new HashMap<>();
 
 	public ElementBuilder(int address, String deviceName) {
 		this.address = address;
@@ -127,6 +130,23 @@ public class ElementBuilder {
 
 	public ElementBuilder wordOrder(WordOrder wordOrder) {
 		this.wordOrder = wordOrder;
+		return this;
+	}
+
+	public ElementBuilder writable() {
+		this.writable = true;
+		return this;
+		// TODO actually use "writable"
+	}
+
+	public ElementBuilder map(int value, State mappedValue) {
+		this.valueMap.put(value, mappedValue);
+		return this;
+		// TODO actually use "map"
+	}
+
+	public ElementBuilder map(int value, String mappedValue) {
+		this.valueMap.put(value, new StringState(mappedValue));
 		return this;
 	}
 

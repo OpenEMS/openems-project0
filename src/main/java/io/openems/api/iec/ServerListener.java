@@ -1,7 +1,5 @@
 package io.openems.api.iec;
 
-import io.openems.App;
-
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -37,7 +35,6 @@ public class ServerListener implements ServerEventListener {
 		}
 
 		log.debug("Started data transfer on connection (" + myConnectionId + ") Will listen for incoming commands.");
-		registerElementChangedListener(connection);
 	}
 
 	@Override
@@ -45,9 +42,4 @@ public class ServerListener implements ServerEventListener {
 		log.debug("Connection attempt failed: " + arg0.getMessage());
 	}
 
-	public void registerElementChangedListener(Connection connection) {
-		for (IecControllable d : App.getConfig().getDevices().values()) {
-			// d.createChangeListeners(startAddress, connection);
-		}
-	}
 }

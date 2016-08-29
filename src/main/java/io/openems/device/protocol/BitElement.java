@@ -49,7 +49,7 @@ public class BitElement extends ModbusElement<BooleanType> implements WordElemen
 	public void update(Register register) {
 		int position = address % 8;
 		byte curByte = register.toBytes()[1 - address / 8];
-		setValue(new BooleanType(((curByte >> position) & 1) == 1));
+		update(new BooleanType(((curByte >> position) & 1) == 1));
 	}
 
 	@Override

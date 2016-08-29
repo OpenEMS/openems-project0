@@ -40,7 +40,7 @@ public class SignedIntegerWordElement extends NumberElement<IntegerType> impleme
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2).order(byteOrder);
 		buff.put(register.toBytes());
-		setValue(new IntegerType((buff.order(byteOrder).getShort(0) * multiplier - delta)));
+		update(new IntegerType((buff.order(byteOrder).getShort(0) * multiplier - delta)));
 	}
 
 	@Override

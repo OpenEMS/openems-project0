@@ -13,8 +13,12 @@ import io.openems.config.exception.ConfigNotFoundException;
 import io.openems.config.exception.ConfigParseException;
 
 public class ConfigUtil {
-	public static JsonElement getAsJsonElement(JsonElement jsonElement, String memberName) throws ConfigException {
-		return getAsJsonElement(getAsJsonObject(jsonElement, memberName), memberName);
+	public static JsonElement getAsJsonElement(JsonElement jsonElement, String memberName) {
+		try {
+			return jsonElement.getAsJsonObject().get(memberName);
+		} catch (ClassCastException | IllegalStateException e) {
+			throw new ConfigParseException(memberName, jsonElement);
+		}
 	}
 
 	public static JsonElement getAsJsonElement(JsonObject jsonObject, String memberName) throws ConfigException {
@@ -61,14 +65,6 @@ public class ConfigUtil {
 			return getAsJsonElement(jsonObject, memberName).getAsJsonArray();
 		} catch (ClassCastException | IllegalStateException e) {
 			throw new ConfigParseException(memberName, jsonObject);
-		}
-	}
-
-	public static JsonObject getAsJsonObject(JsonElement jsonElement, String memberName) throws ConfigException {
-		try {
-			return getAsJsonElement(jsonElement, memberName).getAsJsonObject();
-		} catch (ClassCastException | IllegalStateException e) {
-			throw new ConfigParseException(memberName, jsonElement);
 		}
 	}
 

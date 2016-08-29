@@ -17,22 +17,9 @@
  */
 package io.openems.config;
 
-import io.openems.channel.ChannelFactory;
-import io.openems.channel.ChannelWorker;
-import io.openems.channel.modbus.ModbusChannelWorker;
-import io.openems.config.exception.ConfigException;
-import io.openems.config.exception.ConfigInstantiateException;
-import io.openems.controller.ControllerFactory;
-import io.openems.controller.ControllerWorker;
-import io.openems.device.Device;
-import io.openems.device.DeviceFactory;
-import io.openems.monitoring.MonitorFactory;
-import io.openems.monitoring.MonitoringWorker;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +36,18 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+
+import io.openems.channel.ChannelFactory;
+import io.openems.channel.ChannelWorker;
+import io.openems.channel.modbus.ModbusChannelWorker;
+import io.openems.config.exception.ConfigException;
+import io.openems.config.exception.ConfigInstantiateException;
+import io.openems.controller.ControllerFactory;
+import io.openems.controller.ControllerWorker;
+import io.openems.device.Device;
+import io.openems.device.DeviceFactory;
+import io.openems.monitoring.MonitorFactory;
+import io.openems.monitoring.MonitoringWorker;
 
 public class Config {
 	private final static Logger log = LoggerFactory.getLogger(Config.class);
@@ -68,16 +67,16 @@ public class Config {
 
 	public Config(JsonObject obj) throws ConfigException {
 		if (obj.has("channel")) {
-			readChannelsFromJson(ConfigUtil.getAsJsonObject(obj, "channel"));
+			readChannelsFromJson(ConfigUtil.getAsJsonElement(obj, "channel"));
 		}
 		if (obj.has("device")) {
-			readDevicesFromJson(ConfigUtil.getAsJsonObject(obj, "device"));
+			readDevicesFromJson(ConfigUtil.getAsJsonElement(obj, "device"));
 		}
 		if (obj.has("controller")) {
-			readControllersFromJson(ConfigUtil.getAsJsonObject(obj, "controller"));
+			readControllersFromJson(ConfigUtil.getAsJsonElement(obj, "controller"));
 		}
 		if (obj.has("monitor")) {
-			readMonitorFromJson(ConfigUtil.getAsJsonObject(obj, "monitor"));
+			readMonitorFromJson(ConfigUtil.getAsJsonElement(obj, "monitor"));
 		}
 	}
 
@@ -87,14 +86,6 @@ public class Config {
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(new FileReader(file));
 		return jsonElement.getAsJsonObject();
-	}
-
-	public void writeJsonFile() throws IOException {
-		File file = getConfigFile();
-		String jsonString = getConfigAsJson().toString();
-		FileWriter writer = new FileWriter(file);
-		writer.write(jsonString);
-		writer.close();
 	}
 
 	private static File getConfigFile() {
@@ -165,7 +156,7 @@ public class Config {
 	 * @param jsonElement
 	 * @throws ConfigException
 	 */
-	private void readMonitorFromJson(JsonObject jsonElement) throws ConfigException {
+	private void readMonitorFromJson(JsonElement jsonElement) throws ConfigException {
 		if (jsonElement != null && jsonElement.isJsonObject()) {
 			JsonObject obj = jsonElement.getAsJsonObject();
 			for (Entry<String, JsonElement> entry : obj.entrySet()) {
@@ -318,7 +309,8 @@ public class Config {
 	 * @param devices
 	 * @param channelWorkers
 	 */
-	public void registerDevicesToChannelWorkers(Map<String, Device> devices, Map<String, ChannelWorker> channelWorkers) {
+	public void registerDevicesToChannelWorkers(Map<String, Device> devices,
+			Map<String, ChannelWorker> channelWorkers) {
 		for (Device device : devices.values()) {
 			channelWorkers.get(device.getChannel()).registerDevice(device);
 		}
@@ -375,8 +367,8 @@ public class Config {
 	public Map<String, JsonObject> getJsonCannels() {
 		HashMap<String, JsonObject> jsonDevices = new HashMap<String, JsonObject>();
 		for (Map.Entry<String, ChannelWorker> entry : channels.entrySet()) {
-			ChannelFactory cf = channelFactories.get(((ModbusChannelWorker) entry.getValue()).getModbusConnection()
-					.getClass().getName());
+			ChannelFactory cf = channelFactories
+					.get(((ModbusChannelWorker) entry.getValue()).getModbusConnection().getClass().getName());
 			JsonObject obj = cf.getConfig(entry.getValue());
 			jsonDevices.put(entry.getKey(), obj);
 		}

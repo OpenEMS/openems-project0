@@ -18,5 +18,59 @@
 package io.openems.device.ess.mini;
 
 public enum MiniProtocol {
-	SetParameterSetting, ParameterSetting;
+	SetParameterSetting, ParameterSetting, //
+	SetOffGridInverterAllowLoad, OffGridInverterAllowLoad, //
+	SetInverterAllowGridConnect, InverterAllowGridConnect, //
+	SetChargeMode, ChargeMode, //
+	SetDischargeMode, DischargeMode, //
+	SetInverterAllowGridCharge, InverterAllowGridCharge, //
+	SetInverterAllowGridDischarge, InverterAllowGridDischarge, //
+	SetInverterChargeDischargeTimeMode, InverterChargeDischargeTimeMode, //
+	SetBatteryVoltageLowLimit, BatteryVoltageLowLimit, //
+	SetBatteryVoltageHighLimit, BatteryVoltageHighLimit, //
+	SetGridVoltageLowLimit, GridVoltageLowLimit, //
+	SetGridFrequencyLowLimit, GridFrequencyLowLimit, //
+	SetGridVoltageHighLimit, GridVoltageHighLimit, //
+	SetGridFrequencyHighLimit, GridFrequencyHighLimit, //
+	SetInverterCertificationStandard, InverterCertificationStandard, //
+	SetEnableSmoothPV, EnableSmoothPV, //
+	SetSmoothSpeedPV, SmoothSpeedPV, //
+	SetGridMaxOutputCurrent, GridMaxOutputCurrent, //
+	SetInverterMaxChargeCurrent, InverterMaxChargeCurrent, //
+	SetInverterMaxDischargeCurrent, InverterMaxDischargeCurrent, //
+	SetGridMaxInputCurrent, GridMaxInputCurrent, //
+	SetTimeModeStartChargeMinute, TimeModeStartChargeMinute, //
+	SetTimeModeStartChargeHour, TimeModeStartChargeHour, //
+	SetTimeModeStopChargeMinute, TimeModeStopChargeMinute, //
+	SetTimeModeStopChargeHour, TimeModeStopChargeHour, //
+	SetTimeModeStartDischargeMinute, TimeModeStartDischargeMinute, //
+	SetTimeModeStartDischargeHour, TimeModeStartDischargeHour, //
+	SetTimeModeStopDischargeMinute, TimeModeStopDischargeMinute, //
+	SetTimeModeStopDischargeHour, TimeModeStopDischargeHour, //
+	SetSystemMaxSOC, SystemMaxSOC, //
+	SetSystemMinSOC, SystemMinSOC, //
+	SetSystemChargeFromGridSOC, SystemChargeFromGridSOC, //
+	SetGridSlowVoltageLowLimit, GridSlowVoltageLowLimit, //
+	SetGridSlowVoltageHighLimit, GridSlowVoltageHighLimit, //
+	SetGridSlowVoltageLowTimeLimit, GridSlowVoltageLowTimeLimit, //
+	SetGridSlowVoltageHighTimeLimit, GridSlowVoltageHighTimeLimit, //
+	SetGridFastVoltageLowTimeLimit, GridFastVoltageLowTimeLimit, //
+	SetGridFastVoltageHighTimeLimit, GridFastVoltageHighTimeLimit, //
+	SetGridFrequencyLowTimeLimit, GridFrequencyLowTimeLimit, //
+	SetGridFrequencyHighTimeLimit, GridFrequencyHighTimeLimit, //
+	SetGridFrequencyReconnectLowLimit, GridFrequencyReconnectLowLimit, //
+	SetGridFrequencyReconnectHighLimit, GridFrequencyReconnectHighLimit, //
+	SetGridFrequencyReconnectTimeLimit, GridFrequencyReconnectTimeLimit, //
+	SetGridVoltageStartPowerFactorAdjustmentLimit, GridVoltageStartPowerFactorAdjustmentLimit, //
+	SetGridVoltageStartPowerFactorAdjustmentPercentageLimit, GridVoltageStartPowerFactorAdjustmentPercentageLimit, //
+	SetGridVoltageStopPowerFactorAdjustmentLimit, GridVoltageStopPowerFactorAdjustmentLimit, //
+	SetGridVoltageReconnectLowLimit, GridVoltageReconnectLowLimit, //
+	SetGridVoltageReconnectHighLimit, GridVoltageReconnectHighLimit, //
+	SetGridReconnectPowerRisingSlope, GridReconnectPowerRisingSlope, //
+	SetLocalRemoteMode, //
+	SetPcsMode, PcsMode, //
+	SetPowerMeterLimit, PowerMeterLimit, //
+	SetInverterNetworking
+
+	;
 }

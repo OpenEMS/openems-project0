@@ -18,12 +18,10 @@
 package io.openems.device.ess;
 
 import io.openems.channel.modbus.WritableModbusDevice;
-import io.openems.element.Element;
-import io.openems.element.type.IntegerType;
 
 public abstract class Ess extends WritableModbusDevice {
 
-	protected Element<IntegerType> minSoc = new Element<IntegerType>("minSoc", "%");
+	protected int minSoc = 10;
 
 	private static final int HYSTERESIS = 10;
 
@@ -32,7 +30,7 @@ public abstract class Ess extends WritableModbusDevice {
 
 	public Ess(String name, String modbusid, int unitid, int minSoc) {
 		super(name, modbusid, unitid);
-		this.minSoc.setValue(new IntegerType(minSoc));
+		this.minSoc = minSoc;
 	}
 
 	@Override
@@ -57,11 +55,11 @@ public abstract class Ess extends WritableModbusDevice {
 	public abstract void stop();
 
 	public int getMinSoc() {
-		return minSoc.getValue().toInteger();
+		return minSoc;
 	}
 
 	public void setMinSoc(int minSoc) {
-		this.minSoc.setValue(new IntegerType(minSoc));
+		this.minSoc = minSoc;
 	}
 
 	public int getUseableSoc() {
@@ -69,9 +67,9 @@ public abstract class Ess extends WritableModbusDevice {
 	}
 
 	public int getMaxDischargePower() {
-		if (getSOC() >= getMinSoc()) {
+		if (getSOC() >= minSoc) {
 			// increase the discharge Power slowly
-			if (lastSoc < getMinSoc()) {
+			if (lastSoc < minSoc) {
 				lowSocCounter = 0;
 			}
 			if (lowSocCounter < HYSTERESIS) {
@@ -79,7 +77,7 @@ public abstract class Ess extends WritableModbusDevice {
 			}
 		} else {
 			// decrease the discharge Power slowly
-			if (lastSoc >= getMinSoc()) {
+			if (lastSoc >= minSoc) {
 				lowSocCounter = HYSTERESIS;
 			}
 			if (lowSocCounter > 0) {

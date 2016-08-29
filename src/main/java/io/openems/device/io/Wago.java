@@ -1,14 +1,5 @@
 package io.openems.device.io;
 
-import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
-import io.openems.config.exception.ConfigException;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.element.ElementOnChangeListener;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -24,15 +15,21 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
-import org.openmuc.j60870.InformationObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
+import io.openems.config.exception.ConfigException;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
 
 public class Wago extends IO {
 
@@ -213,31 +210,7 @@ public class Wago extends IO {
 	}
 
 	@Override
-	public List<InformationObject> getMeassurements(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<InformationObject> getMessages(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleCommand(int function, InformationElement informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
+	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
 	}
