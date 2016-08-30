@@ -37,8 +37,8 @@ public class EnBAGControllerFactory extends ControllerFactory {
 
 		Gson gson = new Gson();
 		Map<String, String> essOffGridSwitches = new HashMap<String, String>();
-		essOffGridSwitches = gson.fromJson(ConfigUtil.getAsString(controllerJson, "essOffGridSwitches"),
-				essOffGridSwitches.getClass());
+		String jsonOffGridSwitches = ConfigUtil.getAsJsonElement(controllerJson, "essOffGridSwitches").toString();
+		essOffGridSwitches = gson.fromJson(jsonOffGridSwitches, essOffGridSwitches.getClass());
 
 		int maxGridFeedPower = ConfigUtil.getAsInt(controllerJson, "maxGridFeedPower");
 		String pvOnGridSwitch = ConfigUtil.getAsString(controllerJson, "pvOnGridSwitch");
