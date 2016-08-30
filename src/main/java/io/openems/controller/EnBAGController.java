@@ -1,5 +1,6 @@
 package io.openems.controller;
 
+import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.joda.time.DateTime;
+import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,15 +124,15 @@ public class EnBAGController extends Controller {
 
 	private long time = 0;
 	private long time2 = 0;
-	private boolean isOffGrid = false;
+	private boolean isOffGrid = true;
 
 	@Override
 	public void run() {
 		ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
-		if (isOnGrid()) {
+		if (isEssOnGrid()) {
 			// OnGrid
 			// switch all ESS and PV to onGrid
-			if (activeEss != null) {
+			if (isOffGrid) {
 				if (areAllEssOff() && !io.readDigitalValue(pvOffGridSwitch)) {
 					if (time + 3000 <= System.currentTimeMillis()) {
 						// switch primary Ess On
@@ -280,7 +283,7 @@ public class EnBAGController extends Controller {
 		}
 	}
 
-	private boolean isOnGrid() {
+	private boolean isEssOnGrid() {
 		for (Ess ess : essDevices.values()) {
 			if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
 				return false;
@@ -302,5 +305,24 @@ public class EnBAGController extends Controller {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

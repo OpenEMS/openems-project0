@@ -18,7 +18,6 @@
 package io.openems.device.ess.commercial;
 
 import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.api.iec.IecValueParameter;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
@@ -30,13 +29,10 @@ import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ElementType;
 import io.openems.device.protocol.ModbusElement;
 import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.SignedIntegerWordElement;
-import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
 import io.openems.element.Element;
-import io.openems.element.ElementOnChangeListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,44 +41,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoublePointWithQuality;
-import org.openmuc.j60870.IeDoublePointWithQuality.DoublePointInformation;
-import org.openmuc.j60870.IeQuality;
-import org.openmuc.j60870.IeShortFloat;
-import org.openmuc.j60870.IeTime56;
 import org.openmuc.j60870.InformationElement;
-import org.openmuc.j60870.InformationObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Commercial extends Ess {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Commercial.class);
-
-	private final static List<IecValueParameter> IECMEASSUREMENTELEMENTS = new ArrayList<>();
-	private final static List<IecValueParameter> IECMESSAGEELEMENTS = new ArrayList<>();
-	static {
-		// Mesassurement Elements
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(0, EssProtocol.ChargeEnergy.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(1, EssProtocol.DischargeEnergy.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(2, EssProtocol.BatteryChargeEnergy.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(3, EssProtocol.BatteryDischargeEnergy.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(10, EssProtocol.ActivePower.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(11, EssProtocol.ReactivePower.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(12, EssProtocol.ApparentPower.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(13, EssProtocol.CurrentPhase1.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(14, EssProtocol.CurrentPhase2.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(15, EssProtocol.CurrentPhase3.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(16, EssProtocol.VoltagePhase1.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(17, EssProtocol.VoltagePhase2.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(18, EssProtocol.VoltagePhase3.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(19, EssProtocol.Frequency.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(20, EssProtocol.AllowedCharge.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(21, EssProtocol.AllowedDischarge.name(), 0.001));
-		IECMEASSUREMENTELEMENTS.add(new IecValueParameter(22, EssProtocol.AllowedApparent.name(), 0.001));
-
-		// Message Elements
-	}
 
 	public Commercial(String name, String channel, int unitid, int minSoc) {
 		super(name, channel, unitid, minSoc);
@@ -669,54 +634,60 @@ public class Commercial extends Ess {
 				+ getElement(EssProtocol.Pv2OutputPower.name()).readable() + "] ";
 	}
 
-	@Override
-	public List<InformationObject> getMeassurements(int startAddress) {
-		ArrayList<InformationObject> informationObjects = new ArrayList<>();
-		for (IecValueParameter entry : IECMEASSUREMENTELEMENTS) {
-			float value = 0;
-			Long time = System.currentTimeMillis();
-			ModbusElement<?> element = getElement(entry.getElementName());
-			if (element != null && element.getLastUpdate() != null) {
-				time = element.getLastUpdate().getMillis();
-				if (element instanceof UnsignedIntegerDoublewordElement) {
-					value = ((UnsignedIntegerDoublewordElement) element).getValue().toLong();
-				} else if (element instanceof UnsignedShortWordElement) {
-					value = ((UnsignedShortWordElement) element).getValue().toInteger();
-				} else if (element instanceof SignedIntegerWordElement) {
-					value = ((SignedIntegerWordElement) element).getValue().toInteger();
-				} else if (element instanceof SignedIntegerDoublewordElement) {
-					value = ((SignedIntegerDoublewordElement) element).getValue().toInteger();
-				}
-			}
-			informationObjects.add(new InformationObject(startAddress + entry.getAddressOffset(),
-					new InformationElement[][] { { new IeShortFloat((float) (value * entry.getMultiplier())),
-							new IeQuality(false, false, false, false, false), new IeTime56(time) } }));
-		}
-		return informationObjects;
-	}
-
-	@Override
-	public List<InformationObject> getMessages(int startAddress) {
-		ArrayList<InformationObject> informationObjects = new ArrayList<>();
-		for (IecValueParameter entry : IECMESSAGEELEMENTS) {
-			DoublePointInformation dpi = DoublePointInformation.INDETERMINATE;
-			Long time = System.currentTimeMillis();
-			ModbusElement<?> element = getElement(entry.getElementName());
-			if (element != null && element.getLastUpdate() != null) {
-				time = element.getLastUpdate().getMillis();
-				BitElement e = (BitElement) element;
-				if (e.getValue().toBoolean()) {
-					dpi = DoublePointInformation.ON;
-				} else {
-					dpi = DoublePointInformation.OFF;
-				}
-			}
-			informationObjects.add(new InformationObject(startAddress + entry.getAddressOffset(),
-					new InformationElement[][] { { new IeDoublePointWithQuality(dpi, false, false, false, false),
-							new IeTime56(time) } }));
-		}
-		return informationObjects;
-	}
+	// @Override
+	// public List<InformationObject> getMeassurements(int startAddress) {
+	// ArrayList<InformationObject> informationObjects = new ArrayList<>();
+	// for (IecValueParameter entry : IECMEASSUREMENTELEMENTS) {
+	// float value = 0;
+	// Long time = System.currentTimeMillis();
+	// ModbusElement<?> element = getElement(entry.getElementName());
+	// if (element != null && element.getLastUpdate() != null) {
+	// time = element.getLastUpdate().getMillis();
+	// if (element instanceof UnsignedIntegerDoublewordElement) {
+	// value = ((UnsignedIntegerDoublewordElement) element).getValue().toLong();
+	// } else if (element instanceof UnsignedShortWordElement) {
+	// value = ((UnsignedShortWordElement) element).getValue().toInteger();
+	// } else if (element instanceof SignedIntegerWordElement) {
+	// value = ((SignedIntegerWordElement) element).getValue().toInteger();
+	// } else if (element instanceof SignedIntegerDoublewordElement) {
+	// value = ((SignedIntegerDoublewordElement)
+	// element).getValue().toInteger();
+	// }
+	// }
+	// informationObjects.add(new InformationObject(startAddress +
+	// entry.getAddressOffset(),
+	// new InformationElement[][] { { new IeShortFloat((float) (value *
+	// entry.getMultiplier())),
+	// new IeQuality(false, false, false, false, false), new IeTime56(time) }
+	// }));
+	// }
+	// return informationObjects;
+	// }
+	//
+	// @Override
+	// public List<InformationObject> getMessages(int startAddress) {
+	// ArrayList<InformationObject> informationObjects = new ArrayList<>();
+	// for (IecValueParameter entry : IECMESSAGEELEMENTS) {
+	// DoublePointInformation dpi = DoublePointInformation.INDETERMINATE;
+	// Long time = System.currentTimeMillis();
+	// ModbusElement<?> element = getElement(entry.getElementName());
+	// if (element != null && element.getLastUpdate() != null) {
+	// time = element.getLastUpdate().getMillis();
+	// BitElement e = (BitElement) element;
+	// if (e.getValue().toBoolean()) {
+	// dpi = DoublePointInformation.ON;
+	// } else {
+	// dpi = DoublePointInformation.OFF;
+	// }
+	// }
+	// informationObjects.add(new InformationObject(startAddress +
+	// entry.getAddressOffset(),
+	// new InformationElement[][] { { new IeDoublePointWithQuality(dpi, false,
+	// false, false, false),
+	// new IeTime56(time) } }));
+	// }
+	// return informationObjects;
+	// }
 
 	@Override
 	public void handleSetPoint(int function, InformationElement informationElement) {
@@ -731,15 +702,115 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
-		ArrayList<ElementOnChangeListener> eventListener = new ArrayList<>();
-		for (IecValueParameter entry : IECMESSAGEELEMENTS) {
-			IecElementOnChangeListener ieocl = new IecElementOnChangeListener(entry.getElementName(), connection,
-					startAddress + entry.getAddressOffset(), entry.getMultiplier());
-			Element<?> element = getElement(entry.getElementName());
-			element.addOnChangeListener(ieocl);
-			eventListener.add(ieocl);
-		}
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
+		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
+		/* Meassurements */
+		eventListener.add(createMeassurementListener(EssProtocol.ChargeEnergy.name(), startAddressMeassurements + 0,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.DischargeEnergy.name(), startAddressMeassurements + 1,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryChargeEnergy.name(),
+				startAddressMeassurements + 2, 0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryDischargeEnergy.name(),
+				startAddressMeassurements + 3, 0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.ActivePower.name(), startAddressMeassurements + 10,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.ReactivePower.name(), startAddressMeassurements + 11,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.ApparentPower.name(), startAddressMeassurements + 12,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.CurrentPhase1.name(), startAddressMeassurements + 13,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.CurrentPhase2.name(), startAddressMeassurements + 14,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.CurrentPhase3.name(), startAddressMeassurements + 15,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.VoltagePhase1.name(), startAddressMeassurements + 16,
+				0.001f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.VoltagePhase2.name(), startAddressMeassurements + 17,
+				0.001f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.VoltagePhase3.name(), startAddressMeassurements + 18,
+				0.001f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.Frequency.name(), startAddressMeassurements + 19,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.AllowedCharge.name(), startAddressMeassurements + 20,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.AllowedDischarge.name(),
+				startAddressMeassurements + 21, 0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.AllowedApparent.name(),
+				startAddressMeassurements + 22, 0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryVoltage.name(), startAddressMeassurements + 30,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryCurrent.name(), startAddressMeassurements + 31,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryPower.name(), startAddressMeassurements + 32,
+				0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryStringSoc.name(),
+				startAddressMeassurements + 33, 0.01f, connection));
+		eventListener.add(createMeassurementListener(EssProtocol.BatteryStringSOH.name(),
+				startAddressMeassurements + 34, 0.01f, connection));
+		IecElementOnChangeListener minSocListener = new IecElementOnChangeListener(minSoc, connection,
+				startAddressMeassurements + 35, 1);
+		minSoc.addOnChangeListener(minSocListener);
+		eventListener.add(minSocListener);
+		/* Messages */
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(), EssProtocol.SystemStates.Stop.name(),
+				startAddressMessages + 0, connection));
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(),
+				EssProtocol.SystemStates.PvCharging.name(), startAddressMessages + 1, connection));
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(),
+				EssProtocol.SystemStates.Standby.name(), startAddressMessages + 2, connection));
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(),
+				EssProtocol.SystemStates.Running.name(), startAddressMessages + 3, connection));
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(), EssProtocol.SystemStates.Fault.name(),
+				startAddressMessages + 4, connection));
+		eventListener.add(createMessageListener(EssProtocol.SystemState.name(), EssProtocol.SystemStates.Debug.name(),
+				startAddressMessages + 5, connection));
+		eventListener.add(createMessageListener(EssProtocol.BatteryState.name(),
+				EssProtocol.BatteryStates.Initial.name(), startAddressMessages + 6, connection));
+		eventListener.add(createMessageListener(EssProtocol.BatteryState.name(), EssProtocol.BatteryStates.Stop.name(),
+				startAddressMessages + 7, connection));
+		eventListener.add(createMessageListener(EssProtocol.BatteryState.name(),
+				EssProtocol.BatteryStates.StartingUp.name(), startAddressMessages + 8, connection));
+		eventListener.add(createMessageListener(EssProtocol.BatteryState.name(),
+				EssProtocol.BatteryStates.Running.name(), startAddressMessages + 9, connection));
+		eventListener.add(createMessageListener(EssProtocol.BatteryState.name(),
+				EssProtocol.BatteryStates.Fault.name(), startAddressMessages + 10, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Initial.name(), startAddressMessages + 11, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Fault.name(), startAddressMessages + 12, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Stop.name(), startAddressMessages + 13, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Standby.name(), startAddressMessages + 14, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.GridMonitoring.name(), startAddressMessages + 15, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Ready.name(), startAddressMessages + 15, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Running.name(), startAddressMessages + 16, connection));
+		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
+				EssProtocol.InverterStates.Debug.name(), startAddressMessages + 17, connection));
+
 		return eventListener;
+	}
+
+	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
+			Connection connection) {
+		Element<?> element = getElement(elementName);
+		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier);
+		element.addOnChangeListener(ieocl);
+		return ieocl;
+	}
+
+	private IecElementOnChangeListener createMessageListener(String elementName, String bitName, int address,
+			Connection connection) {
+		BitsElement element = (BitsElement) getElement(elementName);
+		BitElement bit = element.getBit(bitName);
+		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(bit, connection, address);
+		element.addOnChangeListener(ieocl);
+		return ieocl;
 	}
 }

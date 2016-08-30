@@ -1,11 +1,18 @@
 package io.openems.controller;
 
-import java.util.HashMap;
-
 import io.openems.App;
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.InformationElement;
 
 public class IOController extends Controller {
 
@@ -46,11 +53,31 @@ public class IOController extends Controller {
 		System.out.print(pac.readable());
 		UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl.getElement("DailyYield");
 		System.out.println("\t" + dailyYield.readable());
-
+		Ess ess = (Ess) App.getConfig().getDevices().get("ess0");
+		System.out.println(ess.getActivePower());
 	}
 
 	public HashMap<String, IO> getIo() {
 		return io;
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
+		// TODO Auto-generated method stub
+		return new ArrayList<>();
 	}
 
 }

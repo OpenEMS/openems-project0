@@ -1,8 +1,14 @@
 package io.openems.controller;
 
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.ess.Ess;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import io.openems.device.ess.Ess;
+import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.InformationElement;
 
 public class MiniTest extends Controller {
 
@@ -25,6 +31,25 @@ public class MiniTest extends Controller {
 	public void init() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
+		// TODO Auto-generated method stub
+		return new ArrayList<IecElementOnChangeListener>();
 	}
 
 }

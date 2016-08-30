@@ -47,7 +47,7 @@ public class UnsignedIntegerDoublewordElement extends NumberElement<LongType> im
 			buff.put(reg2.toBytes());
 			buff.put(reg1.toBytes());
 		}
-		setValue(new LongType(Integer.toUnsignedLong(buff.getInt(0) * multiplier - delta)));
+		setValue(new LongType(Integer.toUnsignedLong(buff.getInt(0)) * multiplier - delta));
 	}
 
 	@Override

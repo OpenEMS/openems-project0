@@ -17,13 +17,13 @@
  */
 package io.openems.device.counter;
 
+import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-import io.openems.element.ElementOnChangeListener;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
-import org.openmuc.j60870.InformationObject;
 
 public class Socomec extends Counter {
 
@@ -109,18 +108,6 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public List<InformationObject> getMeassurements(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<InformationObject> getMessages(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void handleSetPoint(int function, InformationElement informationElement) {
 		// TODO Auto-generated method stub
 
@@ -133,7 +120,8 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}

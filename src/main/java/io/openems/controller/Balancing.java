@@ -17,16 +17,20 @@
  */
 package io.openems.controller;
 
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
 import io.openems.device.protocol.BitElement;
 import io.openems.device.protocol.BitsElement;
+
+import java.util.List;
+import java.util.Map;
+
+import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.InformationElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Balancing extends Controller {
 	private final static Logger log = LoggerFactory.getLogger(Balancing.class);
@@ -118,5 +122,24 @@ public class Balancing extends Controller {
 
 		log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
 				+ calculatedEssActivePower + "]");
+	}
+
+	@Override
+	public void handleSetPoint(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleCommand(int function, InformationElement informationElement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

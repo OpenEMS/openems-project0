@@ -17,6 +17,7 @@
  */
 package io.openems.device.ess.mini;
 
+import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
@@ -27,7 +28,6 @@ import io.openems.device.protocol.ElementType;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.ElementOnChangeListener;
 import io.openems.element.state.AllowedState;
 import io.openems.element.state.EnabledState;
 import io.openems.element.type.IntegerType;
@@ -37,7 +37,6 @@ import java.util.Set;
 
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.InformationElement;
-import org.openmuc.j60870.InformationObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -420,18 +419,6 @@ public class Mini extends Ess {
 	}
 
 	@Override
-	public List<InformationObject> getMeassurements(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<InformationObject> getMessages(int startAddress) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void handleSetPoint(int function, InformationElement informationElement) {
 		// TODO Auto-generated method stub
 
@@ -444,8 +431,10 @@ public class Mini extends Ess {
 	}
 
 	@Override
-	public List<ElementOnChangeListener> createChangeListeners(int startAddress, Connection connection) {
+	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+			int startAddressMessages, Connection connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

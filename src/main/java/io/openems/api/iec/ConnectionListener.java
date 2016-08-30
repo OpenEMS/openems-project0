@@ -1,7 +1,7 @@
 package io.openems.api.iec;
 
 import io.openems.App;
-import io.openems.device.Device;
+import io.openems.controller.ControllerWorker;
 import io.openems.device.ess.Ess;
 
 import java.io.EOFException;
@@ -22,16 +22,39 @@ public class ConnectionListener implements ConnectionEventListener {
 
 	private final static Logger log = LoggerFactory.getLogger(ConnectionListener.class);
 	private final static int MEASSUREMENTSSTARTADDRESS = 9001;
+	private final static int MESSAGESSTARTADDRESS = 5001;
 	private final static int ADDRESSOFFSET = 100;
 
 	private final Connection connection;
 	private final int connectionId;
-	private final String[] essValueElements = { "", "" };
-	private final String[] essPointElements = { "", "" };
+	private List<IecElementOnChangeListener> listeners;
 
 	public ConnectionListener(Connection connection, int connectionId) {
 		this.connection = connection;
 		this.connectionId = connectionId;
+		registerElementChangeListener();
+	}
+
+	private void registerElementChangeListener() {
+		if (connection != null) {
+			listeners = new ArrayList<>();
+			int essCount = 0;
+			int controllerCount = 0;
+			for (ControllerWorker cw : App.getConfig().getControllerWorkers().values()) {
+				IecControllable c = cw.getController();
+				listeners.addAll(c.createChangeListeners(MEASSUREMENTSSTARTADDRESS + (controllerCount * 50),
+						MESSAGESSTARTADDRESS + (controllerCount * 50), connection));
+				controllerCount++;
+			}
+			for (IecControllable d : App.getConfig().getDevices().values()) {
+				if (d instanceof Ess) {
+					listeners.addAll(d.createChangeListeners(
+							MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET, MESSAGESSTARTADDRESS + 100
+									+ (essCount * ADDRESSOFFSET), connection));
+					essCount++;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -44,36 +67,14 @@ public class ConnectionListener implements ConnectionEventListener {
 				connection.sendConfirmation(aSdu);
 				System.out.println("Got interrogation command. Will send scaled measured values.\n");
 
-				List<Device> devices = new ArrayList<>(App.getConfig().getDevices().values());
-
-				int index = 0;
-				int essCount = 0;
-				int counterCount = 0;
-				List<InformationObject> informationObjects = new ArrayList<>();
-				for (IecControllable d : devices) {
-					if (d instanceof Ess) {
-						informationObjects.addAll(d.getMeassurements(MEASSUREMENTSSTARTADDRESS + 100 + essCount
-								* ADDRESSOFFSET));
-						essCount++;
+				for (IecElementOnChangeListener listener : listeners) {
+					if (listener.isMeassurement()) {
+						connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false, 0,
+								5101, new InformationObject[] { listener.getCurrentValue() }));
+					} else {
+						connection.send(new ASdu(TypeId.M_DP_TB_1, false, CauseOfTransmission.REQUEST, false, false, 0,
+								5101, new InformationObject[] { listener.getCurrentValue() }));
 					}
-					// else if (d instanceof Counter) {
-					// values[index] = new InformationObject(STARTADDRESS + 1000
-					// + counterCount * ADDRESSOFFSET,
-					// d.getIecValues());
-					// counterCount++;
-					// }
-					index++;
-				}
-				// TODO send all values
-				// Meassured values
-				while (informationObjects.size() > 0) {
-					List<InformationObject> io = informationObjects;
-					if (informationObjects.size() > 16) {
-						io = informationObjects.subList(0, 16);
-					}
-					connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false, 0,
-							5101, io.toArray(new InformationObject[io.size()])));
-					informationObjects.removeAll(io);
 				}
 
 				break;
@@ -93,5 +94,8 @@ public class ConnectionListener implements ConnectionEventListener {
 	@Override
 	public void connectionClosed(IOException e) {
 		System.out.println("Connection (" + connectionId + ") was closed. " + e.getMessage());
+		for (IecElementOnChangeListener listener : listeners) {
+			listener.remove();
+		}
 	}
 }

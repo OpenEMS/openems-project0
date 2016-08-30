@@ -17,7 +17,9 @@
  */
 package io.openems.controller;
 
-public abstract class Controller {
+import io.openems.api.iec.IecControllable;
+
+public abstract class Controller implements IecControllable {
 
 	private final String name;
 

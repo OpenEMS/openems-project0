@@ -17,15 +17,15 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.google.gson.JsonElement;
-
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.IntegerType;
 
 public class SignedIntegerWordElement extends NumberElement<IntegerType> implements WordElement<IntegerType> {
 	final ByteOrder byteOrder;
@@ -40,7 +40,7 @@ public class SignedIntegerWordElement extends NumberElement<IntegerType> impleme
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2).order(byteOrder);
 		buff.put(register.toBytes());
-		setValue(new IntegerType((buff.order(byteOrder).getShort(0) * multiplier - delta)));
+		setValue(new IntegerType((buff.order(byteOrder).getShort(0)) * multiplier - delta));
 	}
 
 	@Override

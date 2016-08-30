@@ -17,6 +17,9 @@
  */
 package io.openems.device.protocol;
 
+import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.type.IntegerType;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -25,9 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
-
-import io.openems.device.protocol.interfaces.WordElement;
-import io.openems.element.type.IntegerType;
 
 public class UnsignedShortWordElement extends NumberElement<IntegerType> implements WordElement<IntegerType> {
 	@SuppressWarnings("unused")
@@ -44,7 +44,7 @@ public class UnsignedShortWordElement extends NumberElement<IntegerType> impleme
 	public void update(Register register) {
 		ByteBuffer buff = ByteBuffer.allocate(2).order(byteOrder);
 		buff.put(register.toBytes());
-		setValue(new IntegerType(Short.toUnsignedInt((short) (buff.getShort(0) * multiplier - delta))));
+		setValue(new IntegerType(Short.toUnsignedInt((buff.getShort(0))) * multiplier - delta));
 	}
 
 	@Override

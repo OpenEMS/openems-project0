@@ -112,15 +112,30 @@ public class Element<T extends Type> {
 	 * @param listener
 	 */
 	public void addOnChangeListener(ElementOnChangeListener listener) {
-		listenersOnChange.add(listener);
+		synchronized (listenersOnChange) {
+			listenersOnChange.add(listener);
+		}
+	}
+
+	/**
+	 * Remove a added listener for OnChange events.
+	 * 
+	 * @param listener
+	 */
+	public void removeOnChangeListener(ElementOnChangeListener listener) {
+		synchronized (listenersOnChange) {
+			listenersOnChange.remove(listener);
+		}
 	}
 
 	/**
 	 * Notify {@link ElementOnChangeListener}s about changed value
 	 */
 	private void notifyOnChangeListeners(T oldValue) {
-		for (ElementOnChangeListener listener : listenersOnChange) {
-			listener.elementChanged(this.getFullName(), this.value, oldValue);
+		synchronized (listenersOnChange) {
+			for (ElementOnChangeListener listener : listenersOnChange) {
+				listener.elementChanged(this.getFullName(), this.value, oldValue);
+			}
 		}
 	}
 
