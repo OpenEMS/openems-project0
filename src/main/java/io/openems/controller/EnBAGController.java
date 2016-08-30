@@ -187,10 +187,12 @@ public class EnBAGController extends Controller {
 			} else {
 				// charge
 				if (allowChargeFromAC) { // charging is allowed
+					int reservedSoc = 20;
 					// Reserve storage capacity for the Pv peak at midday
-					if (new DateTime().getHourOfDay() <= 11 && soc > 80
+					if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
 							&& calculatedEssActivePower < getMaxGridFeedPower()) {
-						calculatedEssActivePower = 0;
+						calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
+								* (reservedSoc - (soc - (100 - reservedSoc)));
 					} else {
 						if (calculatedEssActivePower < allowedCharge) {
 							// not allowed to charge with such high power
