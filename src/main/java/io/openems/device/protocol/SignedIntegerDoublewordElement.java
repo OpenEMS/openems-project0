@@ -48,7 +48,7 @@ public class SignedIntegerDoublewordElement extends NumberElement<IntegerType> i
 			buff.put(reg2.toBytes());
 			buff.put(reg1.toBytes());
 		}
-		update(new IntegerType(buff.order(byteOrder).getInt(0) * multiplier - delta));
+		setValue(new IntegerType(buff.order(byteOrder).getInt(0) * multiplier - delta));
 	}
 
 	@Override

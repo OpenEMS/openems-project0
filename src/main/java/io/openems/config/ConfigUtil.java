@@ -1,5 +1,10 @@
 package io.openems.config;
 
+import io.openems.config.exception.ConfigException;
+import io.openems.config.exception.ConfigInetAddressException;
+import io.openems.config.exception.ConfigNotFoundException;
+import io.openems.config.exception.ConfigParseException;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -7,13 +12,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import io.openems.config.exception.ConfigException;
-import io.openems.config.exception.ConfigInetAddressException;
-import io.openems.config.exception.ConfigNotFoundException;
-import io.openems.config.exception.ConfigParseException;
-
 public class ConfigUtil {
-	public static JsonElement getAsJsonElement(JsonElement jsonElement, String memberName) {
+	public static JsonElement getAsJsonElement(JsonElement jsonElement, String memberName) throws ConfigException {
 		try {
 			return jsonElement.getAsJsonObject().get(memberName);
 		} catch (ClassCastException | IllegalStateException e) {

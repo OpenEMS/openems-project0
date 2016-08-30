@@ -50,27 +50,12 @@
 		}
 	},
 	"controller": {
-		"enbag": {
-			"type": "io.openems.controller.EnBAGController",
-			"chargeFromAc":true,
-			"gridCounter": "counter0",
-			"ess": ["ess0"],
-			"essOffGridSwitches":{
-				"ess0":"DigitalOutput_1_1"
-			},
-			"maxGridFeedPower":100,
-			"pvOnGridSwitch":"DigitalOutput_1_2",
-			"pvOffGridSwitch":"DigitalOutput_2_1",
-			"primaryEss":"ess0",
-			"io": "io0",
-			"solarLog": "sl0"
-		}
-		
-		/*
 		"io0": {
 			"type": "io.openems.controller.IOController",
 			"io":["io0"]
 		}
+		
+		/*
 		"controller0": {
 			"type": "io.openems.controller.MiniTest",
 			"ess": ["ess0","ess0"]
