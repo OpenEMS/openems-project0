@@ -28,6 +28,8 @@ import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.ElementOnChangeListener;
+import io.openems.element.state.AllowedState;
+import io.openems.element.state.EnabledState;
 import io.openems.element.type.IntegerType;
 
 import java.util.List;
@@ -403,12 +405,6 @@ public class Mini extends Ess {
 
 	@Override
 	public String getCurrentDataAsString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InformationElement[][] getIecValues() {
 		// TODO Auto-generated method stub
 		return null;
 	}
