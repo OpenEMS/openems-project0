@@ -13,6 +13,7 @@ import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.ConnectionEventListener;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public class ConnectionListener implements ConnectionEventListener {
 	private final static int MEASSUREMENTSSTARTADDRESS = 9001;
 	private final static int MESSAGESSTARTADDRESS = 5001;
 	private final static int ADDRESSOFFSET = 100;
+	private final static int SETPOINTADDRESS = 21001;
 
 	private final Connection connection;
 	private final int connectionId;
@@ -38,7 +40,6 @@ public class ConnectionListener implements ConnectionEventListener {
 	private void registerElementChangeListener() {
 		if (connection != null) {
 			listeners = new ArrayList<>();
-			int essCount = 0;
 			int controllerCount = 0;
 			for (ControllerWorker cw : App.getConfig().getControllerWorkers().values()) {
 				IecControllable c = cw.getController();
@@ -46,6 +47,7 @@ public class ConnectionListener implements ConnectionEventListener {
 						MESSAGESSTARTADDRESS + (controllerCount * 50), connection));
 				controllerCount++;
 			}
+			int essCount = 0;
 			for (IecControllable d : App.getConfig().getDevices().values()) {
 				if (d instanceof Ess) {
 					listeners.addAll(d.createChangeListeners(
@@ -77,6 +79,17 @@ public class ConnectionListener implements ConnectionEventListener {
 					}
 				}
 
+				break;
+			case C_SE_TC_1:
+				int address = aSdu.getInformationObjects()[0].getInformationObjectAddress();
+				address -= SETPOINTADDRESS;
+				int controllerId = address / ADDRESSOFFSET;
+				int functionId = address % ADDRESSOFFSET;
+				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
+				IecControllable c = cw.get(controllerId).getController();
+				IeShortFloat value = (IeShortFloat) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
+				c.handleSetPoint(functionId, value);
+				connection.sendConfirmation(aSdu);
 				break;
 			default:
 				System.out.println("Got unknown request: " + aSdu + ". Will not confirm it.\n");

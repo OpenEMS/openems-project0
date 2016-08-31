@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -516,12 +517,14 @@ public class Commercial extends Ess {
 		return ((SignedIntegerWordElement) getElement(EssProtocol.ActivePower.name())).getValue().toInteger();
 	}
 
-	public SignedIntegerWordElement getReactivePower() {
-		return (SignedIntegerWordElement) getElement(EssProtocol.ReactivePower.name());
+	@Override
+	public int getReactivePower() {
+		return ((SignedIntegerWordElement) getElement(EssProtocol.ReactivePower.name())).getValue().toInteger();
 	}
 
-	public UnsignedShortWordElement getApparentPower() {
-		return (UnsignedShortWordElement) getElement(EssProtocol.ApparentPower.name());
+	@Override
+	public int getApparentPower() {
+		return ((UnsignedShortWordElement) getElement(EssProtocol.ApparentPower.name())).getValue().toInteger();
 	}
 
 	@Override
@@ -690,7 +693,7 @@ public class Commercial extends Ess {
 	// }
 
 	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
+	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		// TODO Auto-generated method stub
 
 	}

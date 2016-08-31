@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 
 import org.joda.time.DateTime;
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class EnBAGController extends Controller {
 	private IO io;
 	private List<Ess> availableEss;
 	private SolarLog solarLog;
+	private Element<IntegerType> totalActivePower;
+	private Element<IntegerType> totalReactivePower;
+	private Element<IntegerType> totalApparentPower;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
@@ -56,6 +60,9 @@ public class EnBAGController extends Controller {
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
 		this.solarLog = solarLog;
+		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
+		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
+		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
 	}
 
 	public int getMaxGridFeedPower() {
@@ -129,6 +136,17 @@ public class EnBAGController extends Controller {
 	@Override
 	public void run() {
 		ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
+		int totalActivePower = 0;
+		int totalReactivePower = 0;
+		int totalApparentPower = 0;
+		for (Ess ess : allEss) {
+			totalActivePower += ess.getActivePower();
+			totalReactivePower += ess.getReactivePower();
+			totalApparentPower += ess.getApparentPower();
+		}
+		this.totalActivePower.setValue(new IntegerType(totalActivePower));
+		this.totalReactivePower.setValue(new IntegerType(totalReactivePower));
+		this.totalApparentPower.setValue(new IntegerType(totalApparentPower));
 		if (isEssOnGrid()) {
 			// OnGrid
 			// switch all ESS and PV to onGrid
@@ -308,9 +326,18 @@ public class EnBAGController extends Controller {
 	}
 
 	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
-		// TODO Auto-generated method stub
+	public void handleSetPoint(int function, IeShortFloat informationElement) {
+		switch (function) {
+		case 0:
+			// TODO Set ActivePower
+			break;
+		case 1:
+			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
+			break;
+		default:
+			break;
 
+		}
 	}
 
 	@Override
@@ -322,7 +349,19 @@ public class EnBAGController extends Controller {
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
+		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
+				connection, startAddressMeassurements + 0, 0.001f);
+		totalActivePower.addOnChangeListener(totalActivePowerListener);
+		eventListener.add(totalActivePowerListener);
+		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
+				connection, startAddressMeassurements + 1, 0.001f);
+		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
+		eventListener.add(totalReactivePowerListener);
+		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
+				connection, startAddressMeassurements + 0, 0.001f);
+		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
+		eventListener.add(totalApparentPowerListener);
+		return eventListener;
 	}
 }

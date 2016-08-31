@@ -90,4 +90,8 @@ public abstract class Ess extends WritableModbusDevice {
 		// Calculate discharge power with hysteresis for the minSoc
 		return (int) (getAllowedDischarge() / (double) HYSTERESIS * lowSocCounter);
 	}
+
+	public abstract int getReactivePower();
+
+	public abstract int getApparentPower();
 }

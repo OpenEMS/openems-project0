@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +126,7 @@ public class Balancing extends Controller {
 	}
 
 	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
+	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		// TODO Auto-generated method stub
 
 	}

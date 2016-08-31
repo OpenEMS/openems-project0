@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationElement;
 
 public class IOController extends Controller {
@@ -62,7 +63,7 @@ public class IOController extends Controller {
 	}
 
 	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
+	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		// TODO Auto-generated method stub
 
 	}

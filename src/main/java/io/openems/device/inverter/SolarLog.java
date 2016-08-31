@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationElement;
 
 public class SolarLog extends WritableModbusDevice {
@@ -125,7 +126,7 @@ public class SolarLog extends WritableModbusDevice {
 	}
 
 	@Override
-	public void handleSetPoint(int function, InformationElement informationElement) {
+	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		// TODO Auto-generated method stub
 
 	}
