@@ -50,7 +50,7 @@
 		}
 	},
 	"controller": {
-		/*"enbag": {
+		"enbag": {
 			"type": "io.openems.controller.EnBAGController",
 			"chargeFromAc":true,
 			"gridCounter": "counter0",
@@ -64,14 +64,13 @@
 			"primaryEss":"ess0",
 			"io": "io0",
 			"solarLog": "sl0"
-		}*/
-		
+		}
+		/*
 		"io0": {
 			"type": "io.openems.controller.IOController",
 			"io":["io0"]
 		}
 		
-		/*
 		"controller0": {
 			"type": "io.openems.controller.MiniTest",
 			"ess": ["ess0","ess0"]

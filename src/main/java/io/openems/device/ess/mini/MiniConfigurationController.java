@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
-import org.openmuc.j60870.InformationElement;
 
 public class MiniConfigurationController extends Controller {
 
@@ -37,7 +37,7 @@ public class MiniConfigurationController extends Controller {
 	}
 
 	@Override
-	public void handleCommand(int function, InformationElement informationElement) {
+	public void handleCommand(int function, IeDoubleCommand informationElement) {
 		// TODO Auto-generated method stub
 
 	}

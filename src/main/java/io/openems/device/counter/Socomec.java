@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
-import org.openmuc.j60870.InformationElement;
 
 public class Socomec extends Counter {
 
@@ -115,7 +115,7 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public void handleCommand(int function, InformationElement informationElement) {
+	public void handleCommand(int function, IeDoubleCommand informationElement) {
 		// TODO Auto-generated method stub
 
 	}

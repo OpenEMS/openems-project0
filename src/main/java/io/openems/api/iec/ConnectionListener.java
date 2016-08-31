@@ -13,6 +13,7 @@ import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.ConnectionEventListener;
+import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
@@ -26,6 +27,7 @@ public class ConnectionListener implements ConnectionEventListener {
 	private final static int MESSAGESSTARTADDRESS = 5001;
 	private final static int ADDRESSOFFSET = 100;
 	private final static int SETPOINTADDRESS = 21001;
+	private final static int COMMANDADDRESS = 25001;
 
 	private final Connection connection;
 	private final int connectionId;
@@ -80,16 +82,32 @@ public class ConnectionListener implements ConnectionEventListener {
 				}
 
 				break;
-			case C_SE_TC_1:
+			case C_SE_TC_1: {
 				int address = aSdu.getInformationObjects()[0].getInformationObjectAddress();
+				System.out.println(address);
 				address -= SETPOINTADDRESS;
 				int controllerId = address / ADDRESSOFFSET;
 				int functionId = address % ADDRESSOFFSET;
+				System.out.println(controllerId);
+				System.out.println(functionId);
 				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
 				IecControllable c = cw.get(controllerId).getController();
 				IeShortFloat value = (IeShortFloat) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
 				c.handleSetPoint(functionId, value);
 				connection.sendConfirmation(aSdu);
+			}
+				break;
+			case C_DC_NA_1: {
+				int address = aSdu.getInformationObjects()[0].getInformationObjectAddress();
+				address -= COMMANDADDRESS;
+				int controllerId = address / ADDRESSOFFSET;
+				int functionId = address % ADDRESSOFFSET;
+				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
+				IecControllable c = cw.get(controllerId).getController();
+				IeDoubleCommand value = (IeDoubleCommand) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
+				c.handleCommand(functionId, value);
+				connection.sendConfirmation(aSdu);
+			}
 				break;
 			default:
 				System.out.println("Got unknown request: " + aSdu + ". Will not confirm it.\n");
