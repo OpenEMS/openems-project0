@@ -54,7 +54,11 @@ public class SignedIntegerDoublewordElement extends NumberElement<IntegerType> i
 	@Override
 	public Register[] toRegisters(IntegerType value) {
 		byte[] b = ByteBuffer.allocate(4).order(byteOrder).putInt((value.toInteger() - delta) / multiplier).array();
-		return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
+		if (wordOrder == WordOrder.MSWLSW) {
+			return new Register[] { new SimpleRegister(b[0], b[1]), new SimpleRegister(b[2], b[3]) };
+		} else {
+			return new Register[] { new SimpleRegister(b[2], b[3]), new SimpleRegister(b[0], b[1]) };
+		}
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public enum EssProtocol {
 
 	Frequency,
 
-	ControlMode, WorkMode, RemoteDispatch, BatteryMaintananceState, ProtocolVersion, SystemType, SystemManufacturer, DcVoltage, DcCurrent, DcPower, IPMPhase1Temperature, IPMPhase2Temperature, IPMPhase3Temperature, TransformerPhase1Temperature, TotalEnergy, TotalYearEnergy, TotalMonthEnergy, TotalDateEnergy, BatterySwitchState, BatteryPeripheralIOState, BatteryChargeCurrentLimit, BatteryCellAverageTemperature, BatteryDischargeCurrentLimit, ChargeDischargeTimes;
+	ControlMode, WorkMode, RemoteDispatch, BatteryMaintananceState, ProtocolVersion, SystemType, SystemManufacturer, DcVoltage, DcCurrent, DcPower, IPMPhase1Temperature, IPMPhase2Temperature, IPMPhase3Temperature, TransformerPhase1Temperature, TotalEnergy, TotalYearEnergy, TotalMonthEnergy, TotalDateEnergy, BatterySwitchState, BatteryPeripheralIOState, BatteryChargeCurrentLimit, BatteryCellAverageTemperature, BatteryDischargeCurrentLimit, ChargeDischargeTimes, InverterCurrentPhase1, InverterCurrentPhase2, InverterCurrentPhase3, InverterVoltagePhase1, InverterVoltagePhase2, InverterVoltagePhase3, InverterActivePower;
 
 	public enum SystemStates {
 		Stop, PvCharging, Standby, Running, Fault, Debug

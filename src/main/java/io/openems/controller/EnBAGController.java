@@ -46,6 +46,8 @@ public class EnBAGController extends Controller {
 	private Element<IntegerType> totalApparentPower;
 	private boolean gridFeedLimitation = true;
 	private boolean isStoped = false;
+	private boolean isRemoteControlled = false;
+	private int remoteActivePower = 0;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
@@ -178,7 +180,7 @@ public class EnBAGController extends Controller {
 						time = System.currentTimeMillis();
 					}
 				}
-				int calculatedEssActivePower = gridCounter.getActivePower();
+				int calculatedEssActivePower = gridCounter.getActivePower() + lastActivePower;
 				int allowedCharge = 0;
 				int[] activePower = new int[allEss.size()];
 				int allowedDischargeSum = 0;
@@ -189,7 +191,6 @@ public class EnBAGController extends Controller {
 				// Collect data of all Ess devices
 				for (Ess ess : allEss) {
 					io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
-					calculatedEssActivePower += ess.getActivePower();
 					allowedCharge += ess.getAllowedCharge();
 					allowedDischargeSum += ess.getMaxDischargePower();
 					sumUseableSoc += ess.getUseableSoc();
@@ -197,7 +198,10 @@ public class EnBAGController extends Controller {
 					soc += ess.getSOC();
 				}
 				soc /= allEss.size();
-
+				// overwrite ActivePower by Remote value
+				if (isRemoteControlled) {
+					calculatedEssActivePower = remoteActivePower;
+				}
 				if (calculatedEssActivePower > 0) {
 					// discharge
 					// Split ActivePower to all Ess
@@ -206,7 +210,8 @@ public class EnBAGController extends Controller {
 					}
 					// TODO check maxDischargePower of device
 					for (int i = 0; i < allEss.size(); i++) {
-						activePower[i] = calculatedEssActivePower / sumUseableSoc * allEss.get(i).getUseableSoc();
+						activePower[i] = (int) ((double) calculatedEssActivePower / (double) sumUseableSoc * allEss
+								.get(i).getUseableSoc());
 					}
 				} else {
 					// charge
@@ -224,8 +229,8 @@ public class EnBAGController extends Controller {
 							}
 						}
 						for (int i = 0; i < allEss.size(); i++) {
-							activePower[i] = calculatedEssActivePower / sumChargeableSoc
-									* (100 - allEss.get(i).getSOC());
+							activePower[i] = (int) Math.ceil(calculatedEssActivePower / sumChargeableSoc
+									* (100 - allEss.get(i).getSOC()));
 						}
 					} else { // charging is not allowed
 						for (int i = 0; i < activePower.length; i++) {
@@ -247,9 +252,9 @@ public class EnBAGController extends Controller {
 					Ess ess = allEss.get(i);
 					// round to 100: ess can only be controlled with precision
 					// 100 W
-					ess.setActivePower(calculatedEssActivePower / 100 * 100);
+					ess.setActivePower(activePower[i] / 100 * 100);
 					log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-							+ calculatedEssActivePower + "]");
+							+ activePower[i] + "]");
 				}
 				lastActivePower = calculatedEssActivePower;
 			} else {
@@ -353,11 +358,10 @@ public class EnBAGController extends Controller {
 	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		switch (function) {
 		case 0:
-			// TODO Set ActivePower
+			remoteActivePower = (int) (informationElement.getValue() * 100);
 			break;
 		case 1:
 			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
-			System.out.println("MaxGridFeedPower: " + maxGridFeedPower.getValue().toInteger());
 			break;
 		default:
 			break;
@@ -384,11 +388,20 @@ public class EnBAGController extends Controller {
 			default:
 			case ON:
 				gridFeedLimitation = true;
-				System.out.println("GridFeedLimitation: ON");
 				break;
 			case OFF:
 				gridFeedLimitation = false;
-				System.out.println("GridFeedLimitation: OFF");
+				break;
+			}
+			break;
+		case 2:
+			switch (informationElement.getCommandState()) {
+			default:
+			case ON:
+				isRemoteControlled = true;
+				break;
+			case OFF:
+				isRemoteControlled = false;
 				break;
 			}
 			break;
@@ -410,7 +423,7 @@ public class EnBAGController extends Controller {
 		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
 		eventListener.add(totalReactivePowerListener);
 		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
-				connection, startAddressMeassurements + 0, 0.001f);
+				connection, startAddressMeassurements + 2, 0.001f);
 		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
 		eventListener.add(totalApparentPowerListener);
 		return eventListener;

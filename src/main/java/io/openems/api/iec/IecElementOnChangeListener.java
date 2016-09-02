@@ -1,7 +1,6 @@
 package io.openems.api.iec;
 
 import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.NumberElement;
 import io.openems.element.Element;
 import io.openems.element.ElementOnChangeListener;
 import io.openems.element.type.DoubleType;
@@ -31,21 +30,24 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 	private Connection iecConnection;
 	private int iOA;
 	private float multiplier;
-	private boolean isMeassurement = false;
+	private final boolean isMeassurement;
 
-	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier) {
+	private IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier,
+			boolean isMeassurement) {
 		super();
 		this.element = element;
 		this.iecConnection = iecConnection;
 		this.iOA = iOA;
 		this.multiplier = multiplier;
-		if (element instanceof NumberElement<?>) {
-			isMeassurement = true;
-		}
+		this.isMeassurement = isMeassurement;
 	}
 
 	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA) {
-		this(element, iecConnection, iOA, 0);
+		this(element, iecConnection, iOA, 0, false);
+	}
+
+	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier) {
+		this(element, iecConnection, iOA, multiplier, true);
 	}
 
 	public boolean isMeassurement() {
