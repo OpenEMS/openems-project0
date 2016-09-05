@@ -90,7 +90,7 @@ public class Balancing extends Controller {
 		int calculatedEssActivePower;
 
 		// actual power calculation
-		calculatedEssActivePower = ess.getActivePower() + gridCounter.getActivePower();
+		calculatedEssActivePower = lastSetEssActivePower + gridCounter.getActivePower();
 
 		if (calculatedEssActivePower > 0) {
 			// discharge

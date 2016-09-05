@@ -339,13 +339,13 @@ public class Commercial extends Ess {
 				new ElementBuilder(0x0224, name).name(EssProtocol.InverterVoltagePhase3).signed(true).multiplier(100)
 						.unit("mV").build(), //
 				new ElementBuilder(0x0225, name).name(EssProtocol.InverterCurrentPhase1).signed(true).multiplier(100)
-						.unit("mV").build(), //
+						.unit("mA").build(), //
 				new ElementBuilder(0x0226, name).name(EssProtocol.InverterCurrentPhase2).signed(true).multiplier(100)
-						.unit("mV").build(), //
+						.unit("mA").build(), //
 				new ElementBuilder(0x0227, name).name(EssProtocol.InverterCurrentPhase3).signed(true).multiplier(100)
-						.unit("mV").build(), //
+						.unit("mA").build(), //
 				new ElementBuilder(0x0228, name).name(EssProtocol.InverterActivePower).signed(true).multiplier(100)
-						.unit("mV").build(), //
+						.unit("W").build(), //
 				new ElementBuilder(0x0229, name).type(ElementType.PLACEHOLDER).intLength(0x230 - 0x229).build(), //
 				new ElementBuilder(0x0230, name).name(EssProtocol.AllowedCharge).multiplier(100).signed(true).unit("W")
 						.build(), //
@@ -645,8 +645,9 @@ public class Commercial extends Ess {
 
 	@Override
 	public String getCurrentDataAsString() {
-		return "[" + getElement(EssProtocol.BatteryStringSoc.name()).readable() + "] PWR: ["
-				+ getElement(EssProtocol.ActivePower.name()).readable() + " "
+		return "[" + getElement(EssProtocol.BatteryStringSoc.name()).readable() + "] PWR: [ GridFeedPower: "
+				+ getElement(EssProtocol.ActivePower.name()).readable() + " InverterOutputPower: "
+				+ getElement(EssProtocol.InverterActivePower.name()).readable() + " "
 				+ getElement(EssProtocol.ReactivePower.name()).readable() + " "
 				+ getElement(EssProtocol.ApparentPower.name()).readable() + "] DCPV: ["
 				+ getElement(EssProtocol.Pv1OutputPower.name()).readable()

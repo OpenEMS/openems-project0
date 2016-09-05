@@ -17,14 +17,16 @@
  */
 package io.openems.channel.modbus;
 
+import io.openems.channel.modbus.write.ModbusWriteRequest;
+import io.openems.device.protocol.ModbusProtocol;
+
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.openems.channel.modbus.write.ModbusWriteRequest;
-import io.openems.device.protocol.ModbusProtocol;
 
 public abstract class WritableModbusDevice extends ModbusDevice {
 	@SuppressWarnings("unused")
@@ -32,7 +34,7 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 
 	private ModbusProtocol writeProtocol;
 	// Queue of ModbusWriteRequests, naturally ordered by address
-	protected final Set<ModbusWriteRequest> writeRequestQueue = new TreeSet<>();
+	protected final Map<Integer, ModbusWriteRequest> writeRequestQueue = new TreeMap<>();
 
 	public WritableModbusDevice(String name, String channel, int unitid) {
 		super(name, channel, unitid);
@@ -53,14 +55,15 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	}
 
 	public void addToWriteRequestQueue(ModbusWriteRequest req) {
-		writeRequestQueue.add(req);
+		writeRequestQueue.put(req.getAddress(), req);
 	}
 
 	public abstract Set<String> getWriteElements();
 
 	public void executeModbusWrite(ModbusConnection modbusConnection) throws Exception {
-		for (ModbusWriteRequest req : writeRequestQueue) {
-			req.write(modbusConnection, this.unitid);
+		for (Entry<Integer, ModbusWriteRequest> writeRequest : writeRequestQueue.entrySet()) {
+			writeRequest.getValue().write(modbusConnection, this.unitid);
+			writeRequestQueue.remove(writeRequest.getKey());
 		}
 	}
 
