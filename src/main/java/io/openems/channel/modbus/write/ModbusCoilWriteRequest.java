@@ -22,5 +22,11 @@ public class ModbusCoilWriteRequest extends ModbusWriteRequest {
 	@Override
 	public void write(ModbusConnection con, int unitid) throws Exception {
 		con.write(unitid, this.getAddress(), this.coil);
+		System.out.println(this.getAddress() + " " + this.coil);
+	}
+
+	@Override
+	public String toString() {
+		return "Address: " + this.getAddress() + " Value: " + this.coil;
 	}
 }

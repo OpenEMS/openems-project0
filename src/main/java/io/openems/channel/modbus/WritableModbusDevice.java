@@ -55,15 +55,21 @@ public abstract class WritableModbusDevice extends ModbusDevice {
 	}
 
 	public void addToWriteRequestQueue(ModbusWriteRequest req) {
-		writeRequestQueue.put(req.getAddress(), req);
+		synchronized (writeRequestQueue) {
+			System.out.println(writeRequestQueue.get(req.getAddress()));
+			writeRequestQueue.put(req.getAddress(), req);
+			System.out.println(writeRequestQueue.get(req.getAddress()));
+		}
 	}
 
 	public abstract Set<String> getWriteElements();
 
 	public void executeModbusWrite(ModbusConnection modbusConnection) throws Exception {
-		for (Entry<Integer, ModbusWriteRequest> writeRequest : writeRequestQueue.entrySet()) {
-			writeRequest.getValue().write(modbusConnection, this.unitid);
-			writeRequestQueue.remove(writeRequest.getKey());
+		synchronized (writeRequestQueue) {
+			for (Entry<Integer, ModbusWriteRequest> writeRequest : writeRequestQueue.entrySet()) {
+				writeRequest.getValue().write(modbusConnection, this.unitid);
+				writeRequestQueue.remove(writeRequest.getKey());
+			}
 		}
 	}
 

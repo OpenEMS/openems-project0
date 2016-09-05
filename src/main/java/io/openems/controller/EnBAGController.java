@@ -48,6 +48,9 @@ public class EnBAGController extends Controller {
 	private boolean isStoped = false;
 	private boolean isRemoteControlled = false;
 	private int remoteActivePower = 0;
+	private long time = 0;
+	private long time2 = 0;
+	private boolean isOffGrid = true;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
@@ -131,11 +134,12 @@ public class EnBAGController extends Controller {
 				}
 			}
 		}
+		if (isEssOnGrid()) {
+			isOffGrid = true;
+		} else {
+			isOffGrid = false;
+		}
 	}
-
-	private long time = 0;
-	private long time2 = 0;
-	private boolean isOffGrid = true;
 
 	@Override
 	public void run() {
@@ -156,14 +160,16 @@ public class EnBAGController extends Controller {
 				// OnGrid
 				// switch all ESS and PV to onGrid
 				if (isOffGrid) {
-					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)) {
+					System.out.println("Switch to On-Grid");
+					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
+							&& !io.readDigitalValue(pvOnGridSwitch)) {
 						if (time + 3000 <= System.currentTimeMillis()) {
 							// switch primary Ess On
 							io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
 							// SetSolarLog to max power
 							solarLog.setPVLimit(solarLog.getTotalPower());
 							// OnGridSwitch is inverted
-							io.writeDigitalValue(pvOnGridSwitch, false);
+							io.writeDigitalValue(pvOnGridSwitch, true);
 							activeEss = null;
 							isOffGrid = false;
 						}
@@ -177,87 +183,94 @@ public class EnBAGController extends Controller {
 						io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
 						// Disconnect PV Off-Grid connection
 						io.writeDigitalValue(pvOffGridSwitch, false);
+						io.writeDigitalValue(pvOnGridSwitch, false);
 						time = System.currentTimeMillis();
 					}
-				}
-				int calculatedEssActivePower = gridCounter.getActivePower() + lastActivePower;
-				int allowedCharge = 0;
-				int[] activePower = new int[allEss.size()];
-				int allowedDischargeSum = 0;
-				int sumUseableSoc = 0;
-				int sumChargeableSoc = 0;
-				int soc = 0;
-
-				// Collect data of all Ess devices
-				for (Ess ess : allEss) {
-					io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
-					allowedCharge += ess.getAllowedCharge();
-					allowedDischargeSum += ess.getMaxDischargePower();
-					sumUseableSoc += ess.getUseableSoc();
-					sumChargeableSoc += (100 - ess.getSOC());
-					soc += ess.getSOC();
-				}
-				soc /= allEss.size();
-				// overwrite ActivePower by Remote value
-				if (isRemoteControlled) {
-					calculatedEssActivePower = remoteActivePower;
-				}
-				if (calculatedEssActivePower > 0) {
-					// discharge
-					// Split ActivePower to all Ess
-					if (allowedDischargeSum < calculatedEssActivePower) {
-						calculatedEssActivePower = allowedDischargeSum;
-					}
-					// TODO check maxDischargePower of device
-					for (int i = 0; i < allEss.size(); i++) {
-						activePower[i] = (int) ((double) calculatedEssActivePower / (double) sumUseableSoc * allEss
-								.get(i).getUseableSoc());
-					}
 				} else {
-					// charge
-					if (allowChargeFromAC) { // charging is allowed
-						int reservedSoc = 20;
-						// Reserve storage capacity for the Pv peak at midday
-						if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
-								&& calculatedEssActivePower < getMaxGridFeedPower()) {
-							calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
-									* (reservedSoc - (soc - (100 - reservedSoc)));
-						} else {
-							if (calculatedEssActivePower < allowedCharge) {
-								// not allowed to charge with such high power
-								calculatedEssActivePower = allowedCharge;
+					int calculatedEssActivePower = gridCounter.getActivePower();
+					int allowedCharge = 0;
+					int[] activePower = new int[allEss.size()];
+					int allowedDischargeSum = 0;
+					int sumUseableSoc = 0;
+					int sumChargeableSoc = 0;
+					int soc = 0;
+
+					// Collect data of all Ess devices
+					for (Ess ess : allEss) {
+						allowedCharge += ess.getAllowedCharge();
+						allowedDischargeSum += ess.getMaxDischargePower();
+						sumUseableSoc += ess.getUseableSoc();
+						sumChargeableSoc += (100 - ess.getSOC());
+						soc += ess.getSOC();
+						calculatedEssActivePower += ess.getActivePower();
+					}
+					soc /= allEss.size();
+					// overwrite ActivePower by Remote value
+					if (isRemoteControlled) {
+						calculatedEssActivePower = remoteActivePower;
+					}
+					if (calculatedEssActivePower > 0) {
+						// discharge
+						// Split ActivePower to all Ess
+						if (allowedDischargeSum < calculatedEssActivePower) {
+							calculatedEssActivePower = allowedDischargeSum;
+						}
+						// TODO check maxDischargePower of device
+						for (int i = 0; i < allEss.size(); i++) {
+							activePower[i] = (int) ((double) calculatedEssActivePower / sumUseableSoc * allEss.get(i)
+									.getUseableSoc());
+						}
+					} else {
+						// charge
+						if (allowChargeFromAC) { // charging is allowed
+							int reservedSoc = 20;
+							// Reserve storage capacity for the Pv peak at
+							// midday
+							if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
+									&& calculatedEssActivePower < getMaxGridFeedPower()) {
+								calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
+										* (reservedSoc - (soc - (100 - reservedSoc)));
+							} else {
+								if (calculatedEssActivePower < allowedCharge) {
+									// not allowed to charge with such high
+									// power
+									calculatedEssActivePower = allowedCharge;
+								}
+							}
+							// TODO Durch aufteilung der Leistung auf mehrere
+							// Speicher kann Leistung verloren gehen, da
+							// abgerundet
+							// wird
+							for (int i = 0; i < allEss.size(); i++) {
+								activePower[i] = calculatedEssActivePower / sumChargeableSoc
+										* (100 - allEss.get(i).getSOC());
+							}
+						} else { // charging is not allowed
+							for (int i = 0; i < activePower.length; i++) {
+								activePower[i] = 0;
 							}
 						}
-						for (int i = 0; i < allEss.size(); i++) {
-							activePower[i] = (int) Math.ceil(calculatedEssActivePower / sumChargeableSoc
-									* (100 - allEss.get(i).getSOC()));
-						}
-					} else { // charging is not allowed
-						for (int i = 0; i < activePower.length; i++) {
-							activePower[i] = 0;
-						}
 					}
-				}
 
-				// Reduce PV power
-				int toGridPower = gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower);
-				if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
-						|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
-					// set PV power
-					int pvlimit = solarLog.getPVLimit() - (toGridPower - getMaxGridFeedPower());
-					solarLog.setPVLimit(pvlimit);
+					// Reduce PV power
+					int toGridPower = gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower);
+					if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
+							|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
+						// set PV power
+						int pvlimit = solarLog.getPVLimit() - (toGridPower - getMaxGridFeedPower());
+						solarLog.setPVLimit(pvlimit);
+					}
+					// Write new calculated ActivePower to Ess device
+					for (int i = 0; i < allEss.size(); i++) {
+						Ess ess = allEss.get(i);
+						ess.setActivePower(activePower[i]);
+						log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
+								+ activePower[i] + "]");
+					}
+					lastActivePower = calculatedEssActivePower;
 				}
-				// Write new calculated ActivePower to Ess device
-				for (int i = 0; i < allEss.size(); i++) {
-					Ess ess = allEss.get(i);
-					// round to 100: ess can only be controlled with precision
-					// 100 W
-					ess.setActivePower(activePower[i] / 100 * 100);
-					log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-							+ activePower[i] + "]");
-				}
-				lastActivePower = calculatedEssActivePower;
 			} else {
+				System.out.println("Switch to Off-Grid");
 				// OffGrid
 				if (isOffGrid) {
 					// Check soc of activeEss
@@ -284,13 +297,15 @@ public class EnBAGController extends Controller {
 						}
 					}
 				} else {
-					if (areAllEssDisconnected() && io.readDigitalValue(pvOnGridSwitch)) {
+					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
+							&& !io.readDigitalValue(pvOnGridSwitch)) {
 						if (time2 + 3000 <= System.currentTimeMillis()) {
 							// switch primary Ess On
 							io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
 							// Switch Solar to OffGrid
 							io.writeDigitalValue(pvOffGridSwitch, true);
 							activeEss = essDevices.get(primaryOffGridEss);
+							System.out.println("ActiveEss :" + activeEss);
 							availableEss = new LinkedList<>(essDevices.values());
 							availableEss.remove(activeEss);
 							isOffGrid = true;
@@ -303,8 +318,9 @@ public class EnBAGController extends Controller {
 							}
 						}
 						io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
-						// Disconnect PV On-Grid connection
-						io.writeDigitalValue(pvOnGridSwitch, true);
+						// Disconnect PV connections
+						io.writeDigitalValue(pvOnGridSwitch, false);
+						io.writeDigitalValue(pvOffGridSwitch, false);
 						// Set SolarLog max power to 35kW
 						solarLog.setPVLimit(35000);
 						time2 = System.currentTimeMillis();
@@ -315,11 +331,12 @@ public class EnBAGController extends Controller {
 	}
 
 	private boolean isEssOnGrid() {
-		for (Ess ess : essDevices.values()) {
-			if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
-				return false;
-			}
-		}
+		// for (Ess ess : essDevices.values()) {
+		// if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
+		// return false;
+		// }
+		// }
+		// return true;
 		return true;
 	}
 
