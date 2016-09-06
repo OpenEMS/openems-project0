@@ -1,0 +1,11 @@
+#
+# -AIOLOS REPO-
+# 
+# This file contains the setup for the AIOLOS repository
+#
+
+-plugin.felix.repo= \
+	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+		name=Felix; \
+		locations=http://aiolos.intec.ugent.be/repositories/org.apache.felix/index.xml;
+

@@ -1,0 +1,18 @@
+#
+#  RUN SPECIFICATION
+#
+
+
+Bundle-Version:				1.0.0.${tstamp}
+Bundle-SymbolicName:		io.openems.application.launch
+JPM-Command:					openems
+
+
+-runfw:						org.eclipse.osgi
+
+-runrequires: osgi.identity;filter:='(osgi.identity=io.openems.application)'
+
+-runbundles: \
+	io.openems.application;version=snapshot,\
+	org.apache.felix.log;version='[1.0.1,1.0.2)'
+-resolve: auto
