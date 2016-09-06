@@ -160,7 +160,7 @@ public class EnBAGController extends Controller {
 				// OnGrid
 				// switch all ESS and PV to onGrid
 				if (isOffGrid) {
-					System.out.println("Switch to On-Grid");
+					log.info("Switch to On-Grid");
 					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
 							&& !io.readDigitalValue(pvOnGridSwitch)) {
 						if (time + 3000 <= System.currentTimeMillis()) {
@@ -270,7 +270,6 @@ public class EnBAGController extends Controller {
 					lastActivePower = calculatedEssActivePower;
 				}
 			} else {
-				System.out.println("Switch to Off-Grid");
 				// OffGrid
 				if (isOffGrid) {
 					// Check soc of activeEss
@@ -283,7 +282,7 @@ public class EnBAGController extends Controller {
 									availableEss.remove(activeEss);
 									io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), true);
 								} catch (NoSuchElementException ex) {
-									log.debug("Off-Grid: All Storages are empty!");
+									log.info("Off-Grid: All Storages are empty!");
 								}
 							}
 						} else {
@@ -297,6 +296,7 @@ public class EnBAGController extends Controller {
 						}
 					}
 				} else {
+					log.info("Switch to Off-Grid");
 					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
 							&& !io.readDigitalValue(pvOnGridSwitch)) {
 						if (time2 + 3000 <= System.currentTimeMillis()) {
@@ -331,12 +331,12 @@ public class EnBAGController extends Controller {
 	}
 
 	private boolean isEssOnGrid() {
-		// for (Ess ess : essDevices.values()) {
-		// if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
-		// return false;
-		// }
-		// }
-		// return true;
+		for (Ess ess : essDevices.values()) {
+			if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
+				return false;
+
+			}
+		}
 		return true;
 	}
 

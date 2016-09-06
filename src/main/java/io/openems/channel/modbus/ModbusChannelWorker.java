@@ -99,7 +99,8 @@ public class ModbusChannelWorker extends ChannelWorker {
 					try {
 						((WritableModbusDevice) device).executeModbusWrite(modbusConnection);
 					} catch (Exception e) {
-						log.error("Write-Exception: {}", e.getMessage());
+						// log.error("Write-Exception: {}", e.getMessage());
+						log.error("Write-Exception: " + e.getMessage() + " " + e.getClass().getName(), e);
 					}
 				}
 			}
