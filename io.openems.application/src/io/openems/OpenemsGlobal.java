@@ -39,33 +39,12 @@ import io.openems.monitoring.MonitoringWorker;
  * Main App
  *
  */
-public class App {
-	private final static Logger log = LoggerFactory.getLogger(App.class);
-
+public class OpenemsGlobal {
 	private static Map<String, ChannelWorker> channelWorkers = new HashMap<>();
 	private static Map<String, ControllerWorker> controllerWorkers = new HashMap<>();
 	private static Map<String, MonitoringWorker> monitoringWorkers = new HashMap<>();
 
 	private static Config config = null;
-
-	/**
-	 * Main method
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		config = new Config(Config.readJsonFile());
-		updateConfig(config);
-		// Run all api's
-		try {
-			RestWorker.startWorker();
-		} catch (Exception e) {
-			log.warn("Unable to start REST-Api");
-			e.printStackTrace();
-		}
-		new Iec60870Server().start();
-	}
 
 	/**
 	 * Starts all workers

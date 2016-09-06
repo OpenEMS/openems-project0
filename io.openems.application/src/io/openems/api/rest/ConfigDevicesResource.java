@@ -1,6 +1,6 @@
 package io.openems.api.rest;
 
-import io.openems.App;
+import io.openems.OpenemsGlobal;
 import io.openems.config.Config;
 import io.openems.config.exception.ConfigException;
 
@@ -17,7 +17,7 @@ public class ConfigDevicesResource extends ServerResource {
 
 	@Get("json")
 	public String getConfig() {
-		return App.getConfig().getConfigAsJson().toString();
+		return OpenemsGlobal.getConfig().getConfigAsJson().toString();
 	}
 
 	@Post("json")
@@ -25,7 +25,7 @@ public class ConfigDevicesResource extends ServerResource {
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(json);
 		Config conf = new Config(jsonElement.getAsJsonObject());
-		App.updateConfig(conf);
+		OpenemsGlobal.updateConfig(conf);
 		try {
 			conf.writeJsonFile();
 		} catch (IOException e) {

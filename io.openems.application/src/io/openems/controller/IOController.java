@@ -1,6 +1,6 @@
 package io.openems.controller;
 
-import io.openems.App;
+import io.openems.OpenemsGlobal;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
@@ -27,7 +27,7 @@ public class IOController extends Controller {
 
 	@Override
 	public void init() {
-		sl = (SolarLog) App.getConfig().getDevices().get("sl0");
+		sl = (SolarLog) OpenemsGlobal.getConfig().getDevices().get("sl0");
 		// UnsignedShortWordElement setLimitType = (UnsignedShortWordElement)
 		// sl.getElement("SetLimitType");
 		// sl.addToWriteQueue(setLimitType, setLimitType.toRegister(new
@@ -54,7 +54,7 @@ public class IOController extends Controller {
 		System.out.print(pac.readable());
 		UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl.getElement("DailyYield");
 		System.out.println("\t" + dailyYield.readable());
-		Ess ess = (Ess) App.getConfig().getDevices().get("ess0");
+		Ess ess = (Ess) OpenemsGlobal.getConfig().getDevices().get("ess0");
 		System.out.println(ess.getActivePower());
 	}
 

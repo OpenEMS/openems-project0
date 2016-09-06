@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import io.openems.App;
+import io.openems.OpenemsGlobal;
 import io.openems.channel.modbus.WritableModbusDevice;
 import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
@@ -33,7 +33,7 @@ public class DeviceCurrentValueResource extends ServerResource {
 	public Representation getCurrentValue() throws IOException, ParserConfigurationException, SAXException {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
-		Device d = App.getConfig().getDevices().get(device);
+		Device d = OpenemsGlobal.getConfig().getDevices().get(device);
 		return new StringRepresentation(findElement(parameterName, d).getAsJson().toString(),
 				MediaType.APPLICATION_JSON);
 	}
@@ -44,7 +44,7 @@ public class DeviceCurrentValueResource extends ServerResource {
 		JsonElement jsonElement = parser.parse(json);
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
-		WritableModbusDevice d = (WritableModbusDevice) App.getConfig().getDevices().get(device);
+		WritableModbusDevice d = (WritableModbusDevice) OpenemsGlobal.getConfig().getDevices().get(device);
 		ModbusElement<?> e = findElement(parameterName, d);
 		if (e instanceof BitElement) {
 			BitElement be = (BitElement) e;

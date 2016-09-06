@@ -1,6 +1,6 @@
 package io.openems.api.iec;
 
-import io.openems.App;
+import io.openems.OpenemsGlobal;
 import io.openems.controller.ControllerWorker;
 import io.openems.device.ess.Ess;
 
@@ -43,14 +43,14 @@ public class ConnectionListener implements ConnectionEventListener {
 		if (connection != null) {
 			listeners = new ArrayList<>();
 			int controllerCount = 0;
-			for (ControllerWorker cw : App.getConfig().getControllerWorkers().values()) {
+			for (ControllerWorker cw : OpenemsGlobal.getConfig().getControllerWorkers().values()) {
 				IecControllable c = cw.getController();
 				listeners.addAll(c.createChangeListeners(MEASSUREMENTSSTARTADDRESS + (controllerCount * 50),
 						MESSAGESSTARTADDRESS + (controllerCount * 50), connection));
 				controllerCount++;
 			}
 			int essCount = 0;
-			for (IecControllable d : App.getConfig().getDevices().values()) {
+			for (IecControllable d : OpenemsGlobal.getConfig().getDevices().values()) {
 				if (d instanceof Ess) {
 					listeners.addAll(d.createChangeListeners(
 							MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET, MESSAGESSTARTADDRESS + 100
@@ -90,7 +90,7 @@ public class ConnectionListener implements ConnectionEventListener {
 				int functionId = address % ADDRESSOFFSET;
 				System.out.println(controllerId);
 				System.out.println(functionId);
-				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
+				List<ControllerWorker> cw = new ArrayList<>(OpenemsGlobal.getConfig().getControllerWorkers().values());
 				IecControllable c = cw.get(controllerId).getController();
 				IeShortFloat value = (IeShortFloat) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
 				c.handleSetPoint(functionId, value);
@@ -102,7 +102,7 @@ public class ConnectionListener implements ConnectionEventListener {
 				address -= COMMANDADDRESS;
 				int controllerId = address / ADDRESSOFFSET;
 				int functionId = address % ADDRESSOFFSET;
-				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
+				List<ControllerWorker> cw = new ArrayList<>(OpenemsGlobal.getConfig().getControllerWorkers().values());
 				IecControllable c = cw.get(controllerId).getController();
 				IeDoubleCommand value = (IeDoubleCommand) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
 				c.handleCommand(functionId, value);
