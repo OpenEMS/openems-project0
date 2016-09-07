@@ -12,9 +12,11 @@ import io.openems.element.Element;
 import io.openems.element.type.IntegerType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import org.joda.time.DateTime;
@@ -34,9 +36,9 @@ public class EnBAGController extends Controller {
 	private final Element<IntegerType> maxGridFeedPower;
 	private int lastActivePower;
 	private Ess activeEss = null;
-	private String pvOnGridSwitch;
-	private String pvOffGridSwitch;
-	private Map<String, String> essOffGridSwitches;
+	private String pvOnGridSwitchName;
+	private String pvOffGridSwitchName;
+	private Map<String, String> essOffGridSwitchMapping;
 	private String primaryOffGridEss;
 	private IO io;
 	private List<Ess> availableEss;
@@ -45,31 +47,39 @@ public class EnBAGController extends Controller {
 	private Element<IntegerType> totalReactivePower;
 	private Element<IntegerType> totalApparentPower;
 	private boolean gridFeedLimitation = true;
-	private boolean isStoped = false;
+	private boolean isStopped = false;
 	private boolean isRemoteControlled = false;
 	private int remoteActivePower = 0;
 	private long time = 0;
 	private long time2 = 0;
 	private boolean isOffGrid = true;
+	private int pvLimit = 100;
+	private boolean pvOnGridSwitch = false;
+	private boolean pvOffGridSwitch = false;
+	private Map<String, Boolean> essOffGridSwitches;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
-			Map<String, String> essOffGridSwitches, String primaryOffGridEss, IO io, SolarLog solarLog) {
+			Map<String, String> essOffGridSwitchMapping, String primaryOffGridEss, IO io, SolarLog solarLog) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
 		this.allowChargeFromAC = allowChargeFromAc;
 		this.maxGridFeedPower = new Element<IntegerType>("maxGridFeedPower", "W");
 		this.maxGridFeedPower.setValue(new IntegerType(maxGridFeedPower));
-		this.pvOnGridSwitch = pvOnGridSwitch;
-		this.pvOffGridSwitch = pvOffGridSwitch;
-		this.essOffGridSwitches = essOffGridSwitches;
+		this.pvOnGridSwitchName = pvOnGridSwitch;
+		this.pvOffGridSwitchName = pvOffGridSwitch;
+		this.essOffGridSwitchMapping = essOffGridSwitchMapping;
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
 		this.solarLog = solarLog;
 		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
 		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
 		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
+		this.essOffGridSwitches = new HashMap<String, Boolean>();
+		for (Entry<String, String> value : essOffGridSwitchMapping.entrySet()) {
+			this.essOffGridSwitches.put(value.getValue(), false);
+		}
 	}
 
 	public int getMaxGridFeedPower() {
@@ -93,15 +103,15 @@ public class EnBAGController extends Controller {
 	}
 
 	public String getPvOnGridSwitch() {
-		return pvOnGridSwitch;
+		return pvOnGridSwitchName;
 	}
 
 	public String getPvOffGridSwitch() {
-		return pvOffGridSwitch;
+		return pvOffGridSwitchName;
 	}
 
 	public Map<String, String> getEssOffGridSwitches() {
-		return essOffGridSwitches;
+		return essOffGridSwitchMapping;
 	}
 
 	public String getPrimaryOffGridEss() {
@@ -143,7 +153,7 @@ public class EnBAGController extends Controller {
 
 	@Override
 	public void run() {
-		if (!isStoped) {
+		if (!isStopped) {
 			ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
 			int totalActivePower = 0;
 			int totalReactivePower = 0;
@@ -161,29 +171,27 @@ public class EnBAGController extends Controller {
 				// switch all ESS and PV to onGrid
 				if (isOffGrid) {
 					log.info("Switch to On-Grid");
-					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
-							&& !io.readDigitalValue(pvOnGridSwitch)) {
+					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
+							&& !io.readDigitalValue(pvOnGridSwitchName)) {
 						if (time + 3000 <= System.currentTimeMillis()) {
 							// switch primary Ess On
-							io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
 							// SetSolarLog to max power
-							solarLog.setPVLimit(solarLog.getTotalPower());
+							pvLimit = solarLog.getTotalPower();
 							// OnGridSwitch is inverted
-							io.writeDigitalValue(pvOnGridSwitch, true);
+							pvOnGridSwitch = true;
 							activeEss = null;
 							isOffGrid = false;
 						}
 					} else {
 						// Switch all Ess off
 						for (Ess ess : allEss) {
-							if (ess.getName() != primaryOffGridEss) {
-								io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
-							}
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
 						}
-						io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
+						essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
 						// Disconnect PV Off-Grid connection
-						io.writeDigitalValue(pvOffGridSwitch, false);
-						io.writeDigitalValue(pvOnGridSwitch, false);
+						pvOffGridSwitch = false;
+						pvOnGridSwitch = false;
 						time = System.currentTimeMillis();
 					}
 				} else {
@@ -253,12 +261,12 @@ public class EnBAGController extends Controller {
 					}
 
 					// Reduce PV power
-					int toGridPower = gridCounter.getActivePower() - (calculatedEssActivePower - lastActivePower);
+					int toGridPower = gridCounter.getActivePower() * -1;
 					if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
 							|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
 						// set PV power
-						int pvlimit = solarLog.getPVLimit() - (toGridPower - getMaxGridFeedPower());
-						solarLog.setPVLimit(pvlimit);
+						int pvlimit = toGridPower - getMaxGridFeedPower();
+						pvLimit = pvlimit;
 					}
 					// Write new calculated ActivePower to Ess device
 					for (int i = 0; i < allEss.size(); i++) {
@@ -280,7 +288,7 @@ public class EnBAGController extends Controller {
 								try {
 									activeEss = availableEss.iterator().next();
 									availableEss.remove(activeEss);
-									io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), true);
+									essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), true);
 								} catch (NoSuchElementException ex) {
 									log.info("Off-Grid: All Storages are empty!");
 								}
@@ -289,43 +297,53 @@ public class EnBAGController extends Controller {
 							// switch primary Ess off (is seperately needed
 							// because
 							// primary Ess output is inverted)
-							io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
 							// switch active Ess off
-							io.writeDigitalValue(essOffGridSwitches.get(activeEss.getName()), false);
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), false);
 							time2 = System.currentTimeMillis();
 						}
+					} else if (activeEss.getSOC() >= 95) {
+						pvOffGridSwitch = false;
 					}
 				} else {
 					log.info("Switch to Off-Grid");
-					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitch)
-							&& !io.readDigitalValue(pvOnGridSwitch)) {
+					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
+							&& !io.readDigitalValue(pvOnGridSwitchName)) {
 						if (time2 + 3000 <= System.currentTimeMillis()) {
 							// switch primary Ess On
-							io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), false);
-							// Switch Solar to OffGrid
-							io.writeDigitalValue(pvOffGridSwitch, true);
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
 							activeEss = essDevices.get(primaryOffGridEss);
 							System.out.println("ActiveEss :" + activeEss);
 							availableEss = new LinkedList<>(essDevices.values());
 							availableEss.remove(activeEss);
+							// Switch Solar to OffGrid
+							if (activeEss.getSOC() < 95) {
+								pvOffGridSwitch = true;
+							}
 							isOffGrid = true;
 						}
 					} else {
 						// Switch all Ess off
 						for (Ess ess : allEss) {
 							if (ess.getName() != primaryOffGridEss) {
-								io.writeDigitalValue(essOffGridSwitches.get(ess.getName()), false);
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
 							}
 						}
-						io.writeDigitalValue(essOffGridSwitches.get(primaryOffGridEss), true);
+						essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
 						// Disconnect PV connections
-						io.writeDigitalValue(pvOnGridSwitch, false);
-						io.writeDigitalValue(pvOffGridSwitch, false);
+						pvOnGridSwitch = false;
+						pvOffGridSwitch = false;
 						// Set SolarLog max power to 35kW
-						solarLog.setPVLimit(35000);
+						pvLimit = 35000;
 						time2 = System.currentTimeMillis();
 					}
 				}
+			}
+			solarLog.setPVLimit(pvLimit);
+			io.writeDigitalValue(pvOnGridSwitchName, pvOnGridSwitch);
+			io.writeDigitalValue(pvOffGridSwitchName, pvOffGridSwitch);
+			for (Entry<String, Boolean> value : essOffGridSwitches.entrySet()) {
+				io.writeDigitalValue(value.getKey(), value.getValue());
 			}
 		}
 	}
@@ -343,11 +361,11 @@ public class EnBAGController extends Controller {
 	private boolean areAllEssDisconnected() {
 		for (Ess ess : essDevices.values()) {
 			if (primaryOffGridEss.equals(ess.getName())) {
-				if (!io.readDigitalValue(essOffGridSwitches.get(ess.getName()))) {
+				if (!io.readDigitalValue(essOffGridSwitchMapping.get(ess.getName()))) {
 					return false;
 				}
 			} else {
-				if (io.readDigitalValue(essOffGridSwitches.get(ess.getName()))) {
+				if (io.readDigitalValue(essOffGridSwitchMapping.get(ess.getName()))) {
 					return false;
 				}
 			}
@@ -359,16 +377,14 @@ public class EnBAGController extends Controller {
 		for (Ess ess : essDevices.values()) {
 			ess.start();
 		}
-		isStoped = false;
-		System.out.println("Start");
+		isStopped = false;
 	}
 
 	public void stop() {
 		for (Ess ess : essDevices.values()) {
 			ess.stop();
 		}
-		isStoped = true;
-		System.out.println("Stop");
+		isStopped = true;
 	}
 
 	@Override

@@ -111,6 +111,12 @@ public class SolarLog extends WritableModbusDevice {
 
 	public void setPVLimit(int power) {
 		int limitPercent = (int) ((double) power / (double) totalPower * 100.0);
+		if (limitPercent > 100) {
+			limitPercent = 100;
+		}
+		if (limitPercent < 0) {
+			limitPercent = 0;
+		}
 		UnsignedShortWordElement setLimit = (UnsignedShortWordElement) getElement("SetLimit");
 		UnsignedIntegerDoublewordElement placeholder = (UnsignedIntegerDoublewordElement) getElement("Placeholder");
 		UnsignedIntegerDoublewordElement watchdog = (UnsignedIntegerDoublewordElement) getElement("WatchDog");
