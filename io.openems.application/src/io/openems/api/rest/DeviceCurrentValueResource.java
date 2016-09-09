@@ -2,8 +2,6 @@ package io.openems.api.rest;
 
 import java.io.IOException;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -30,7 +28,7 @@ import io.openems.device.protocol.interfaces.WordElement;
 public class DeviceCurrentValueResource extends ServerResource {
 
 	@Get("json")
-	public Representation getCurrentValue() throws IOException, ParserConfigurationException, SAXException {
+	public Representation getCurrentValue() {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
 		Device d = OpenemsGlobal.getConfig().getDevices().get(device);
@@ -39,7 +37,7 @@ public class DeviceCurrentValueResource extends ServerResource {
 	}
 
 	@Post("json")
-	public void setValue(String json) throws IOException, ParserConfigurationException, SAXException {
+	public void setValue(String json) {
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(json);
 		String device = (String) this.getRequestAttributes().get("device");

@@ -17,7 +17,6 @@
  */
 package io.openems.device.ess.mini;
 
-import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
@@ -35,9 +34,9 @@ import io.openems.element.type.IntegerType;
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
+//TODO OSGi import org.openmuc.j60870.Connection;
+//TODO OSGi import org.openmuc.j60870.IeDoubleCommand;
+//TODO OSGi import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -419,24 +418,24 @@ public class Mini extends Ess {
 		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetParameterSetting(), STOP));
 	}
 
-	@Override
-	public void handleSetPoint(int function, IeShortFloat informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleCommand(int function, IeDoubleCommand informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public void handleSetPoint(int function, IeShortFloat informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public void handleCommand(int function, IeDoubleCommand informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+//			int startAddressMessages, Connection connection) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	@Override
 	public int getReactivePower() {

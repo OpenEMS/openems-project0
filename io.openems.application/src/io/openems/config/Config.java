@@ -53,7 +53,7 @@ import com.google.gson.JsonSyntaxException;
 public class Config {
 	private final static Logger log = LoggerFactory.getLogger(Config.class);
 	private final static File configFile = new File("/etc/openems");
-	private final static File configFileDebug = new File("D:/fems/openems/openems");
+	private final static File configFileDebug = new File("D:/fems/openems/io.openems.application/openems");
 	private final static File configFileDebug2 = new File("C:/Users/matthias.rossmann/Dev/git/openems/openems");
 
 	private HashMap<String, ChannelWorker> channels = new HashMap<>();

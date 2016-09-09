@@ -1,7 +1,6 @@
 package io.openems.controller;
 
 import io.openems.OpenemsGlobal;
-import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
@@ -11,9 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
+//TODO OSGi import org.openmuc.j60870.Connection;
+//TODO OSGi import org.openmuc.j60870.IeDoubleCommand;
+//TODO OSGi import org.openmuc.j60870.IeShortFloat;
 
 public class IOController extends Controller {
 
@@ -62,23 +61,23 @@ public class IOController extends Controller {
 		return io;
 	}
 
-	@Override
-	public void handleSetPoint(int function, IeShortFloat informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleCommand(int function, IeDoubleCommand informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return new ArrayList<>();
-	}
+//	@Override
+//	public void handleSetPoint(int function, IeShortFloat informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public void handleCommand(int function, IeDoubleCommand informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+//			int startAddressMessages, Connection connection) {
+//		// TODO Auto-generated method stub
+//		return new ArrayList<>();
+//	}
 
 }

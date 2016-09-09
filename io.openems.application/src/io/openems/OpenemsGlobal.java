@@ -23,12 +23,8 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import io.openems.api.iec.Iec60870Server;
-import io.openems.api.rest.RestWorker;
 import io.openems.channel.ChannelWorker;
 import io.openems.config.Config;
 import io.openems.controller.ControllerWorker;

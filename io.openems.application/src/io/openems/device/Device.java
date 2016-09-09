@@ -1,6 +1,5 @@
 package io.openems.device;
 
-import io.openems.api.iec.IecControllable;
 import io.openems.device.protocol.ModbusElement;
 import io.openems.element.ElementOnChangeListener;
 import io.openems.element.ElementOnUpdateListener;
@@ -14,7 +13,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-public abstract class Device implements IecControllable {
+//TODO public abstract class Device implements IecControllable {
+public abstract class Device {
 	private final String channel;
 	protected Set<ElementOnUpdateListener> onUpdateListeners = new HashSet<>();
 	protected Set<ElementOnChangeListener> onChangeListeners = new HashSet<>();

@@ -1,6 +1,5 @@
 package io.openems.device.inverter;
 
-import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.WritableModbusDevice;
 import io.openems.channel.modbus.write.ModbusRegistersWriteRequest;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
@@ -19,9 +18,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
+//TODO OSGi import org.openmuc.j60870.Connection;
+//TODO OSGi import org.openmuc.j60870.IeDoubleCommand;
+//TODO OSGi import org.openmuc.j60870.IeShortFloat;
 
 public class SolarLog extends WritableModbusDevice {
 
@@ -125,23 +124,23 @@ public class SolarLog extends WritableModbusDevice {
 				* ((UnsignedShortWordElement) getElement(InverterProtocol.GetLimit.name())).getValue().toInteger();
 	}
 
-	@Override
-	public void handleSetPoint(int function, IeShortFloat informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleCommand(int function, IeDoubleCommand informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public void handleSetPoint(int function, IeShortFloat informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public void handleCommand(int function, IeDoubleCommand informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+//			int startAddressMessages, Connection connection) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 }

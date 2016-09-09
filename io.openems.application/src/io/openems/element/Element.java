@@ -5,9 +5,6 @@ import io.openems.element.type.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.joda.time.DateTime;
-import org.joda.time.Period;
-
 import com.google.gson.JsonObject;
 
 public class Element<T extends Type> {
@@ -17,14 +14,14 @@ public class Element<T extends Type> {
 	private String deviceName;
 	private T value = null;
 	private final String name;
-	private DateTime lastUpdate = null;
+//	TODO OSGi private DateTime lastUpdate = null;
 	private final String unit;
-	private final Period validPeriod;
+	//TODO OSGi private final Period validPeriod;
 
 	public Element(String name, String unit) {
 		this.name = name;
 		this.unit = unit;
-		this.validPeriod = new Period(Period.minutes(1));
+		//TODO OSGi this.validPeriod = new Period(Period.minutes(1));
 	}
 
 	public String getName() {
@@ -60,9 +57,10 @@ public class Element<T extends Type> {
 	 * 
 	 * @return last update timestamp
 	 */
-	public DateTime getLastUpdate() {
-		return lastUpdate;
-	}
+	//TODO OSGi 
+//	public DateTime getLastUpdate() {
+//		return lastUpdate;
+//	}
 
 	/**
 	 * Returns the raw value, without checking if it is still valid
@@ -79,7 +77,7 @@ public class Element<T extends Type> {
 	 * 
 	 */
 	public void setValue(T newValue) {
-		lastUpdate = DateTime.now();
+		//TODO OSGi lastUpdate = DateTime.now();
 		T oldValue = this.value;
 		this.value = newValue;
 		if (oldValue == null || !oldValue.isEqual(newValue)) {
@@ -143,7 +141,7 @@ public class Element<T extends Type> {
 		JsonObject obj = new JsonObject();
 		obj.addProperty("name", this.name);
 		obj.addProperty("unit", this.unit);
-		obj.addProperty("lastUpdate", lastUpdate.toString());
+		//TODO OSGi obj.addProperty("lastUpdate", lastUpdate.toString());
 		obj.addProperty("value", getValue().readable());
 		return obj;
 	}

@@ -8,7 +8,7 @@ import org.restlet.Component;
 import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 import org.restlet.routing.Router;
-import org.restlet.service.CorsService;
+//TODO OSGi import org.restlet.service.CorsService;
 
 public class RestWorker extends Application {
 	private static Component worker = null;
@@ -16,12 +16,13 @@ public class RestWorker extends Application {
 	private static final int PORT = 8084;
 
 	public RestWorker() {
-		CorsService corsService = new CorsService();
-		corsService.setAllowedOrigins(new HashSet<String>(Arrays.asList("http://localhost:3000")));
+		//TODO OSGi CorsService corsService = new CorsService();
+		//TODO OSGi corsService.setAllowedOrigins(new HashSet<String>(Arrays.asList("http://localhost:3000")));
 		// TODO add URL of real web interface
-		corsService.setAllowedCredentials(true);
-		getServices().add(corsService);
-		getStatusService().setConverterService(new RestConverterService());
+		//TODO OSGi corsService.setAllowedCredentials(true);
+		//TODO OSGi getServices().add(corsService);
+		//TODO: needs org.restlet: 2.3.7
+		//getStatusService().setConverterService(new RestConverterService());
 	}
 
 	public static Component startWorker() throws Exception {

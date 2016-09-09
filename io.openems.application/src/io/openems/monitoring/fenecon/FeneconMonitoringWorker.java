@@ -17,25 +17,15 @@
  */
 package io.openems.monitoring.fenecon;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonStreamParser;
 
 import io.openems.element.ElementOnChangeListener;
 import io.openems.element.type.Type;
@@ -107,38 +97,39 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 
 	private JsonObject sendToOnlineMonitoring(ArrayList<TimedElementValue> queue) {
 		JsonObject resultObj = null;
-		try (CloseableHttpClient client = HttpClients.createDefault()) {
-			String json = tevListToJson(queue);
-			HttpPost post = new HttpPost(URL);
-			post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
-			HttpResponse response = client.execute(post);
-
-			JsonStreamParser stream = new JsonStreamParser(new InputStreamReader(response.getEntity().getContent()));
-			while (stream.hasNext()) {
-				JsonElement mainElement = stream.next();
-				if (mainElement.isJsonObject()) {
-					JsonObject mainObj = mainElement.getAsJsonObject();
-					// read result
-					JsonElement resultElement = mainObj.get("result");
-					if (resultElement != null) {
-						if (resultElement.isJsonObject()) {
-							resultObj = resultElement.getAsJsonObject();
-						}
-					}
-					// read error
-					JsonElement errorElement = mainObj.get("error");
-					if (errorElement != null) {
-						throw new IOException(errorElement.toString());
-					}
-				}
-			}
-			if (resultObj == null) {
-				resultObj = new JsonObject();
-			}
-			log.info("Successfully sent data");
-		} catch (IOException | JsonParseException e) {
-			log.error("Send error: " + e.getMessage());
-		}
+		// TODO OSGi
+//		try (CloseableHttpClient client = HttpClients.createDefault()) {
+//			String json = tevListToJson(queue);
+//			HttpPost post = new HttpPost(URL);
+//			post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+//			HttpResponse response = client.execute(post);
+//
+//			JsonStreamParser stream = new JsonStreamParser(new InputStreamReader(response.getEntity().getContent()));
+//			while (stream.hasNext()) {
+//				JsonElement mainElement = stream.next();
+//				if (mainElement.isJsonObject()) {
+//					JsonObject mainObj = mainElement.getAsJsonObject();
+//					// read result
+//					JsonElement resultElement = mainObj.get("result");
+//					if (resultElement != null) {
+//						if (resultElement.isJsonObject()) {
+//							resultObj = resultElement.getAsJsonObject();
+//						}
+//					}
+//					// read error
+//					JsonElement errorElement = mainObj.get("error");
+//					if (errorElement != null) {
+//						throw new IOException(errorElement.toString());
+//					}
+//				}
+//			}
+//			if (resultObj == null) {
+//				resultObj = new JsonObject();
+//			}
+//			log.info("Successfully sent data");
+//		} catch (IOException | JsonParseException e) {
+//			log.error("Send error: " + e.getMessage());
+//		}
 		return resultObj;
 	}
 
@@ -170,10 +161,11 @@ public class FeneconMonitoringWorker extends MonitoringWorker implements Element
 			try {
 				if (yalerRelayDomain.equals("false")) {
 					log.info("Yaler: deactivate Tunnel");
-					// TODO FemsYaler.getFemsYaler().deactivateTunnel();
+					// TODO deactivate yaler
+					// FemsYaler.getFemsYaler().deactivateTunnel();
 				} else {
 					log.info("Yaler: activate Tunnel - " + yalerRelayDomain);
-					// TODO
+					// TODO activate yaler
 					// FemsYaler.getFemsYaler().activateTunnel(yalerRelayDomain);
 				}
 			} catch (Exception e) {

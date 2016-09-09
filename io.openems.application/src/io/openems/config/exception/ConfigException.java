@@ -1,8 +1,8 @@
 package io.openems.config.exception;
 
-import org.restlet.resource.Status;
+//TODO OSGi import org.restlet.resource.Status;
 
-@Status(value = 422, serialize = true)
+//TODO OSGi @Status(value = 422, serialize = true)
 public class ConfigException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 

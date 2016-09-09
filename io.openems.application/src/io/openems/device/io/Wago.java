@@ -1,38 +1,22 @@
 package io.openems.device.io;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
-import io.openems.config.exception.ConfigException;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
+//TODO OSGi import org.openmuc.j60870.Connection;
+//TODO OSGi import org.openmuc.j60870.IeDoubleCommand;
+//TODO OSGi import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
+
+import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ModbusProtocol;
 
 public class Wago extends IO {
 
@@ -63,6 +47,8 @@ public class Wago extends IO {
 		writeElements = new ArrayList<String>();
 		mainElements = new ArrayList<String>();
 		bitElementMapping = new HashMap<String, String>();
+		//TODO Deleted for OSGi
+		/*
 		HashMap<String, List<String>> channels = new HashMap<>();
 		ModbusProtocol protocol = new ModbusProtocol(name);
 		String username = "admin";
@@ -179,6 +165,7 @@ public class Wago extends IO {
 		// ElementBuilder(512).device(name).name("output") //
 		// .bit(new BitElement(0, "DOUT_1_1")) //
 		// .bit(new BitElement(1, "DOUT_1_2")).build()));
+		*/
 		return protocol;
 	}
 
@@ -212,23 +199,24 @@ public class Wago extends IO {
 		return getBitElement(channel).getValue().toBoolean();
 	}
 
-	@Override
-	public void handleSetPoint(int function, IeShortFloat informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleCommand(int function, IeDoubleCommand informationElement) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//TODO OSGi
+//	@Override
+//	public void handleSetPoint(int function, IeShortFloat informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public void handleCommand(int function, IeDoubleCommand informationElement) {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+//			int startAddressMessages, Connection connection) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 }

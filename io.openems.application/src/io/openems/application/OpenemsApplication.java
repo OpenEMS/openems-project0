@@ -11,7 +11,6 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
 import io.openems.OpenemsGlobal;
-import io.openems.api.iec.Iec60870Server;
 import io.openems.api.rest.RestWorker;
 import io.openems.config.Config;
 import io.openems.config.exception.ConfigException;
@@ -23,7 +22,7 @@ public class OpenemsApplication {
 	private static Config config = null;
 	
 	@Activate
-	public void activate() throws JsonIOException, JsonSyntaxException, ConfigException, FileNotFoundException {
+	public void activate() throws JsonIOException, JsonSyntaxException, ConfigException, FileNotFoundException{		
 		log.info("Activate OpenemsApplication");
 		config = new Config(Config.readJsonFile());
 		OpenemsGlobal.updateConfig(config);
@@ -34,6 +33,6 @@ public class OpenemsApplication {
 			log.warn("Unable to start REST-Api");
 			e.printStackTrace();
 		}
-		new Iec60870Server().start();
+//		TODO OSGi new Iec60870Server().start();
 	}
 }

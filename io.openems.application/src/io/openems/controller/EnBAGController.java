@@ -1,6 +1,5 @@
 package io.openems.controller;
 
-import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
@@ -17,10 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.joda.time.DateTime;
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,7 +222,8 @@ public class EnBAGController extends Controller {
 							int reservedSoc = 20;
 							// Reserve storage capacity for the Pv peak at
 							// midday
-							if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
+							//TODO OSGi
+							if (/*new DateTime().getHourOfDay() <= 11 && */soc > 100 - reservedSoc
 									&& calculatedEssActivePower < getMaxGridFeedPower()) {
 								calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
 										* (reservedSoc - (soc - (100 - reservedSoc)));
@@ -370,79 +367,79 @@ public class EnBAGController extends Controller {
 		isStoped = true;
 		System.out.println("Stop");
 	}
-
-	@Override
-	public void handleSetPoint(int function, IeShortFloat informationElement) {
-		switch (function) {
-		case 0:
-			remoteActivePower = (int) (informationElement.getValue() * 100);
-			break;
-		case 1:
-			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
-			break;
-		default:
-			break;
-
-		}
-	}
-
-	@Override
-	public void handleCommand(int function, IeDoubleCommand informationElement) {
-		switch (function) {
-		case 0:
-			switch (informationElement.getCommandState()) {
-			default:
-			case ON:
-				start();
-				break;
-			case OFF:
-				stop();
-				break;
-			}
-			break;
-		case 1:
-			switch (informationElement.getCommandState()) {
-			default:
-			case ON:
-				gridFeedLimitation = true;
-				break;
-			case OFF:
-				gridFeedLimitation = false;
-				break;
-			}
-			break;
-		case 2:
-			switch (informationElement.getCommandState()) {
-			default:
-			case ON:
-				isRemoteControlled = true;
-				break;
-			case OFF:
-				isRemoteControlled = false;
-				break;
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	@Override
-	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
-		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
-		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
-				connection, startAddressMeassurements + 0, 0.001f);
-		totalActivePower.addOnChangeListener(totalActivePowerListener);
-		eventListener.add(totalActivePowerListener);
-		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
-				connection, startAddressMeassurements + 1, 0.001f);
-		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
-		eventListener.add(totalReactivePowerListener);
-		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
-				connection, startAddressMeassurements + 2, 0.001f);
-		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
-		eventListener.add(totalApparentPowerListener);
-		return eventListener;
-	}
+//
+//	@Override
+//	public void handleSetPoint(int function, IeShortFloat informationElement) {
+//		switch (function) {
+//		case 0:
+//			remoteActivePower = (int) (informationElement.getValue() * 100);
+//			break;
+//		case 1:
+//			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
+//			break;
+//		default:
+//			break;
+//
+//		}
+//	}
+//
+//	@Override
+//	public void handleCommand(int function, IeDoubleCommand informationElement) {
+//		switch (function) {
+//		case 0:
+//			switch (informationElement.getCommandState()) {
+//			default:
+//			case ON:
+//				start();
+//				break;
+//			case OFF:
+//				stop();
+//				break;
+//			}
+//			break;
+//		case 1:
+//			switch (informationElement.getCommandState()) {
+//			default:
+//			case ON:
+//				gridFeedLimitation = true;
+//				break;
+//			case OFF:
+//				gridFeedLimitation = false;
+//				break;
+//			}
+//			break;
+//		case 2:
+//			switch (informationElement.getCommandState()) {
+//			default:
+//			case ON:
+//				isRemoteControlled = true;
+//				break;
+//			case OFF:
+//				isRemoteControlled = false;
+//				break;
+//			}
+//			break;
+//		default:
+//			break;
+//		}
+//	}
+//
+//	@Override
+//	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
+//			int startAddressMessages, Connection connection) {
+//		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
+//		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
+//				connection, startAddressMeassurements + 0, 0.001f);
+//		totalActivePower.addOnChangeListener(totalActivePowerListener);
+//		eventListener.add(totalActivePowerListener);
+//		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
+//				connection, startAddressMeassurements + 1, 0.001f);
+//		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
+//		eventListener.add(totalReactivePowerListener);
+//		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
+//				connection, startAddressMeassurements + 2, 0.001f);
+//		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
+//		eventListener.add(totalApparentPowerListener);
+//		return eventListener;
+//	}
 }

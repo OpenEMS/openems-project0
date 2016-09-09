@@ -62,7 +62,8 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 
 	@Override
 	public String toString() {
+		//TODO OSGi 
 		return "Element [address=0x" + Integer.toHexString(address) + ", name=" + getName() + ", unit=" + getUnit()
-				+ ", lastUpdate=" + getLastUpdate() + ", value=" + getValue() + "]";
+				+ /*", lastUpdate=" + getLastUpdate() + */", value=" + getValue() + "]";
 	}
 }
