@@ -833,4 +833,15 @@ public class Commercial extends Ess {
 		// element.addOnChangeListener(ieocl);
 		return ieocl;
 	}
+
+	@Override
+	public int getMaxCapacity() {
+		return 40000;
+	}
+
+	@Override
+	public void setReactivePower(int power) {
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(
+				(SignedIntegerWordElement) getElement(EssProtocol.SetReactivePower.name()), power));
+	}
 }

@@ -46,6 +46,10 @@ public abstract class Ess extends WritableModbusDevice {
 
 	public abstract int getActivePower();
 
+	public abstract void setReactivePower(int power);
+
+	public abstract int getReactivePower();
+
 	public abstract int getSOC();
 
 	public abstract int getAllowedCharge();
@@ -91,7 +95,15 @@ public abstract class Ess extends WritableModbusDevice {
 		return (int) (getAllowedDischarge() / (double) HYSTERESIS * lowSocCounter);
 	}
 
-	public abstract int getReactivePower();
-
 	public abstract int getApparentPower();
+
+	public abstract int getMaxCapacity();
+
+	public int getCapacity() {
+		return getMaxCapacity() / 100 * getSOC();
+	}
+
+	public int getUseableCapacity() {
+		return this.getCapacity() / 100 * (getSOC() - getMinSoc());
+	}
 }

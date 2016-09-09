@@ -235,7 +235,7 @@ public class EnBAGController extends Controller {
 							// Reserve storage capacity for the Pv peak at
 							// midday
 							if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
-									&& calculatedEssActivePower < getMaxGridFeedPower()) {
+									&& gridCounter.getActivePower() < getMaxGridFeedPower()) {
 								calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
 										* (reservedSoc - (soc - (100 - reservedSoc)));
 							} else {

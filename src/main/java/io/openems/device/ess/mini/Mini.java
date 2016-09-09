@@ -450,4 +450,16 @@ public class Mini extends Ess {
 		return 0;
 	}
 
+	@Override
+	public int getMaxCapacity() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setReactivePower(int power) {
+		// TODO Auto-generated method stub
+
+	}
+
 }
