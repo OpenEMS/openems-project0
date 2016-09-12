@@ -610,11 +610,11 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public EssProtocol.GridStates getGridState() {
+	public boolean isOnGrid() {
 		if (((UnsignedShortWordElement) getElement(EssProtocol.GridMode.name())).getValue().toInteger() == 2) {
-			return EssProtocol.GridStates.OnGrid;
+			return true;
 		}
-		return EssProtocol.GridStates.OffGrid;
+		return false;
 	}
 
 	private SignedIntegerWordElement getSetWorkState() {
@@ -843,5 +843,12 @@ public class Commercial extends Ess {
 	public void setReactivePower(int power) {
 		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(
 				(SignedIntegerWordElement) getElement(EssProtocol.SetReactivePower.name()), power));
+	}
+
+	@Override
+	public boolean isRunning() {
+		BitsElement bitsElement = (BitsElement) getElement(EssProtocol.SystemState.name());
+		BitElement essRunning = bitsElement.getBit(EssProtocol.SystemStates.Running.name());
+		return essRunning.getValue().toBoolean();
 	}
 }

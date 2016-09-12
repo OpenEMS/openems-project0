@@ -40,7 +40,9 @@ public abstract class Ess extends WritableModbusDevice {
 		return "ESS [name=" + name + ", unitid=" + unitid + "]";
 	}
 
-	public abstract EssProtocol.GridStates getGridState();
+	public abstract boolean isOnGrid();
+
+	public abstract boolean isRunning();
 
 	public abstract void setActivePower(int power);
 

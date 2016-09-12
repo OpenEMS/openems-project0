@@ -21,7 +21,6 @@ import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.ess.Ess;
 import io.openems.device.ess.EssProtocol;
-import io.openems.device.ess.EssProtocol.GridStates;
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ElementType;
@@ -356,12 +355,6 @@ public class Mini extends Ess {
 	}
 
 	@Override
-	public GridStates getGridState() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void setActivePower(int power) {
 		// TODO Auto-generated method stub
 
@@ -460,6 +453,18 @@ public class Mini extends Ess {
 	public void setReactivePower(int power) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean isOnGrid() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

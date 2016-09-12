@@ -3,11 +3,9 @@ package io.openems.controller;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssProtocol;
+import io.openems.device.ess.EssCluster;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
 import io.openems.element.Element;
 import io.openems.element.type.IntegerType;
 
@@ -57,6 +55,7 @@ public class EnBAGController extends Controller {
 	private boolean pvOnGridSwitch = false;
 	private boolean pvOffGridSwitch = false;
 	private Map<String, Boolean> essOffGridSwitches;
+	private EssCluster cluster;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
@@ -80,6 +79,7 @@ public class EnBAGController extends Controller {
 		for (Entry<String, String> value : essOffGridSwitchMapping.entrySet()) {
 			this.essOffGridSwitches.put(value.getValue(), false);
 		}
+		this.cluster = new EssCluster("Cluster", "", 0, 0, new ArrayList<Ess>(essDevices.values()));
 	}
 
 	public int getMaxGridFeedPower() {
@@ -128,23 +128,11 @@ public class EnBAGController extends Controller {
 
 	@Override
 	public void init() {
-		for (Ess ess : essDevices.values()) {
-			BitsElement bitsElement = (BitsElement) ess.getElement(EssProtocol.SystemState.name());
-			BitElement essRunning = bitsElement.getBit(EssProtocol.SystemStates.Running.name());
-			if (essRunning == null) {
-				log.info("No connection to ESS");
-			} else {
-				boolean isEssRunning = essRunning.getValue().toBoolean();
-				if (isEssRunning) {
-					log.info("ESS is running");
-				} else {
-					// Start ESS if not running
-					ess.start();
-					log.warn("ESS is not running. Start ESS");
-				}
-			}
+		if (!cluster.isRunning()) {
+			log.warn("ESS is not running. Start ESS");
+			cluster.start();
 		}
-		if (isEssOnGrid()) {
+		if (cluster.isOnGrid()) {
 			isOffGrid = true;
 		} else {
 			isOffGrid = false;
@@ -155,18 +143,10 @@ public class EnBAGController extends Controller {
 	public void run() {
 		if (!isStopped) {
 			ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
-			int totalActivePower = 0;
-			int totalReactivePower = 0;
-			int totalApparentPower = 0;
-			for (Ess ess : allEss) {
-				totalActivePower += ess.getActivePower();
-				totalReactivePower += ess.getReactivePower();
-				totalApparentPower += ess.getApparentPower();
-			}
-			this.totalActivePower.setValue(new IntegerType(totalActivePower));
-			this.totalReactivePower.setValue(new IntegerType(totalReactivePower));
-			this.totalApparentPower.setValue(new IntegerType(totalApparentPower));
-			if (isEssOnGrid()) {
+			this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
+			this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
+			this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
+			if (cluster.isOnGrid()) {
 				// OnGrid
 				// switch all ESS and PV to onGrid
 				if (isOffGrid) {
@@ -195,38 +175,16 @@ public class EnBAGController extends Controller {
 						time = System.currentTimeMillis();
 					}
 				} else {
-					int calculatedEssActivePower = gridCounter.getActivePower();
-					int allowedCharge = 0;
-					int[] activePower = new int[allEss.size()];
-					int allowedDischargeSum = 0;
-					int sumUseableSoc = 0;
-					int sumChargeableSoc = 0;
-					int soc = 0;
+					int calculatedEssActivePower = gridCounter.getActivePower() + cluster.getActivePower();
 
-					// Collect data of all Ess devices
-					for (Ess ess : allEss) {
-						allowedCharge += ess.getAllowedCharge();
-						allowedDischargeSum += ess.getMaxDischargePower();
-						sumUseableSoc += ess.getUseableSoc();
-						sumChargeableSoc += (100 - ess.getSOC());
-						soc += ess.getSOC();
-						calculatedEssActivePower += ess.getActivePower();
-					}
-					soc /= allEss.size();
 					// overwrite ActivePower by Remote value
 					if (isRemoteControlled) {
 						calculatedEssActivePower = remoteActivePower;
 					}
 					if (calculatedEssActivePower > 0) {
 						// discharge
-						// Split ActivePower to all Ess
-						if (allowedDischargeSum < calculatedEssActivePower) {
-							calculatedEssActivePower = allowedDischargeSum;
-						}
-						// TODO check maxDischargePower of device
-						for (int i = 0; i < allEss.size(); i++) {
-							activePower[i] = (int) ((double) calculatedEssActivePower / sumUseableSoc * allEss.get(i)
-									.getUseableSoc());
+						if (cluster.getAllowedDischarge() < calculatedEssActivePower) {
+							calculatedEssActivePower = cluster.getAllowedDischarge();
 						}
 					} else {
 						// charge
@@ -234,29 +192,19 @@ public class EnBAGController extends Controller {
 							int reservedSoc = 20;
 							// Reserve storage capacity for the Pv peak at
 							// midday
-							if (new DateTime().getHourOfDay() <= 11 && soc > 100 - reservedSoc
+							if (new DateTime().getHourOfDay() <= 11 && cluster.getSOC() > 100 - reservedSoc
 									&& gridCounter.getActivePower() < getMaxGridFeedPower()) {
 								calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
-										* (reservedSoc - (soc - (100 - reservedSoc)));
+										* (reservedSoc - (cluster.getSOC() - (100 - reservedSoc)));
 							} else {
-								if (calculatedEssActivePower < allowedCharge) {
+								if (calculatedEssActivePower < cluster.getAllowedCharge()) {
 									// not allowed to charge with such high
 									// power
-									calculatedEssActivePower = allowedCharge;
+									calculatedEssActivePower = cluster.getAllowedCharge();
 								}
 							}
-							// TODO Durch aufteilung der Leistung auf mehrere
-							// Speicher kann Leistung verloren gehen, da
-							// abgerundet
-							// wird
-							for (int i = 0; i < allEss.size(); i++) {
-								activePower[i] = calculatedEssActivePower / sumChargeableSoc
-										* (100 - allEss.get(i).getSOC());
-							}
 						} else { // charging is not allowed
-							for (int i = 0; i < activePower.length; i++) {
-								activePower[i] = 0;
-							}
+							calculatedEssActivePower = 0;
 						}
 					}
 
@@ -269,12 +217,7 @@ public class EnBAGController extends Controller {
 						pvLimit = pvlimit;
 					}
 					// Write new calculated ActivePower to Ess device
-					for (int i = 0; i < allEss.size(); i++) {
-						Ess ess = allEss.get(i);
-						ess.setActivePower(activePower[i]);
-						log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-								+ activePower[i] + "]");
-					}
+					cluster.setActivePower(calculatedEssActivePower);
 					lastActivePower = calculatedEssActivePower;
 				}
 			} else {
@@ -348,16 +291,6 @@ public class EnBAGController extends Controller {
 		}
 	}
 
-	private boolean isEssOnGrid() {
-		for (Ess ess : essDevices.values()) {
-			if (ess.getGridState() == EssProtocol.GridStates.OffGrid) {
-				return false;
-
-			}
-		}
-		return true;
-	}
-
 	private boolean areAllEssDisconnected() {
 		for (Ess ess : essDevices.values()) {
 			if (primaryOffGridEss.equals(ess.getName())) {
@@ -371,20 +304,6 @@ public class EnBAGController extends Controller {
 			}
 		}
 		return true;
-	}
-
-	public void start() {
-		for (Ess ess : essDevices.values()) {
-			ess.start();
-		}
-		isStopped = false;
-	}
-
-	public void stop() {
-		for (Ess ess : essDevices.values()) {
-			ess.stop();
-		}
-		isStopped = true;
 	}
 
 	@Override
@@ -409,10 +328,12 @@ public class EnBAGController extends Controller {
 			switch (informationElement.getCommandState()) {
 			default:
 			case ON:
-				start();
+				cluster.start();
+				isStopped = false;
 				break;
 			case OFF:
-				stop();
+				cluster.stop();
+				isStopped = true;
 				break;
 			}
 			break;

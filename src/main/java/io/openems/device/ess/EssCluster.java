@@ -1,7 +1,6 @@
 package io.openems.device.ess;
 
 import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.ess.EssProtocol.GridStates;
 import io.openems.device.protocol.ModbusProtocol;
 
 import java.util.Collections;
@@ -40,13 +39,13 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public GridStates getGridState() {
+	public boolean isOnGrid() {
 		for (Ess storage : storages) {
-			if (storage.getGridState() == GridStates.OffGrid) {
-				return GridStates.OffGrid;
+			if (!storage.isOnGrid()) {
+				return false;
 			}
 		}
-		return GridStates.OnGrid;
+		return true;
 	}
 
 	@Override
@@ -286,6 +285,16 @@ public class EssCluster extends Ess {
 			useableCapacity += storage.getUseableCapacity();
 		}
 		return useableCapacity;
+	}
+
+	@Override
+	public boolean isRunning() {
+		for (Ess storage : storages) {
+			if (!storage.isRunning()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }
