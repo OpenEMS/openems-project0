@@ -1,14 +1,5 @@
 package io.openems.controller;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssCluster;
-import io.openems.device.inverter.SolarLog;
-import io.openems.device.io.IO;
-import io.openems.element.Element;
-import io.openems.element.type.IntegerType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,6 +14,15 @@ import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
+import io.openems.device.ess.EssCluster;
+import io.openems.device.inverter.SolarLog;
+import io.openems.device.io.IO;
+import io.openems.element.Element;
+import io.openems.element.type.IntegerType;
 
 public class EnBAGController extends Controller {
 
@@ -44,6 +44,7 @@ public class EnBAGController extends Controller {
 	private Element<IntegerType> totalActivePower;
 	private Element<IntegerType> totalReactivePower;
 	private Element<IntegerType> totalApparentPower;
+	private Element<IntegerType> inHousePowerConsumption;
 	private boolean gridFeedLimitation = true;
 	private boolean isStopped = false;
 	private boolean isRemoteControlled = false;
@@ -75,6 +76,7 @@ public class EnBAGController extends Controller {
 		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
 		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
 		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
+		inHousePowerConsumption = new Element<IntegerType>("inHousePowerConsumption", "W");
 		this.essOffGridSwitches = new HashMap<String, Boolean>();
 		for (Entry<String, String> value : essOffGridSwitchMapping.entrySet()) {
 			this.essOffGridSwitches.put(value.getValue(), false);
@@ -146,6 +148,8 @@ public class EnBAGController extends Controller {
 			this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
 			this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
 			this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
+			this.inHousePowerConsumption.setValue(new IntegerType(
+					cluster.getActivePower() + gridCounter.getActivePower() + solarLog.getActivePower()));
 			if (cluster.isOnGrid()) {
 				// OnGrid
 				// switch all ESS and PV to onGrid
@@ -218,6 +222,8 @@ public class EnBAGController extends Controller {
 					}
 					// Write new calculated ActivePower to Ess device
 					cluster.setActivePower(calculatedEssActivePower);
+					log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
+							+ calculatedEssActivePower + "]");
 					lastActivePower = calculatedEssActivePower;
 				}
 			} else {
@@ -380,6 +386,10 @@ public class EnBAGController extends Controller {
 				connection, startAddressMeassurements + 2, 0.001f);
 		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
 		eventListener.add(totalApparentPowerListener);
+		IecElementOnChangeListener inHousePowerConsumptionListener = new IecElementOnChangeListener(
+				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f);
+		inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
+		eventListener.add(inHousePowerConsumptionListener);
 		return eventListener;
 	}
 }

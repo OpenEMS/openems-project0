@@ -1,5 +1,15 @@
 package io.openems.device.inverter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.openmuc.j60870.Connection;
+import org.openmuc.j60870.IeDoubleCommand;
+import org.openmuc.j60870.IeShortFloat;
+
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.WritableModbusDevice;
 import io.openems.channel.modbus.write.ModbusRegistersWriteRequest;
@@ -11,17 +21,9 @@ import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
+import io.openems.element.Element;
 import io.openems.element.type.IntegerType;
 import io.openems.element.type.LongType;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
 
 public class SolarLog extends WritableModbusDevice {
 
@@ -53,34 +55,33 @@ public class SolarLog extends WritableModbusDevice {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502, name)
-				.name(InverterProtocol.PAC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
-				.unit("W").build()));//
-		protocol.addElementRange(new ElementRange(3504, new ElementBuilder(3504, name)
-				.name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
-				.unit("W").build(), //
+		protocol.addElementRange(new ElementRange(3502, new ElementBuilder(3502, name).name(InverterProtocol.PAC.name())
+				.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("W").build()));//
+		protocol.addElementRange(new ElementRange(3504,
+				new ElementBuilder(3504, name).name(InverterProtocol.PDC.name()).length(ElementLength.DOUBLEWORD)
+						.wordOrder(WordOrder.LSWMSW).unit("W").build(), //
 				new ElementBuilder(3506, name).name(InverterProtocol.UAC.name()).unit("V").build(), //
 				new ElementBuilder(3507, name).name(InverterProtocol.UDC.name()).unit("V").build(), //
-				new ElementBuilder(3508, name).name(InverterProtocol.DailyYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
+				new ElementBuilder(3508, name).name(InverterProtocol.DailyYield.name()).length(ElementLength.DOUBLEWORD)
+						.wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3510, name).name(InverterProtocol.YesterdayYield.name())
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3512, name).name(InverterProtocol.MonthlyYield.name())
 						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
 				new ElementBuilder(3514, name).name(InverterProtocol.YearlyYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(),//
-				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name())
-						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build()));//
-		protocol.addElementRange(new ElementRange(10400, new ElementBuilder(10400, name)
-				.name(InverterProtocol.SetLimitType.name()).unit("%").build()));
-		protocol.addElementRange(new ElementRange(10401, new ElementBuilder(10401, name).name(
-				InverterProtocol.SetLimit.name()).build()));
-		protocol.addElementRange(new ElementRange(10404, new ElementBuilder(10404, name)
-				.name(InverterProtocol.WatchDog.name()).length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW)
-				.build()));
-		protocol.addElementRange(new ElementRange(10900, new ElementBuilder(10900, name).name(
-				InverterProtocol.Status.name()).build(), new ElementBuilder(10901, name)
-				.name(InverterProtocol.GetLimit.name()).unit("%").build()));
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).unit("Wh").build(), //
+				new ElementBuilder(3516, name).name(InverterProtocol.TotalYield.name()).length(ElementLength.DOUBLEWORD)
+						.wordOrder(WordOrder.LSWMSW).unit("Wh").build()));//
+		protocol.addElementRange(new ElementRange(10400,
+				new ElementBuilder(10400, name).name(InverterProtocol.SetLimitType.name()).unit("%").build()));
+		protocol.addElementRange(new ElementRange(10401,
+				new ElementBuilder(10401, name).name(InverterProtocol.SetLimit.name()).build()));
+		protocol.addElementRange(
+				new ElementRange(10404, new ElementBuilder(10404, name).name(InverterProtocol.WatchDog.name())
+						.length(ElementLength.DOUBLEWORD).wordOrder(WordOrder.LSWMSW).build()));
+		protocol.addElementRange(
+				new ElementRange(10900, new ElementBuilder(10900, name).name(InverterProtocol.Status.name()).build(),
+						new ElementBuilder(10901, name).name(InverterProtocol.GetLimit.name()).unit("%").build()));
 		return protocol;
 	}
 
@@ -101,6 +102,10 @@ public class SolarLog extends WritableModbusDevice {
 
 	public void setTotalPower(int totalPower) {
 		this.totalPower = totalPower;
+	}
+
+	public int getActivePower() {
+		return ((UnsignedShortWordElement) getElement(InverterProtocol.PAC.name())).getValue().toInteger();
 	}
 
 	@Override
@@ -146,8 +151,19 @@ public class SolarLog extends WritableModbusDevice {
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
+		/* Meassurements */
+		eventListener.add(createMeassurementListener(InverterProtocol.PAC.name(), startAddressMeassurements + 0, 0.01f,
+				connection));
+		return eventListener;
+	}
+
+	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
+			Connection connection) {
+		Element<?> element = getElement(elementName);
+		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier);
+		element.addOnChangeListener(ieocl);
+		return ieocl;
 	}
 
 }

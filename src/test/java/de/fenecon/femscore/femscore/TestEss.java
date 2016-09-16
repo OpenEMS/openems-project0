@@ -2,7 +2,6 @@ package de.fenecon.femscore.femscore;
 
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssProtocol.GridStates;
 import io.openems.device.protocol.ModbusProtocol;
 
 import java.util.List;
@@ -46,12 +45,6 @@ public class TestEss extends Ess {
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public GridStates getGridState() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -141,6 +134,18 @@ public class TestEss extends Ess {
 	public String getCurrentDataAsString() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean isOnGrid() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

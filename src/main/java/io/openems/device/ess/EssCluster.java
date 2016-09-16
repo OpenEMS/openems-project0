@@ -10,8 +10,12 @@ import java.util.Set;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EssCluster extends Ess {
+	private final static Logger log = LoggerFactory.getLogger(EssCluster.class);
+
 	public EssCluster(String name, String modbusid, int unitid, int minSoc, List<Ess> storages) {
 		super(name, modbusid, unitid, minSoc);
 		this.storages = storages;
@@ -83,6 +87,7 @@ public class EssCluster extends Ess {
 				if (e.getUseableSoc() > 0) {
 					int p = (int) Math.ceil((minP + diff / useableSocSum * e.getUseableSoc()) / 100) * 100;
 					e.setActivePower(p);
+					log.info(e.getCurrentDataAsString() + " SetActivePower: [" + p + "]");
 					power -= p;
 				}
 			}
@@ -113,6 +118,7 @@ public class EssCluster extends Ess {
 				double diff = maxP - minP;
 				int p = (int) Math.floor((minP + diff / useableSocSum * (100 - e.getUseableSoc())) / 100) * 100;
 				e.setActivePower(p);
+				log.info(e.getCurrentDataAsString() + " SetActivePower: [" + p + "]");
 				power -= p;
 			}
 		}
@@ -256,8 +262,11 @@ public class EssCluster extends Ess {
 
 	@Override
 	public String getCurrentDataAsString() {
-		// TODO Auto-generated method stub
-		return null;
+		String erg = "";
+		for (Ess storage : storages) {
+			erg += storage.getCurrentDataAsString();
+		}
+		return erg;
 	}
 
 	@Override

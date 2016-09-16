@@ -1,9 +1,5 @@
 package io.openems.api.iec;
 
-import io.openems.App;
-import io.openems.controller.ControllerWorker;
-import io.openems.device.ess.Ess;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +15,11 @@ import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.App;
+import io.openems.controller.ControllerWorker;
+import io.openems.device.ess.Ess;
+import io.openems.device.inverter.SolarLog;
 
 public class ConnectionListener implements ConnectionEventListener {
 
@@ -50,12 +51,17 @@ public class ConnectionListener implements ConnectionEventListener {
 				controllerCount++;
 			}
 			int essCount = 0;
+			int inverterCount = 0;
 			for (IecControllable d : App.getConfig().getDevices().values()) {
 				if (d instanceof Ess) {
-					listeners.addAll(d.createChangeListeners(
-							MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET, MESSAGESSTARTADDRESS + 100
-									+ (essCount * ADDRESSOFFSET), connection));
+					listeners.addAll(d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET,
+							MESSAGESSTARTADDRESS + 100 + (essCount * ADDRESSOFFSET), connection));
 					essCount++;
+				} else if (d instanceof SolarLog) {
+					listeners.addAll(
+							d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 600 + inverterCount * ADDRESSOFFSET,
+									MESSAGESSTARTADDRESS + 100 + (inverterCount * ADDRESSOFFSET), connection));
+					inverterCount++;
 				}
 			}
 		}
@@ -104,7 +110,8 @@ public class ConnectionListener implements ConnectionEventListener {
 				int functionId = address % ADDRESSOFFSET;
 				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
 				IecControllable c = cw.get(controllerId).getController();
-				IeDoubleCommand value = (IeDoubleCommand) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
+				IeDoubleCommand value = (IeDoubleCommand) aSdu.getInformationObjects()[0]
+						.getInformationElements()[0][0];
 				c.handleCommand(functionId, value);
 				connection.sendConfirmation(aSdu);
 			}
@@ -114,8 +121,8 @@ public class ConnectionListener implements ConnectionEventListener {
 			}
 
 		} catch (EOFException e) {
-			System.out.println("Will quit listening for commands on connection (" + connectionId
-					+ ") because socket was closed.");
+			System.out.println(
+					"Will quit listening for commands on connection (" + connectionId + ") because socket was closed.");
 		} catch (IOException e) {
 			System.out.println("Will quit listening for commands on connection (" + connectionId
 					+ ") because of error: \"" + e.getMessage() + "\".");
