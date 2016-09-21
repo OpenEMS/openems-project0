@@ -17,11 +17,16 @@
  */
 package io.openems.device.ess;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.openems.channel.modbus.WritableModbusDevice;
 import io.openems.element.Element;
+import io.openems.element.InvalidValueExcecption;
 import io.openems.element.type.IntegerType;
 
 public abstract class Ess extends WritableModbusDevice {
+	private final static Logger log = LoggerFactory.getLogger(Ess.class);
 
 	protected Element<IntegerType> minSoc = new Element<IntegerType>("minSoc", "%");
 
@@ -40,29 +45,33 @@ public abstract class Ess extends WritableModbusDevice {
 		return "ESS [name=" + name + ", unitid=" + unitid + "]";
 	}
 
-	public abstract boolean isOnGrid();
+	public abstract boolean isOnGrid() throws InvalidValueExcecption;
 
-	public abstract boolean isRunning();
+	public abstract boolean isRunning() throws InvalidValueExcecption;
 
-	public abstract void setActivePower(int power);
+	public abstract void setActivePower(int power) throws InvalidValueExcecption;
 
-	public abstract int getActivePower();
+	public abstract int getActivePower() throws InvalidValueExcecption;
 
-	public abstract void setReactivePower(int power);
+	public abstract void setReactivePower(int power) throws InvalidValueExcecption;
 
-	public abstract int getReactivePower();
+	public abstract int getReactivePower() throws InvalidValueExcecption;
 
-	public abstract int getSOC();
+	public abstract int getSOC() throws InvalidValueExcecption;
 
-	public abstract int getAllowedCharge();
+	public abstract int getAllowedCharge() throws InvalidValueExcecption;
 
-	public abstract int getAllowedDischarge();
+	public abstract int getAllowedDischarge() throws InvalidValueExcecption;
 
 	public abstract void start();
 
 	public abstract void stop();
 
-	public int getMinSoc() {
+	public abstract int getApparentPower() throws InvalidValueExcecption;
+
+	public abstract int getMaxCapacity();
+
+	public int getMinSoc() throws InvalidValueExcecption {
 		return minSoc.getValue().toInteger();
 	}
 
@@ -71,10 +80,15 @@ public abstract class Ess extends WritableModbusDevice {
 	}
 
 	public int getUseableSoc() {
-		return getSOC() - getMinSoc();
+		try {
+			return getSOC() - getMinSoc();
+		} catch (InvalidValueExcecption e) {
+			log.error("Soc not valid", e);
+			return 0;
+		}
 	}
 
-	public int getMaxDischargePower() {
+	public int getMaxDischargePower() throws InvalidValueExcecption {
 		if (getSOC() >= getMinSoc()) {
 			// increase the discharge Power slowly
 			if (lastSoc < getMinSoc()) {
@@ -97,15 +111,12 @@ public abstract class Ess extends WritableModbusDevice {
 		return (int) (getAllowedDischarge() / (double) HYSTERESIS * lowSocCounter);
 	}
 
-	public abstract int getApparentPower();
-
-	public abstract int getMaxCapacity();
-
 	public int getCapacity() {
-		return getMaxCapacity() / 100 * getSOC();
-	}
-
-	public int getUseableCapacity() {
-		return this.getCapacity() / 100 * (getSOC() - getMinSoc());
+		try {
+			return getMaxCapacity() / 100 * getSOC();
+		} catch (InvalidValueExcecption e) {
+			log.error("invalid device data", e);
+			return 0;
+		}
 	}
 }

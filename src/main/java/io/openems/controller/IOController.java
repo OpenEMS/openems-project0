@@ -1,12 +1,5 @@
 package io.openems.controller;
 
-import io.openems.App;
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.ess.Ess;
-import io.openems.device.inverter.SolarLog;
-import io.openems.device.io.IO;
-import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +7,14 @@ import java.util.List;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+
+import io.openems.App;
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.ess.Ess;
+import io.openems.device.inverter.SolarLog;
+import io.openems.device.io.IO;
+import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import io.openems.element.InvalidValueExcecption;
 
 public class IOController extends Controller {
 
@@ -50,12 +51,18 @@ public class IOController extends Controller {
 		// wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_2"),
 		// !wago.getBitElement("DigitalOutput_1_2").getValue().toBoolean());
 
-		UnsignedIntegerDoublewordElement pac = (UnsignedIntegerDoublewordElement) sl.getElement("PAC");
-		System.out.print(pac.readable());
-		UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl.getElement("DailyYield");
-		System.out.println("\t" + dailyYield.readable());
-		Ess ess = (Ess) App.getConfig().getDevices().get("ess0");
-		System.out.println(ess.getActivePower());
+		try {
+			UnsignedIntegerDoublewordElement pac = (UnsignedIntegerDoublewordElement) sl.getElement("PAC");
+			System.out.print(pac.readable());
+			UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl
+					.getElement("DailyYield");
+			System.out.println("\t" + dailyYield.readable());
+			Ess ess = (Ess) App.getConfig().getDevices().get("ess0");
+			System.out.println(ess.getActivePower());
+		} catch (InvalidValueExcecption e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public HashMap<String, IO> getIo() {

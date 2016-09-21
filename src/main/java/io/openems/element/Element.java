@@ -1,7 +1,5 @@
 package io.openems.element;
 
-import io.openems.element.type.Type;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +7,8 @@ import org.joda.time.DateTime;
 import org.joda.time.Period;
 
 import com.google.gson.JsonObject;
+
+import io.openems.element.type.Type;
 
 public class Element<T extends Type> {
 	private Set<ElementOnUpdateListener> listenersOnUpdate = new HashSet<>();
@@ -20,6 +20,7 @@ public class Element<T extends Type> {
 	private DateTime lastUpdate = null;
 	private final String unit;
 	private final Period validPeriod;
+	private boolean isValid = false;
 
 	public Element(String name, String unit) {
 		this.name = name;
@@ -43,16 +44,27 @@ public class Element<T extends Type> {
 		return unit;
 	}
 
-	public String readable() {
+	public String readable() throws InvalidValueExcecption {
 		if (getValue() == null) {
 			return "<empty>";
 		}
 		return getValue().readable() + " " + unit;
 	}
 
-	public T getValue() {
-		// TODO: check if valid is still valid
-		return value;
+	public boolean isValid() {
+		return isValid;
+	}
+
+	public void setValid(boolean isValid) {
+		this.isValid = isValid;
+	}
+
+	public T getValue() throws InvalidValueExcecption {
+		if (isValid()) {
+			return value;
+		} else {
+			throw new InvalidValueExcecption("Element " + name + " from device " + deviceName + " is invalid!");
+		}
 	}
 
 	/**
@@ -139,7 +151,7 @@ public class Element<T extends Type> {
 		}
 	}
 
-	public JsonObject getAsJson() {
+	public JsonObject getAsJson() throws InvalidValueExcecption {
 		JsonObject obj = new JsonObject();
 		obj.addProperty("name", this.name);
 		obj.addProperty("unit", this.unit);

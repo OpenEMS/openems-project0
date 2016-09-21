@@ -1,14 +1,5 @@
 package io.openems.device.io;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
-import io.openems.config.exception.ConfigException;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -33,6 +24,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.channel.modbus.write.ModbusCoilWriteRequest;
+import io.openems.config.exception.ConfigException;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.element.InvalidValueExcecption;
 
 public class Wago extends IO {
 
@@ -208,7 +209,7 @@ public class Wago extends IO {
 	}
 
 	@Override
-	public boolean readDigitalValue(String channel) {
+	public boolean readDigitalValue(String channel) throws InvalidValueExcecption {
 		return getBitElement(channel).getValue().toBoolean();
 	}
 

@@ -18,6 +18,7 @@
 package io.openems.device.counter;
 
 import io.openems.channel.modbus.ModbusDevice;
+import io.openems.element.InvalidValueExcecption;
 
 public abstract class Counter extends ModbusDevice {
 
@@ -30,5 +31,5 @@ public abstract class Counter extends ModbusDevice {
 		return "Counter [name=" + name + ", unitid=" + unitid + "]";
 	}
 
-	public abstract int getActivePower();
+	public abstract int getActivePower() throws InvalidValueExcecption;
 }

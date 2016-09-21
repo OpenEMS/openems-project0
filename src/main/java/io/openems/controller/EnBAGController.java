@@ -22,6 +22,7 @@ import io.openems.device.ess.EssCluster;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 import io.openems.element.Element;
+import io.openems.element.InvalidValueExcecption;
 import io.openems.element.type.IntegerType;
 
 public class EnBAGController extends Controller {
@@ -84,7 +85,7 @@ public class EnBAGController extends Controller {
 		this.cluster = new EssCluster("Cluster", "", 0, 0, new ArrayList<Ess>(essDevices.values()));
 	}
 
-	public int getMaxGridFeedPower() {
+	public int getMaxGridFeedPower() throws InvalidValueExcecption {
 		return maxGridFeedPower.getValue().toInteger();
 	}
 
@@ -130,13 +131,22 @@ public class EnBAGController extends Controller {
 
 	@Override
 	public void init() {
-		if (!cluster.isRunning()) {
-			log.warn("ESS is not running. Start ESS");
-			cluster.start();
+		try {
+			if (!cluster.isRunning()) {
+				log.warn("ESS is not running. Start ESS");
+				cluster.start();
+			}
+		} catch (InvalidValueExcecption e) {
+			log.error("can't start some ess", e);
 		}
-		if (cluster.isOnGrid()) {
-			isOffGrid = true;
-		} else {
+		try {
+			if (cluster.isOnGrid()) {
+				isOffGrid = true;
+			} else {
+				isOffGrid = false;
+			}
+		} catch (InvalidValueExcecption e) {
+			log.error("can't read grid state");
 			isOffGrid = false;
 		}
 	}
@@ -145,146 +155,183 @@ public class EnBAGController extends Controller {
 	public void run() {
 		if (!isStopped) {
 			ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
-			this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
-			this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
-			this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
-			this.inHousePowerConsumption.setValue(new IntegerType(
-					cluster.getActivePower() + gridCounter.getActivePower() + solarLog.getActivePower()));
-			if (cluster.isOnGrid()) {
+			try {
+				this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
+				this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
+				this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
+				this.inHousePowerConsumption.setValue(new IntegerType(
+						cluster.getActivePower() + gridCounter.getActivePower() + solarLog.getActivePower()));
+			} catch (InvalidValueExcecption e) {
+				this.totalActivePower.setValid(false);
+				this.totalReactivePower.setValid(false);
+				this.totalApparentPower.setValid(false);
+				this.inHousePowerConsumption.setValid(false);
+			}
+			boolean isOnGrid = true;
+			try {
+				if (!cluster.isOnGrid()) {
+					isOnGrid = false;
+				}
+			} catch (InvalidValueExcecption e) {
+				log.error("error on read grid state!");
+			}
+			if (isOnGrid) {
 				// OnGrid
 				// switch all ESS and PV to onGrid
 				if (isOffGrid) {
 					log.info("Switch to On-Grid");
-					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
-							&& !io.readDigitalValue(pvOnGridSwitchName)) {
-						if (time + 3000 <= System.currentTimeMillis()) {
-							// switch primary Ess On
-							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
-							// SetSolarLog to max power
-							pvLimit = solarLog.getTotalPower();
-							// OnGridSwitch is inverted
-							pvOnGridSwitch = true;
-							activeEss = null;
-							isOffGrid = false;
+					try {
+						if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
+								&& !io.readDigitalValue(pvOnGridSwitchName)) {
+							if (time + 3000 <= System.currentTimeMillis()) {
+								// switch primary Ess On
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
+								// SetSolarLog to max power
+								pvLimit = solarLog.getTotalPower();
+								// OnGridSwitch is inverted
+								pvOnGridSwitch = true;
+								activeEss = null;
+								isOffGrid = false;
+							}
+						} else {
+							// Switch all Ess off
+							for (Ess ess : allEss) {
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
+							}
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
+							// Disconnect PV Off-Grid connection
+							pvOffGridSwitch = false;
+							pvOnGridSwitch = false;
+							time = System.currentTimeMillis();
 						}
-					} else {
-						// Switch all Ess off
-						for (Ess ess : allEss) {
-							essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
-						}
-						essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
-						// Disconnect PV Off-Grid connection
-						pvOffGridSwitch = false;
-						pvOnGridSwitch = false;
-						time = System.currentTimeMillis();
+					} catch (InvalidValueExcecption e) {
+						log.error("failed to switch to OnGrid mode because there are invalid values!", e);
 					}
 				} else {
-					int calculatedEssActivePower = gridCounter.getActivePower() + cluster.getActivePower();
+					try {
+						int calculatedEssActivePower = gridCounter.getActivePower() + cluster.getActivePower();
 
-					// overwrite ActivePower by Remote value
-					if (isRemoteControlled) {
-						calculatedEssActivePower = remoteActivePower;
-					}
-					if (calculatedEssActivePower > 0) {
-						// discharge
-						if (cluster.getAllowedDischarge() < calculatedEssActivePower) {
-							calculatedEssActivePower = cluster.getAllowedDischarge();
+						// overwrite ActivePower by Remote value
+						if (isRemoteControlled) {
+							calculatedEssActivePower = remoteActivePower;
 						}
-					} else {
-						// charge
-						if (allowChargeFromAC) { // charging is allowed
-							int reservedSoc = 20;
-							// Reserve storage capacity for the Pv peak at
-							// midday
-							if (new DateTime().getHourOfDay() <= 11 && cluster.getSOC() > 100 - reservedSoc
-									&& gridCounter.getActivePower() < getMaxGridFeedPower()) {
-								calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
-										* (reservedSoc - (cluster.getSOC() - (100 - reservedSoc)));
-							} else {
-								if (calculatedEssActivePower < cluster.getAllowedCharge()) {
-									// not allowed to charge with such high
-									// power
-									calculatedEssActivePower = cluster.getAllowedCharge();
-								}
+						if (calculatedEssActivePower > 0) {
+							// discharge
+							if (cluster.getAllowedDischarge() < calculatedEssActivePower) {
+								calculatedEssActivePower = cluster.getAllowedDischarge();
 							}
-						} else { // charging is not allowed
-							calculatedEssActivePower = 0;
+						} else {
+							// charge
+							if (allowChargeFromAC) { // charging is allowed
+								int reservedSoc = 20;
+								// Reserve storage capacity for the Pv peak at
+								// midday
+								if (new DateTime().getHourOfDay() <= 11 && cluster.getSOC() > 100 - reservedSoc
+										&& gridCounter.getActivePower() < getMaxGridFeedPower()) {
+									calculatedEssActivePower = calculatedEssActivePower / (reservedSoc * 2)
+											* (reservedSoc - (cluster.getSOC() - (100 - reservedSoc)));
+								} else {
+									if (calculatedEssActivePower < cluster.getAllowedCharge()) {
+										// not allowed to charge with such high
+										// power
+										calculatedEssActivePower = cluster.getAllowedCharge();
+									}
+								}
+							} else { // charging is not allowed
+								calculatedEssActivePower = 0;
+							}
+						}
+
+						// Reduce PV power
+						int toGridPower = gridCounter.getActivePower() * -1;
+						if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
+								|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
+							// set PV power
+							int pvlimit = toGridPower - getMaxGridFeedPower();
+							pvLimit = pvlimit;
+						}
+						// Write new calculated ActivePower to Ess device
+						cluster.setActivePower(calculatedEssActivePower);
+						log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
+								+ calculatedEssActivePower + "]");
+						lastActivePower = calculatedEssActivePower;
+					} catch (InvalidValueExcecption e) {
+						log.error("An error occured on controll the storages!", e);
+						pvLimit = 0;
+						try {
+							cluster.setActivePower(0);
+						} catch (InvalidValueExcecption e1) {
+							log.error("Failed to stop ess!");
 						}
 					}
-
-					// Reduce PV power
-					int toGridPower = gridCounter.getActivePower() * -1;
-					if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
-							|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
-						// set PV power
-						int pvlimit = toGridPower - getMaxGridFeedPower();
-						pvLimit = pvlimit;
-					}
-					// Write new calculated ActivePower to Ess device
-					cluster.setActivePower(calculatedEssActivePower);
-					log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-							+ calculatedEssActivePower + "]");
-					lastActivePower = calculatedEssActivePower;
 				}
 			} else {
 				// OffGrid
 				if (isOffGrid) {
 					// Check soc of activeEss
-					if (activeEss.getSOC() <= 2) {
-						if (areAllEssDisconnected()) {
-							if (time2 + 3000 <= System.currentTimeMillis()) {
-								// switch to next Ess
-								try {
-									activeEss = availableEss.iterator().next();
-									availableEss.remove(activeEss);
-									essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), true);
-								} catch (NoSuchElementException ex) {
-									log.info("Off-Grid: All Storages are empty!");
+					try {
+						if (activeEss.getSOC() <= 2) {
+							if (areAllEssDisconnected()) {
+								if (time2 + 3000 <= System.currentTimeMillis()) {
+									// switch to next Ess
+									try {
+										activeEss = availableEss.iterator().next();
+										availableEss.remove(activeEss);
+										essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), true);
+									} catch (NoSuchElementException ex) {
+										log.info("Off-Grid: All Storages are empty!");
+									}
 								}
+							} else {
+								// switch primary Ess off (is seperately needed
+								// because
+								// primary Ess output is inverted)
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
+								// switch active Ess off
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), false);
+								time2 = System.currentTimeMillis();
 							}
-						} else {
-							// switch primary Ess off (is seperately needed
-							// because
-							// primary Ess output is inverted)
-							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
-							// switch active Ess off
-							essOffGridSwitches.put(essOffGridSwitchMapping.get(activeEss.getName()), false);
-							time2 = System.currentTimeMillis();
+						} else if (activeEss.getSOC() >= 95) {
+							pvOffGridSwitch = false;
 						}
-					} else if (activeEss.getSOC() >= 95) {
-						pvOffGridSwitch = false;
+					} catch (InvalidValueExcecption e) {
+						log.error("can't switch to the next storage, because ther are invalid values", e);
 					}
 				} else {
 					log.info("Switch to Off-Grid");
-					if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
-							&& !io.readDigitalValue(pvOnGridSwitchName)) {
-						if (time2 + 3000 <= System.currentTimeMillis()) {
-							// switch primary Ess On
-							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
-							activeEss = essDevices.get(primaryOffGridEss);
-							System.out.println("ActiveEss :" + activeEss);
-							availableEss = new LinkedList<>(essDevices.values());
-							availableEss.remove(activeEss);
-							// Switch Solar to OffGrid
-							if (activeEss.getSOC() < 95) {
-								pvOffGridSwitch = true;
+					try {
+						if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
+								&& !io.readDigitalValue(pvOnGridSwitchName)) {
+							if (time2 + 3000 <= System.currentTimeMillis()) {
+								// switch primary Ess On
+								essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), false);
+								activeEss = essDevices.get(primaryOffGridEss);
+								System.out.println("ActiveEss :" + activeEss);
+								availableEss = new LinkedList<>(essDevices.values());
+								availableEss.remove(activeEss);
+								// Switch Solar to OffGrid
+								if (activeEss.getSOC() < 95) {
+									pvOffGridSwitch = true;
+								}
+								isOffGrid = true;
 							}
-							isOffGrid = true;
-						}
-					} else {
-						// Switch all Ess off
-						for (Ess ess : allEss) {
-							if (ess.getName() != primaryOffGridEss) {
-								essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
+						} else {
+							// Switch all Ess off
+							for (Ess ess : allEss) {
+								if (ess.getName() != primaryOffGridEss) {
+									essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
+								}
 							}
+							essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
+							// Disconnect PV connections
+							pvOnGridSwitch = false;
+							pvOffGridSwitch = false;
+							// Set SolarLog max power to 35kW
+							pvLimit = 35000;
+							time2 = System.currentTimeMillis();
 						}
-						essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
-						// Disconnect PV connections
-						pvOnGridSwitch = false;
-						pvOffGridSwitch = false;
-						// Set SolarLog max power to 35kW
-						pvLimit = 35000;
-						time2 = System.currentTimeMillis();
+					} catch (InvalidValueExcecption e) {
+						log.error("can't switch to OffGrid because there are invalid values!");
 					}
 				}
 			}
@@ -297,7 +344,7 @@ public class EnBAGController extends Controller {
 		}
 	}
 
-	private boolean areAllEssDisconnected() {
+	private boolean areAllEssDisconnected() throws InvalidValueExcecption {
 		for (Ess ess : essDevices.values()) {
 			if (primaryOffGridEss.equals(ess.getName())) {
 				if (!io.readDigitalValue(essOffGridSwitchMapping.get(ess.getName()))) {

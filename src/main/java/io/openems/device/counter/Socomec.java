@@ -17,14 +17,6 @@
  */
 package io.openems.device.counter;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.protocol.ElementBuilder;
-import io.openems.device.protocol.ElementLength;
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.SignedIntegerDoublewordElement;
-import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +25,21 @@ import java.util.Set;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.protocol.ElementBuilder;
+import io.openems.device.protocol.ElementLength;
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.SignedIntegerDoublewordElement;
+import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import io.openems.element.InvalidValueExcecption;
 
 public class Socomec extends Counter {
+
+	private final static Logger log = LoggerFactory.getLogger(Socomec.class);
 
 	public Socomec(String name, String channel, int unitid) {
 		super(name, channel, unitid);
@@ -48,21 +53,24 @@ public class Socomec extends Counter {
 	@Override
 	protected ModbusProtocol getProtocol() {
 		ModbusProtocol protocol = new ModbusProtocol(name);
-		protocol.addElementRange(new ElementRange(0xc568, new ElementBuilder(0xc568, name)
-				.name(CounterProtocol.ActivePower).multiplier(10).signed(true).length(ElementLength.DOUBLEWORD)
-				.unit("W").build(), new ElementBuilder(0xc56a, name).name(CounterProtocol.ReactivePower).multiplier(10)
-				.signed(true).length(ElementLength.DOUBLEWORD).unit("VA").build(), new ElementBuilder(0xc56c, name)
-				.name(CounterProtocol.ApparentPower).multiplier(10).length(ElementLength.DOUBLEWORD).unit("Var")
-				.build()));
-		protocol.addElementRange(new ElementRange(0xc652, new ElementBuilder(0xc652, name)
-				.name(CounterProtocol.ActivePositiveEnergy).length(ElementLength.DOUBLEWORD).unit("kWh").build(),
+		protocol.addElementRange(new ElementRange(0xc568,
+				new ElementBuilder(0xc568, name).name(CounterProtocol.ActivePower).multiplier(10).signed(true)
+						.length(ElementLength.DOUBLEWORD).unit("W").build(),
+				new ElementBuilder(0xc56a, name).name(CounterProtocol.ReactivePower).multiplier(10).signed(true)
+						.length(ElementLength.DOUBLEWORD).unit("VA").build(),
+				new ElementBuilder(0xc56c, name).name(CounterProtocol.ApparentPower).multiplier(10)
+						.length(ElementLength.DOUBLEWORD).unit("Var").build()));
+		protocol.addElementRange(new ElementRange(0xc652,
+				new ElementBuilder(0xc652, name).name(CounterProtocol.ActivePositiveEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kWh").build(),
 				new ElementBuilder(0xc654, name).name(CounterProtocol.ReactivePositiveEnergy)
-						.length(ElementLength.DOUBLEWORD).unit("kvarh").build(), new ElementBuilder(0xc656, name)
-						.name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD).unit("kVAh").build(),
+						.length(ElementLength.DOUBLEWORD).unit("kvarh").build(),
+				new ElementBuilder(0xc656, name).name(CounterProtocol.ApparentEnergy).length(ElementLength.DOUBLEWORD)
+						.unit("kVAh").build(),
 				new ElementBuilder(0xc658, name).name(CounterProtocol.ActiveNegativeEnergy)
-						.length(ElementLength.DOUBLEWORD).unit("kWh").build(), new ElementBuilder(0xc65a, name)
-						.name(CounterProtocol.ReactiveNegativeEnergy).length(ElementLength.DOUBLEWORD).unit("kvarh")
-						.build()));
+						.length(ElementLength.DOUBLEWORD).unit("kWh").build(),
+				new ElementBuilder(0xc65a, name).name(CounterProtocol.ReactiveNegativeEnergy)
+						.length(ElementLength.DOUBLEWORD).unit("kvarh").build()));
 		return protocol;
 	}
 
@@ -80,7 +88,7 @@ public class Socomec extends Counter {
 	}
 
 	@Override
-	public int getActivePower() {
+	public int getActivePower() throws InvalidValueExcecption {
 		return ((SignedIntegerDoublewordElement) getElement(CounterProtocol.ActivePower.name())).getValue().toInteger();
 	}
 
@@ -102,10 +110,15 @@ public class Socomec extends Counter {
 
 	@Override
 	public String getCurrentDataAsString() {
-		return "COUNTER: [" + getActivePower() + "W " + getElement(CounterProtocol.ReactivePower.name()).readable()
-				+ " " + getElement(CounterProtocol.ApparentPower.name()).readable() + " +"
-				+ getElement(CounterProtocol.ActivePositiveEnergy.name()).readable() + " -"
-				+ getElement(CounterProtocol.ActiveNegativeEnergy.name()).readable() + "] ";
+		try {
+			return "COUNTER: [" + getActivePower() + "W " + getElement(CounterProtocol.ReactivePower.name()).readable()
+					+ " " + getElement(CounterProtocol.ApparentPower.name()).readable() + " +"
+					+ getElement(CounterProtocol.ActivePositiveEnergy.name()).readable() + " -"
+					+ getElement(CounterProtocol.ActiveNegativeEnergy.name()).readable() + "] ";
+		} catch (InvalidValueExcecption e) {
+			log.error("Invalid Value", e);
+			return "COUNTER " + getName() + " has invalid Values ";
+		}
 	}
 
 	@Override

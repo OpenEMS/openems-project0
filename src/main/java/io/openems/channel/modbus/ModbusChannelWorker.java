@@ -17,11 +17,11 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.channel.ChannelWorker;
-import io.openems.device.Device;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.channel.ChannelWorker;
+import io.openems.device.Device;
 
 /**
  * ModbusWorker handles all modbus communication on one channel like
@@ -64,20 +64,12 @@ public class ModbusChannelWorker extends ChannelWorker {
 		while (!isInterrupted()) {
 			beforeRun = System.nanoTime();
 			// Execute Modbus Main Queries
-			boolean error = false;
 			for (Device device : devices) {
 				if (device instanceof ModbusDevice) { // TODO: fix polymorphism
-					try {
-						((ModbusDevice) device).executeMainQuery(modbusConnection);
-					} catch (Exception e) {
-						log.error("Query-Exception: {}", e.getMessage());
-						error = true;
-					}
+					((ModbusDevice) device).executeMainQuery(modbusConnection);
 				}
 			}
-			if (!error) {
-				mainQueryFinished.release();
-			}
+			mainQueryFinished.release();
 
 			// Execute Next Modbus Queries
 			for (Device device : devices) {

@@ -13,6 +13,7 @@ import org.restlet.resource.ServerResource;
 import org.xml.sax.SAXException;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.openems.App;
@@ -26,6 +27,7 @@ import io.openems.device.protocol.BitsElement;
 import io.openems.device.protocol.ModbusElement;
 import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.InvalidValueExcecption;
 
 public class DeviceCurrentValueResource extends ServerResource {
 
@@ -34,8 +36,14 @@ public class DeviceCurrentValueResource extends ServerResource {
 		String device = (String) this.getRequestAttributes().get("device");
 		String parameterName = (String) this.getRequestAttributes().get("parametername");
 		Device d = App.getConfig().getDevices().get(device);
-		return new StringRepresentation(findElement(parameterName, d).getAsJson().toString(),
-				MediaType.APPLICATION_JSON);
+		try {
+			return new StringRepresentation(findElement(parameterName, d).getAsJson().toString(),
+					MediaType.APPLICATION_JSON);
+		} catch (InvalidValueExcecption e) {
+			JsonObject obj = new JsonObject();
+			obj.addProperty("error", e.getMessage());
+			return new StringRepresentation(obj.toString(), MediaType.APPLICATION_JSON);
+		}
 	}
 
 	@Post("json")

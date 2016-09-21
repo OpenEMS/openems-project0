@@ -9,6 +9,7 @@ import io.openems.config.ConfigUtil;
 import io.openems.config.exception.ConfigException;
 import io.openems.device.Device;
 import io.openems.device.DeviceFactory;
+import io.openems.element.InvalidValueExcecption;
 
 public class CommercialFactory extends DeviceFactory {
 
@@ -24,14 +25,18 @@ public class CommercialFactory extends DeviceFactory {
 
 	@Override
 	public JsonObject getConfig(Device d) {
-		if (d instanceof Commercial) {
-			JsonObject jo = new JsonObject();
-			Commercial c = (Commercial) d;
-			jo.addProperty("type", c.getClass().getName());
-			jo.addProperty("channel", c.getChannel());
-			jo.addProperty("modbusUnit", c.getUnitid());
-			jo.addProperty("minSoc", c.getMinSoc());
-			return jo;
+		try {
+			if (d instanceof Commercial) {
+				JsonObject jo = new JsonObject();
+				Commercial c = (Commercial) d;
+				jo.addProperty("type", c.getClass().getName());
+				jo.addProperty("channel", c.getChannel());
+				jo.addProperty("modbusUnit", c.getUnitid());
+				jo.addProperty("minSoc", c.getMinSoc());
+				return jo;
+			}
+		} catch (InvalidValueExcecption e) {
+			return null;
 		}
 		return null;
 	}

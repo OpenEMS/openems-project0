@@ -17,13 +17,6 @@
  */
 package io.openems.controller;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.counter.Counter;
-import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssProtocol;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
-
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +25,14 @@ import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.counter.Counter;
+import io.openems.device.ess.Ess;
+import io.openems.device.ess.EssProtocol;
+import io.openems.device.protocol.BitElement;
+import io.openems.device.protocol.BitsElement;
+import io.openems.element.InvalidValueExcecption;
 
 public class Balancing extends Controller {
 	private final static Logger log = LoggerFactory.getLogger(Balancing.class);
@@ -67,13 +68,17 @@ public class Balancing extends Controller {
 			if (essRunning == null) {
 				log.info("No connection to ESS");
 			} else {
-				boolean isEssRunning = essRunning.getValue().toBoolean();
-				if (isEssRunning) {
-					log.info("ESS is running");
-				} else {
-					// Start ESS if not running
-					ess.start();
-					log.info("ESS is not running. Start ESS");
+				try {
+					boolean isEssRunning = essRunning.getValue().toBoolean();
+					if (isEssRunning) {
+						log.info("ESS is running");
+					} else {
+						// Start ESS if not running
+						ess.start();
+						log.info("ESS is not running. Start ESS");
+					}
+				} catch (InvalidValueExcecption e) {
+					log.error("Fehler beim starten des Speichers.", e);
 				}
 			}
 		}
@@ -86,43 +91,52 @@ public class Balancing extends Controller {
 	@Override
 	public void run() {
 		Ess ess = essDevices.values().iterator().next();
+		try {
 
-		int calculatedEssActivePower;
+			int calculatedEssActivePower;
 
-		// actual power calculation
-		calculatedEssActivePower = lastSetEssActivePower + gridCounter.getActivePower() / 2;
+			// actual power calculation
+			calculatedEssActivePower = lastSetEssActivePower + gridCounter.getActivePower() / 2;
 
-		if (calculatedEssActivePower > 0) {
-			// discharge
-			// Calculate discharge power with hysteresis for the minSoc
-			if (ess.getMaxDischargePower() < calculatedEssActivePower) {
-				calculatedEssActivePower = ess.getMaxDischargePower();
-			}
-		} else {
-			// charge
-			if (allowChargeFromAC) { // charging is allowed
-				if (calculatedEssActivePower < ess.getAllowedCharge()) {
-					// not allowed to charge with such high power
-					calculatedEssActivePower = ess.getAllowedCharge();
-				} else {
-					// charge with calculated value
+			if (calculatedEssActivePower > 0) {
+				// discharge
+				// Calculate discharge power with hysteresis for the minSoc
+				if (ess.getMaxDischargePower() < calculatedEssActivePower) {
+					calculatedEssActivePower = ess.getMaxDischargePower();
 				}
-			} else { // charging is not allowed
-				calculatedEssActivePower = 0;
+			} else {
+				// charge
+				if (allowChargeFromAC) { // charging is allowed
+					if (calculatedEssActivePower < ess.getAllowedCharge()) {
+						// not allowed to charge with such high power
+						calculatedEssActivePower = ess.getAllowedCharge();
+					} else {
+						// charge with calculated value
+					}
+				} else { // charging is not allowed
+					calculatedEssActivePower = 0;
+				}
+			}
+
+			// round to 100: ess can only be controlled with precision 100 W
+			calculatedEssActivePower = calculatedEssActivePower / 100 * 100;
+
+			ess.setActivePower(calculatedEssActivePower);
+
+			lastSetEssActivePower = calculatedEssActivePower;
+			lastEssActivePower = ess.getActivePower();
+			lastCounterActivePower = gridCounter.getActivePower();
+
+			log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
+					+ calculatedEssActivePower + "]");
+		} catch (InvalidValueExcecption e) {
+			log.error("The system encountered some invalid values. Set Storage power to zero.", e);
+			try {
+				ess.setActivePower(0);
+			} catch (InvalidValueExcecption e1) {
+				log.error("Error on stoping the storage", e1);
 			}
 		}
-
-		// round to 100: ess can only be controlled with precision 100 W
-		calculatedEssActivePower = calculatedEssActivePower / 100 * 100;
-
-		ess.setActivePower(calculatedEssActivePower);
-
-		lastSetEssActivePower = calculatedEssActivePower;
-		lastEssActivePower = ess.getActivePower();
-		lastCounterActivePower = gridCounter.getActivePower();
-
-		log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-				+ calculatedEssActivePower + "]");
 	}
 
 	@Override

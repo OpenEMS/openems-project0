@@ -1,8 +1,5 @@
 package io.openems.device.ess;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.protocol.ModbusProtocol;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +9,10 @@ import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.element.InvalidValueExcecption;
 
 public class EssCluster extends Ess {
 	private final static Logger log = LoggerFactory.getLogger(EssCluster.class);
@@ -43,7 +44,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public boolean isOnGrid() {
+	public boolean isOnGrid() throws InvalidValueExcecption {
 		for (Ess storage : storages) {
 			if (!storage.isOnGrid()) {
 				return false;
@@ -53,7 +54,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public void setActivePower(int power) {
+	public void setActivePower(int power) throws InvalidValueExcecption {
 		// TODO calculate with apparentPower and cos(Phi)
 		if (power >= 0) {
 			int useableSocSum = 0;
@@ -125,7 +126,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public void setReactivePower(int power) {
+	public void setReactivePower(int power) throws InvalidValueExcecption {
 		if (power >= 0) {
 			int useableSocSum = 0;
 			int maxDischargePower = 0;
@@ -169,7 +170,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getActivePower() {
+	public int getActivePower() throws InvalidValueExcecption {
 		int activePower = 0;
 		for (Ess storage : storages) {
 			activePower += storage.getActivePower();
@@ -187,7 +188,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getAllowedCharge() {
+	public int getAllowedCharge() throws InvalidValueExcecption {
 		int maxChargePower = 0;
 		for (Ess storage : storages) {
 			maxChargePower += storage.getAllowedCharge();
@@ -196,7 +197,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getAllowedDischarge() {
+	public int getAllowedDischarge() throws InvalidValueExcecption {
 		int maxDischargePower = 0;
 		for (Ess storage : storages) {
 			maxDischargePower += storage.getAllowedDischarge();
@@ -219,7 +220,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getReactivePower() {
+	public int getReactivePower() throws InvalidValueExcecption {
 		int reactivePower = 0;
 		for (Ess storage : storages) {
 			reactivePower += storage.getReactivePower();
@@ -228,7 +229,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getApparentPower() {
+	public int getApparentPower() throws InvalidValueExcecption {
 		int apparentPower = 0;
 		for (Ess storage : storages) {
 			apparentPower += storage.getApparentPower();
@@ -288,16 +289,7 @@ public class EssCluster extends Ess {
 	}
 
 	@Override
-	public int getUseableCapacity() {
-		int useableCapacity = 0;
-		for (Ess storage : storages) {
-			useableCapacity += storage.getUseableCapacity();
-		}
-		return useableCapacity;
-	}
-
-	@Override
-	public boolean isRunning() {
+	public boolean isRunning() throws InvalidValueExcecption {
 		for (Ess storage : storages) {
 			if (!storage.isRunning()) {
 				return false;

@@ -1,5 +1,16 @@
 package io.openems.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import io.openems.channel.ChannelWorker;
 import io.openems.config.ConfigUtil;
 import io.openems.config.exception.ConfigException;
@@ -9,15 +20,9 @@ import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
 import io.openems.device.io.IO;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 public class EnBAGControllerFactory extends ControllerFactory {
+
+	private final static Logger log = LoggerFactory.getLogger(EnBAGControllerFactory.class);
 
 	@Override
 	public ControllerWorker getControllerWorker(String name, JsonObject controllerJson, Map<String, Device> devices,
@@ -47,37 +52,41 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		IO io = (IO) devices.get(ConfigUtil.getAsString(controllerJson, "io"));
 		SolarLog solarLog = (SolarLog) devices.get(ConfigUtil.getAsString(controllerJson, "solarLog"));
 
-		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess,
-				chargeFromAc, maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io,
-				solarLog));
+		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc,
+				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io, solarLog));
 	}
 
 	@Override
 	public JsonObject getConfig(ControllerWorker worker) {
-		if (worker.getController() instanceof EnBAGController) {
-			JsonObject jo = new JsonObject();
-			EnBAGController bal = (EnBAGController) worker.getController();
-			jo.addProperty("type", bal.getClass().getName());
-			jo.addProperty("chargeFromAc", bal.isAllowChargeFromAC());
-			jo.addProperty("gridCounter", bal.getGridCounter().getName());
-			JsonArray arr = new JsonArray();
-			jo.add("ess", arr);
-			for (Map.Entry<String, Ess> ess : bal.getEssDevices().entrySet()) {
-				arr.add(ess.getKey());
-			}
-			JsonObject offGridSwitches = new JsonObject();
-			jo.add("essOffGridSwitches", offGridSwitches);
-			for (Map.Entry<String, String> value : bal.getEssOffGridSwitches().entrySet()) {
-				offGridSwitches.addProperty(value.getKey(), value.getValue());
-			}
-			jo.addProperty("maxGridFeedPower", bal.getMaxGridFeedPower());
-			jo.addProperty("pvOnGridSwitch", bal.getPvOnGridSwitch());
-			jo.addProperty("pvOffGridSwitch", bal.getPvOffGridSwitch());
-			jo.addProperty("primaryEss", bal.getPrimaryOffGridEss());
-			jo.addProperty("io", bal.getIo().getName());
-			jo.addProperty("solarLog", bal.getSolarLog().getName());
+		try {
+			if (worker.getController() instanceof EnBAGController) {
+				JsonObject jo = new JsonObject();
+				EnBAGController bal = (EnBAGController) worker.getController();
+				jo.addProperty("type", bal.getClass().getName());
+				jo.addProperty("chargeFromAc", bal.isAllowChargeFromAC());
+				jo.addProperty("gridCounter", bal.getGridCounter().getName());
+				JsonArray arr = new JsonArray();
+				jo.add("ess", arr);
+				for (Map.Entry<String, Ess> ess : bal.getEssDevices().entrySet()) {
+					arr.add(ess.getKey());
+				}
+				JsonObject offGridSwitches = new JsonObject();
+				jo.add("essOffGridSwitches", offGridSwitches);
+				for (Map.Entry<String, String> value : bal.getEssOffGridSwitches().entrySet()) {
+					offGridSwitches.addProperty(value.getKey(), value.getValue());
+				}
+				jo.addProperty("maxGridFeedPower", bal.getMaxGridFeedPower());
+				jo.addProperty("pvOnGridSwitch", bal.getPvOnGridSwitch());
+				jo.addProperty("pvOffGridSwitch", bal.getPvOffGridSwitch());
+				jo.addProperty("primaryEss", bal.getPrimaryOffGridEss());
+				jo.addProperty("io", bal.getIo().getName());
+				jo.addProperty("solarLog", bal.getSolarLog().getName());
 
-			return jo;
+				return jo;
+			}
+		} catch (Exception e) {
+			log.error("an error occured on generationg the Json config!");
+			return null;
 		}
 		return null;
 	}

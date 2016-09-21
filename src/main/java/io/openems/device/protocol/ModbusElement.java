@@ -24,6 +24,7 @@ import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 
 import io.openems.element.Element;
+import io.openems.element.InvalidValueExcecption;
 import io.openems.element.type.Type;
 
 public abstract class ModbusElement<T extends Type> extends Element<T> {
@@ -62,7 +63,12 @@ public abstract class ModbusElement<T extends Type> extends Element<T> {
 
 	@Override
 	public String toString() {
-		return "Element [address=0x" + Integer.toHexString(address) + ", name=" + getName() + ", unit=" + getUnit()
-				+ ", lastUpdate=" + getLastUpdate() + ", value=" + getValue() + "]";
+		try {
+			return "Element [address=0x" + Integer.toHexString(address) + ", name=" + getName() + ", unit=" + getUnit()
+					+ ", lastUpdate=" + getLastUpdate() + ", value=" + getValue() + "]";
+		} catch (InvalidValueExcecption e) {
+			return "Element [address=0x" + Integer.toHexString(address) + ", name=" + getName() + ", unit=" + getUnit()
+					+ ", lastUpdate=" + getLastUpdate() + "] is invalid";
+		}
 	}
 }

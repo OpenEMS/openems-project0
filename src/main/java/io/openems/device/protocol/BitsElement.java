@@ -29,6 +29,7 @@ import com.google.gson.JsonObject;
 
 import io.openems.device.protocol.interfaces.DoublewordElement;
 import io.openems.device.protocol.interfaces.WordElement;
+import io.openems.element.InvalidValueExcecption;
 import io.openems.element.type.BooleanMapType;
 
 public class BitsElement extends ModbusElement<BooleanMapType>
@@ -72,7 +73,7 @@ public class BitsElement extends ModbusElement<BooleanMapType>
 	}
 
 	@Override
-	public JsonObject getAsJson() {
+	public JsonObject getAsJson() throws InvalidValueExcecption {
 		JsonObject obj = new JsonObject();
 		obj.addProperty("name", getName());
 		JsonArray arr = new JsonArray();

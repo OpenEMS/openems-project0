@@ -78,12 +78,16 @@ public class ConnectionListener implements ConnectionEventListener {
 				System.out.println("Got interrogation command. Will send scaled measured values.\n");
 
 				for (IecElementOnChangeListener listener : listeners) {
-					if (listener.isMeassurement()) {
-						connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false, 0,
-								5101, new InformationObject[] { listener.getCurrentValue() }));
-					} else {
-						connection.send(new ASdu(TypeId.M_DP_TB_1, false, CauseOfTransmission.REQUEST, false, false, 0,
-								5101, new InformationObject[] { listener.getCurrentValue() }));
+					try {
+						if (listener.isMeassurement()) {
+							connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false,
+									0, 5101, new InformationObject[] { listener.getCurrentValue() }));
+						} else {
+							connection.send(new ASdu(TypeId.M_DP_TB_1, false, CauseOfTransmission.REQUEST, false, false,
+									0, 5101, new InformationObject[] { listener.getCurrentValue() }));
+						}
+					} catch (Exception e) {
+						log.error("Failed to send IEC Interrogation value", e);
 					}
 				}
 

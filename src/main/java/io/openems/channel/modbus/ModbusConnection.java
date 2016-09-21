@@ -17,12 +17,6 @@
  */
 package io.openems.channel.modbus;
 
-import io.openems.device.protocol.ElementRange;
-import io.openems.device.protocol.ModbusElement;
-import io.openems.device.protocol.ModbusProtocol;
-import io.openems.device.protocol.interfaces.DoublewordElement;
-import io.openems.device.protocol.interfaces.WordElement;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +32,12 @@ import com.ghgande.j2mod.modbus.msg.WriteMultipleRegistersResponse;
 import com.ghgande.j2mod.modbus.msg.WriteSingleRegisterRequest;
 import com.ghgande.j2mod.modbus.msg.WriteSingleRegisterResponse;
 import com.ghgande.j2mod.modbus.procimg.Register;
+
+import io.openems.device.protocol.ElementRange;
+import io.openems.device.protocol.ModbusElement;
+import io.openems.device.protocol.ModbusProtocol;
+import io.openems.device.protocol.interfaces.DoublewordElement;
+import io.openems.device.protocol.interfaces.WordElement;
 
 public abstract class ModbusConnection implements AutoCloseable {
 	private final static Logger log = LoggerFactory.getLogger(ModbusConnection.class);
@@ -79,23 +79,31 @@ public abstract class ModbusConnection implements AutoCloseable {
 		}
 	}
 
-	public void updateProtocol(int unitid, ModbusProtocol protocol) throws Exception {
+	public void updateProtocol(int unitid, ModbusProtocol protocol) {
 		for (ElementRange elementRange : protocol.getElementRanges()) {
 			updateElementRange(unitid, elementRange);
 		}
 	}
 
-	public void updateElementRange(int unitid, ElementRange elementRange) throws Exception {
-		Register[] registers = query(unitid, elementRange.getStartAddress(), elementRange.getTotalLength());
-		int position = 0;
-		for (ModbusElement<?> element : elementRange.getElements()) {
-			int length = element.getLength();
-			if (element instanceof WordElement) {
-				((WordElement) element).update(registers[position]);
-			} else if (element instanceof DoublewordElement) {
-				((DoublewordElement) element).update(registers[position], registers[position + 1]);
+	public void updateElementRange(int unitid, ElementRange elementRange) {
+		try {
+			Register[] registers = query(unitid, elementRange.getStartAddress(), elementRange.getTotalLength());
+			int position = 0;
+			for (ModbusElement<?> element : elementRange.getElements()) {
+				int length = element.getLength();
+				if (element instanceof WordElement) {
+					((WordElement) element).update(registers[position]);
+				} else if (element instanceof DoublewordElement) {
+					((DoublewordElement) element).update(registers[position], registers[position + 1]);
+				}
+				element.setValid(true);
+				position += length;
 			}
-			position += length;
+		} catch (Exception e) {
+			log.error("Query-Exception: {}", e.getMessage());
+			for (ModbusElement<?> element : elementRange.getElements()) {
+				element.setValid(false);
+			}
 		}
 	}
 

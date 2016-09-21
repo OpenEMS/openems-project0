@@ -1,6 +1,7 @@
 package io.openems.device.io;
 
 import io.openems.channel.modbus.WritableModbusDevice;
+import io.openems.element.InvalidValueExcecption;
 
 public abstract class IO extends WritableModbusDevice {
 
@@ -15,5 +16,5 @@ public abstract class IO extends WritableModbusDevice {
 
 	public abstract void writeDigitalValue(String output, boolean value);
 
-	public abstract boolean readDigitalValue(String channel);
+	public abstract boolean readDigitalValue(String channel) throws InvalidValueExcecption;
 }

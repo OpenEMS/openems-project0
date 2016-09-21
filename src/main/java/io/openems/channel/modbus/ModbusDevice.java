@@ -134,7 +134,7 @@ public abstract class ModbusDevice extends Device {
 		modbusConnection.updateProtocol(this.unitid, this.initProtocol);
 	}
 
-	public void executeMainQuery(ModbusConnection modbusConnection) throws Exception {
+	public void executeMainQuery(ModbusConnection modbusConnection) {
 		modbusConnection.updateProtocol(this.unitid, this.mainProtocol);
 	}
 

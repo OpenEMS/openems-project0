@@ -1,8 +1,5 @@
 package io.openems.controller;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.ess.Ess;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +7,10 @@ import java.util.Map;
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.ess.Ess;
+import io.openems.element.InvalidValueExcecption;
 
 public class MiniTest extends Controller {
 
@@ -25,7 +26,12 @@ public class MiniTest extends Controller {
 		// Mini mini = (Mini) essDevices.values().iterator().next();
 
 		Ess ess = essDevices.values().iterator().next();
-		System.out.println(ess.getSOC());
+		try {
+			System.out.println(ess.getSOC());
+		} catch (InvalidValueExcecption e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

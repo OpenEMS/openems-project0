@@ -1,13 +1,5 @@
 package io.openems.api.iec;
 
-import io.openems.device.protocol.BitElement;
-import io.openems.element.Element;
-import io.openems.element.ElementOnChangeListener;
-import io.openems.element.type.DoubleType;
-import io.openems.element.type.IntegerType;
-import io.openems.element.type.LongType;
-import io.openems.element.type.Type;
-
 import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
 import org.openmuc.j60870.Connection;
@@ -21,6 +13,15 @@ import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.device.protocol.BitElement;
+import io.openems.element.Element;
+import io.openems.element.ElementOnChangeListener;
+import io.openems.element.InvalidValueExcecption;
+import io.openems.element.type.DoubleType;
+import io.openems.element.type.IntegerType;
+import io.openems.element.type.LongType;
+import io.openems.element.type.Type;
 
 public class IecElementOnChangeListener implements ElementOnChangeListener {
 
@@ -69,7 +70,7 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 		}
 	}
 
-	public InformationObject getCurrentValue() {
+	public InformationObject getCurrentValue() throws InvalidValueExcecption {
 		InformationObject io = null;
 		if (isMeassurement) {
 			if (element != null && element.getLastUpdate() != null) {
@@ -82,12 +83,13 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 				} else if (newValue instanceof DoubleType) {
 					value = ((DoubleType) newValue).toDouble().floatValue();
 				}
-				io = new InformationObject(iOA, new InformationElement[][] { { new IeShortFloat((value) * multiplier),
-						new IeQuality(false, false, false, false, false),
-						new IeTime56(element.getLastUpdate().getMillis()) } });
+				io = new InformationObject(iOA,
+						new InformationElement[][] { { new IeShortFloat((value) * multiplier),
+								new IeQuality(false, false, false, false, false),
+								new IeTime56(element.getLastUpdate().getMillis()) } });
 			} else {
-				io = new InformationObject(iOA, new InformationElement[][] { { new IeShortFloat(0),
-						new IeQuality(false, false, false, false, false), new IeTime56(0) } });
+				io = new InformationObject(iOA, new InformationElement[][] {
+						{ new IeShortFloat(0), new IeQuality(false, false, false, false, false), new IeTime56(0) } });
 			}
 		} else {
 			if (element != null && element.getLastUpdate() != null) {
@@ -98,8 +100,8 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 				} else {
 					dpi = DoublePointInformation.OFF;
 				}
-				io = new InformationObject(iOA, new InformationElement[][] { {
-						new IeDoublePointWithQuality(dpi, false, false, false, false), new IeTime56(0) } });
+				io = new InformationObject(iOA, new InformationElement[][] {
+						{ new IeDoublePointWithQuality(dpi, false, false, false, false), new IeTime56(0) } });
 			} else {
 				io = new InformationObject(iOA, new InformationElement[][] { {
 						new IeDoublePointWithQuality(DoublePointInformation.INDETERMINATE, false, false, false, false),

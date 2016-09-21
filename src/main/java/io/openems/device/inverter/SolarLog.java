@@ -22,6 +22,7 @@ import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
 import io.openems.element.Element;
+import io.openems.element.InvalidValueExcecption;
 import io.openems.element.type.IntegerType;
 import io.openems.element.type.LongType;
 
@@ -104,7 +105,7 @@ public class SolarLog extends WritableModbusDevice {
 		this.totalPower = totalPower;
 	}
 
-	public int getActivePower() {
+	public int getActivePower() throws InvalidValueExcecption {
 		return ((UnsignedShortWordElement) getElement(InverterProtocol.PAC.name())).getValue().toInteger();
 	}
 
@@ -131,7 +132,7 @@ public class SolarLog extends WritableModbusDevice {
 				watchdog.toRegisters(new LongType(System.currentTimeMillis()))));
 	}
 
-	public int getPVLimit() {
+	public int getPVLimit() throws InvalidValueExcecption {
 		return totalPower / 100
 				* ((UnsignedShortWordElement) getElement(InverterProtocol.GetLimit.name())).getValue().toInteger();
 	}

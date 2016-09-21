@@ -45,6 +45,7 @@ import io.openems.device.protocol.SignedIntegerWordElement;
 import io.openems.device.protocol.UnsignedShortWordElement;
 import io.openems.device.protocol.WordOrder;
 import io.openems.element.Element;
+import io.openems.element.InvalidValueExcecption;
 
 public class Commercial extends Ess {
 	@SuppressWarnings("unused")
@@ -549,27 +550,27 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public int getActivePower() {
+	public int getActivePower() throws InvalidValueExcecption {
 		return ((SignedIntegerWordElement) getElement(EssProtocol.InverterActivePower.name())).getValue().toInteger();
 	}
 
 	@Override
-	public int getReactivePower() {
+	public int getReactivePower() throws InvalidValueExcecption {
 		return ((SignedIntegerWordElement) getElement(EssProtocol.ReactivePower.name())).getValue().toInteger();
 	}
 
 	@Override
-	public int getApparentPower() {
+	public int getApparentPower() throws InvalidValueExcecption {
 		return ((UnsignedShortWordElement) getElement(EssProtocol.ApparentPower.name())).getValue().toInteger();
 	}
 
 	@Override
-	public int getAllowedCharge() {
+	public int getAllowedCharge() throws InvalidValueExcecption {
 		return ((SignedIntegerWordElement) getElement(EssProtocol.AllowedCharge.name())).getValue().toInteger();
 	}
 
 	@Override
-	public int getAllowedDischarge() {
+	public int getAllowedDischarge() throws InvalidValueExcecption {
 		return ((UnsignedShortWordElement) getElement(EssProtocol.AllowedDischarge.name())).getValue().toInteger();
 	}
 
@@ -597,12 +598,12 @@ public class Commercial extends Ess {
 		return (SignedIntegerWordElement) getElement(EssProtocol.Pv2InputPower.name());
 	}
 
-	public Boolean getPv1StateInitial() {
+	public Boolean getPv1StateInitial() throws InvalidValueExcecption {
 		return ((BitsElement) getElement(EssProtocol.Pv1State.name())).getBit(EssProtocol.DcStates.Initial.name())
 				.getValue().toBoolean();
 	}
 
-	public String getDcState(BitsElement s) {
+	public String getDcState(BitsElement s) throws InvalidValueExcecption {
 		if (s.getBit(EssProtocol.DcStates.Initial.name()).getValue().toBoolean()) {
 			return EssProtocol.DcStates.Initial.name();
 		} else if (s.getBit(EssProtocol.DcStates.Stop.name()).getValue().toBoolean()) {
@@ -621,16 +622,16 @@ public class Commercial extends Ess {
 		return "NO STATUS";
 	}
 
-	public String getPv1State() {
+	public String getPv1State() throws InvalidValueExcecption {
 		return getDcState((BitsElement) getElement(EssProtocol.Pv1State.name()));
 	}
 
-	public String getPv2State() {
+	public String getPv2State() throws InvalidValueExcecption {
 		return getDcState((BitsElement) getElement(EssProtocol.Pv2State.name()));
 	}
 
 	@Override
-	public boolean isOnGrid() {
+	public boolean isOnGrid() throws InvalidValueExcecption {
 		if (((UnsignedShortWordElement) getElement(EssProtocol.GridMode.name())).getValue().toInteger() == 2) {
 			return true;
 		}
@@ -647,7 +648,7 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public int getSOC() {
+	public int getSOC() throws InvalidValueExcecption {
 		return ((UnsignedShortWordElement) getElement(EssProtocol.BatteryStringSoc.name())).getValue().toInteger();
 	}
 
@@ -665,13 +666,18 @@ public class Commercial extends Ess {
 
 	@Override
 	public String getCurrentDataAsString() {
-		return this.getName() + ": [" + getElement(EssProtocol.BatteryStringSoc.name()).readable()
-				+ "] PWR: [ GridFeedPower: " + getElement(EssProtocol.ActivePower.name()).readable()
-				+ " InverterOutputPower: " + getElement(EssProtocol.InverterActivePower.name()).readable() + " "
-				+ getElement(EssProtocol.ReactivePower.name()).readable() + " "
-				+ getElement(EssProtocol.ApparentPower.name()).readable() + "] DCPV: ["
-				+ getElement(EssProtocol.Pv1OutputPower.name()).readable()
-				+ getElement(EssProtocol.Pv2OutputPower.name()).readable() + "] ";
+		try {
+			return this.getName() + ": [" + getElement(EssProtocol.BatteryStringSoc.name()).readable()
+					+ "] PWR: [ GridFeedPower: " + getElement(EssProtocol.ActivePower.name()).readable()
+					+ " InverterOutputPower: " + getElement(EssProtocol.InverterActivePower.name()).readable() + " "
+					+ getElement(EssProtocol.ReactivePower.name()).readable() + " "
+					+ getElement(EssProtocol.ApparentPower.name()).readable() + "] DCPV: ["
+					+ getElement(EssProtocol.Pv1OutputPower.name()).readable()
+					+ getElement(EssProtocol.Pv2OutputPower.name()).readable() + "] ";
+		} catch (InvalidValueExcecption e) {
+			log.error("invalid device data", e);
+			return this.getName() + " is invalid";
+		}
 	}
 
 	// @Override
@@ -866,7 +872,7 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public boolean isRunning() {
+	public boolean isRunning() throws InvalidValueExcecption {
 		BitsElement bitsElement = (BitsElement) getElement(EssProtocol.SystemState.name());
 		BitElement essRunning = bitsElement.getBit(EssProtocol.SystemStates.Running.name());
 		return essRunning.getValue().toBoolean();
