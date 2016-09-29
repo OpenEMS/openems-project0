@@ -1,85 +1,25 @@
 {
 	"channel": {
-		"usb0": {
-			"type": "io.openems.channel.modbus.ModbusRtuConnection",
-			"serialinterface": "/dev/ttyUSB0",
-			"baudrate": "38400",
-			"databits": 8,
-			"parity": "even",
-			"stopbits": 1,
-			"cycle": 1000
-		},
 		"lan0": {
 			"type": "io.openems.channel.modbus.ModbusTcpConnection",
-			"inetAddress": "10.4.0.15",
-			"cycle": 1000
-		},
-		"lan1": {
-			"type": "io.openems.channel.modbus.ModbusTcpConnection",
-			"inetAddress": "192.168.178.152",
-			"cycle": 500
-		},
-		"lan2":{
-			"type": "io.openems.channel.modbus.ModbusTcpConnection",
-			"inetAddress": "192.168.178.178",
-			"cycle": 500
-		},
-		"ssh0": {
-			"type": "io.openems.channel.modbus.ModbusTcpConnection",
-			"inetAddress": "127.0.0.1",
+			"inetAddress": "10.4.0.16",
 			"cycle": 1000
 		}
 	},
 	"device": {
-		/*"io0": {
-			"type": "io.openems.device.io.Wago",
-			"channel": "lan1",
-			"modbusUnit": 0
-		}*/
 		"ess0": {
 			"type": "io.openems.device.ess.commercial.Commercial",
-			"channel": "ssh0",
+			"channel": "lan0",
 			"modbusUnit": 100,
 			"minSoc": 15
-		},
-		"sl0":{
-			"type": "io.openems.device.inverter.SolarLog",
-			"channel": "lan2",
-			"modbusUnit": 1,
-			"totalPower": 5000
 		}
 	},
 	"controller": {
-		"enbag": {
-			"type": "io.openems.controller.EnBAGController",
-			"chargeFromAc":true,
-			"gridCounter": "counter0",
-			"ess": ["ess0"],
-			"essOffGridSwitches":{
-				"ess0":"DigitalOutput_1_1"
-			},
-			"maxGridFeedPower":100,
-			"pvOnGridSwitch":"DigitalOutput_1_2",
-			"pvOffGridSwitch":"DigitalOutput_2_1",
-			"primaryEss":"ess0",
-			"io": "io0",
-			"solarLog": "sl0"
-		}
-		/*
-		"io0": {
+		"ctr":{
 			"type": "io.openems.controller.IOController",
-			"io":["io0"]
+			"cycle": 1000
 		}
-		
-		"controller0": {
-			"type": "io.openems.controller.MiniTest",
-			"ess": ["ess0","ess0"]
-		}*/
 	},
 	"monitor":{
-		/*"monitor0":{
-			"type": "io.openems.monitoring.fenecon.FeneconMonitoringWorker",
-			"devicekey": "KEYKEYKEY"
-		}*/
 	}
 }

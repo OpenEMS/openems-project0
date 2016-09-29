@@ -3,10 +3,9 @@ package io.openems.api.iec;
 import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
 import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoublePointWithQuality;
-import org.openmuc.j60870.IeDoublePointWithQuality.DoublePointInformation;
 import org.openmuc.j60870.IeQuality;
 import org.openmuc.j60870.IeShortFloat;
+import org.openmuc.j60870.IeSinglePointWithQuality;
 import org.openmuc.j60870.IeTime56;
 import org.openmuc.j60870.InformationElement;
 import org.openmuc.j60870.InformationObject;
@@ -18,6 +17,7 @@ import io.openems.device.protocol.BitElement;
 import io.openems.element.Element;
 import io.openems.element.ElementOnChangeListener;
 import io.openems.element.InvalidValueExcecption;
+import io.openems.element.type.BooleanType;
 import io.openems.element.type.DoubleType;
 import io.openems.element.type.IntegerType;
 import io.openems.element.type.LongType;
@@ -31,48 +31,65 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 	private Connection iecConnection;
 	private int iOA;
 	private float multiplier;
-	private final boolean isMeassurement;
+	private final MessageType messageType;
+	private final int wait = 3000;
+	private long lastSend = 0;
 
-	private IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier,
-			boolean isMeassurement) {
+	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier,
+			MessageType messageType) {
 		super();
 		this.element = element;
 		this.iecConnection = iecConnection;
 		this.iOA = iOA;
 		this.multiplier = multiplier;
-		this.isMeassurement = isMeassurement;
+		this.messageType = messageType;
 	}
 
-	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA) {
-		this(element, iecConnection, iOA, 0, false);
-	}
-
-	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier) {
-		this(element, iecConnection, iOA, multiplier, true);
-	}
-
-	public boolean isMeassurement() {
-		return isMeassurement;
+	public MessageType getMessageType() {
+		return messageType;
 	}
 
 	@Override
 	public void elementChanged(String name, Type newValue, Type oldValue) {
-		if (iecConnection != null && name.equals(element.getFullName())) {
-			if (isMeassurement) {
-				try {
-					iecConnection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS, false, false,
-							0, 5101, new InformationObject[] { getCurrentValue() }));
-				} catch (Exception e) {
-					log.error("Failed to send Iec Spontaneous Values");
-					remove();
+		if (newValue != oldValue) {
+			if (lastSend + wait <= System.currentTimeMillis()) {
+				if (iecConnection != null && name.equals(element.getFullName())) {
+					switch (messageType) {
+					case COMMAND:
+						break;
+					case MEASSUREMENT:
+						try {
+							iecConnection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS, false,
+									false, 0, 5101, new InformationObject[] { getCurrentValue() }));
+						} catch (Exception e) {
+							log.error("Failed to send Iec Spontaneous Values");
+							remove();
+						}
+						break;
+					case MESSAGE:
+						try {
+							iecConnection.send(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS, false,
+									false, 0, 5101, new InformationObject[] { getCurrentValue() }));
+						} catch (Exception e) {
+							log.error("Failed to send Iec Spontaneous Values");
+							remove();
+						}
+						break;
+					case SCALEDVALUES:
+						break;
+					}
 				}
+				lastSend = System.currentTimeMillis();
 			}
 		}
 	}
 
 	public InformationObject getCurrentValue() throws InvalidValueExcecption {
 		InformationObject io = null;
-		if (isMeassurement) {
+		switch (messageType) {
+		case COMMAND:
+			break;
+		case MEASSUREMENT:
 			if (element != null && element.getLastUpdate() != null) {
 				float value = 0;
 				Object newValue = element.getValue();
@@ -91,22 +108,27 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 				io = new InformationObject(iOA, new InformationElement[][] {
 						{ new IeShortFloat(0), new IeQuality(false, false, false, false, false), new IeTime56(0) } });
 			}
-		} else {
+			break;
+		case MESSAGE:
 			if (element != null && element.getLastUpdate() != null) {
-				BitElement el = (BitElement) element;
-				DoublePointInformation dpi = DoublePointInformation.INDETERMINATE;
-				if (el.getValue().toBoolean()) {
-					dpi = DoublePointInformation.ON;
-				} else {
-					dpi = DoublePointInformation.OFF;
+				boolean value = false;
+				boolean invalid = true;
+				if (element instanceof BitElement) {
+					BitElement el = (BitElement) element;
+					value = el.getValue().toBoolean();
+					invalid = false;
+				} else if (element.getValue() instanceof BooleanType) {
+					value = ((BooleanType) element.getValue()).toBoolean();
+					invalid = false;
 				}
-				io = new InformationObject(iOA, new InformationElement[][] {
-						{ new IeDoublePointWithQuality(dpi, false, false, false, false), new IeTime56(0) } });
+				io = new InformationObject(iOA,
+						new InformationElement[][] { { new IeSinglePointWithQuality(value, false, false, false, false),
+								new IeTime56(element.getLastUpdate().getMillis()) } });
 			} else {
-				io = new InformationObject(iOA, new InformationElement[][] { {
-						new IeDoublePointWithQuality(DoublePointInformation.INDETERMINATE, false, false, false, false),
-						new IeTime56(0) } });
+				io = new InformationObject(iOA, new InformationElement[][] {
+						{ new IeSinglePointWithQuality(false, false, false, false, false), new IeTime56(0) } });
 			}
+			break;
 		}
 		return io;
 	}

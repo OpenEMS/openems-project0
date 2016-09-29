@@ -51,9 +51,10 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		String primaryEss = ConfigUtil.getAsString(controllerJson, "primaryEss");
 		IO io = (IO) devices.get(ConfigUtil.getAsString(controllerJson, "io"));
 		SolarLog solarLog = (SolarLog) devices.get(ConfigUtil.getAsString(controllerJson, "solarLog"));
-
+		int cycle = ConfigUtil.getAsInt(controllerJson, "cycle");
 		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc,
-				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io, solarLog));
+				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io, solarLog),
+				cycle);
 	}
 
 	@Override
@@ -81,6 +82,7 @@ public class EnBAGControllerFactory extends ControllerFactory {
 				jo.addProperty("primaryEss", bal.getPrimaryOffGridEss());
 				jo.addProperty("io", bal.getIo().getName());
 				jo.addProperty("solarLog", bal.getSolarLog().getName());
+				jo.addProperty("cycle", worker.getCycle());
 
 				return jo;
 			}

@@ -64,6 +64,7 @@ public class ModbusRtuConnection extends ModbusConnection {
 			con.open();
 		}
 		ModbusSerialTransaction trans = new ModbusSerialTransaction(con);
+		trans.setRetries(0);
 		return trans;
 	}
 

@@ -127,46 +127,48 @@ public class EssCluster extends Ess {
 
 	@Override
 	public void setReactivePower(int power) throws InvalidValueExcecption {
-		if (power >= 0) {
-			int useableSocSum = 0;
-			int maxDischargePower = 0;
-			for (Ess storage : storages) {
-				if (storage.getUseableSoc() > 0) {
-					useableSocSum += storage.getUseableSoc();
-					maxDischargePower += storage.getAllowedDischarge();
-				}
-			}
-			if (power > maxDischargePower) {
-				power = maxDischargePower;
-			}
-			Collections.sort(storages, (a, b) -> a.getUseableSoc() - b.getUseableSoc());
-			for (int i = 0; i < storages.size(); i++) {
-				Ess e = storages.get(i);
-				int minP = power;
-				for (int j = i + 1; j < storages.size(); j++) {
-					if (storages.get(j).getUseableSoc() > 0) {
-						minP -= storages.get(j).getAllowedDischarge();
-					}
-				}
-				if (minP < 0) {
-					minP = 0;
-				}
-				int maxP = e.getAllowedDischarge();
-				if (power < e.getAllowedDischarge()) {
-					maxP = power;
-				}
-				double diff = maxP - minP;
-				if (e.getUseableSoc() > 0) {
-					int p = (int) Math.ceil((minP + diff / useableSocSum * e.getUseableSoc()) / 100) * 100;
-					e.setActivePower(p);
-					power -= p;
-				}
-			}
-		} else {
-			if (power < getAllowedCharge()) {
-				power = getAllowedCharge();
-			}
-		}
+		// if (power >= 0) {
+		// int useableSocSum = 0;
+		// int maxDischargePower = 0;
+		// for (Ess storage : storages) {
+		// if (storage.getUseableSoc() > 0) {
+		// useableSocSum += storage.getUseableSoc();
+		// maxDischargePower += storage.getAllowedDischarge();
+		// }
+		// }
+		// if (power > maxDischargePower) {
+		// power = maxDischargePower;
+		// }
+		// Collections.sort(storages, (a, b) -> a.getUseableSoc() -
+		// b.getUseableSoc());
+		// for (int i = 0; i < storages.size(); i++) {
+		// Ess e = storages.get(i);
+		// int minP = power;
+		// for (int j = i + 1; j < storages.size(); j++) {
+		// if (storages.get(j).getUseableSoc() > 0) {
+		// minP -= storages.get(j).getAllowedDischarge();
+		// }
+		// }
+		// if (minP < 0) {
+		// minP = 0;
+		// }
+		// int maxP = e.getAllowedDischarge();
+		// if (power < e.getAllowedDischarge()) {
+		// maxP = power;
+		// }
+		// double diff = maxP - minP;
+		// if (e.getUseableSoc() > 0) {
+		// int p = (int) Math.ceil((minP + diff / useableSocSum *
+		// e.getUseableSoc()) / 100) * 100;
+		// e.setActivePower(p);
+		// power -= p;
+		// }
+		// }
+		// } else {
+		// if (power < getAllowedCharge()) {
+		// power = getAllowedCharge();
+		// }
+		// }
 	}
 
 	@Override
@@ -291,6 +293,7 @@ public class EssCluster extends Ess {
 	@Override
 	public boolean isRunning() throws InvalidValueExcecption {
 		for (Ess storage : storages) {
+			System.out.println(storage.getName());
 			if (!storage.isRunning()) {
 				return false;
 			}

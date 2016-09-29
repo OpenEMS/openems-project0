@@ -37,7 +37,7 @@ public class ConnectionListener implements ConnectionEventListener {
 	public ConnectionListener(Connection connection, int connectionId) {
 		this.connection = connection;
 		this.connectionId = connectionId;
-		registerElementChangeListener();
+		// registerElementChangeListener();
 	}
 
 	private void registerElementChangeListener() {
@@ -72,18 +72,17 @@ public class ConnectionListener implements ConnectionEventListener {
 		try {
 			switch (aSdu.getTypeIdentification()) {
 			// interrogation command
-			// TODO add case for commands
 			case C_IC_NA_1:
 				connection.sendConfirmation(aSdu);
 				System.out.println("Got interrogation command. Will send scaled measured values.\n");
 
 				for (IecElementOnChangeListener listener : listeners) {
 					try {
-						if (listener.isMeassurement()) {
+						if (listener.getMessageType() == MessageType.MEASSUREMENT) {
 							connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.REQUEST, false, false,
 									0, 5101, new InformationObject[] { listener.getCurrentValue() }));
 						} else {
-							connection.send(new ASdu(TypeId.M_DP_TB_1, false, CauseOfTransmission.REQUEST, false, false,
+							connection.send(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.REQUEST, false, false,
 									0, 5101, new InformationObject[] { listener.getCurrentValue() }));
 						}
 					} catch (Exception e) {
@@ -92,14 +91,12 @@ public class ConnectionListener implements ConnectionEventListener {
 				}
 
 				break;
-			case C_SE_TC_1: {
+			case C_SE_NC_1: {
 				int address = aSdu.getInformationObjects()[0].getInformationObjectAddress();
-				System.out.println(address);
+				System.out.println("SetPoint " + address);
 				address -= SETPOINTADDRESS;
 				int controllerId = address / ADDRESSOFFSET;
 				int functionId = address % ADDRESSOFFSET;
-				System.out.println(controllerId);
-				System.out.println(functionId);
 				List<ControllerWorker> cw = new ArrayList<>(App.getConfig().getControllerWorkers().values());
 				IecControllable c = cw.get(controllerId).getController();
 				IeShortFloat value = (IeShortFloat) aSdu.getInformationObjects()[0].getInformationElements()[0][0];
@@ -109,6 +106,7 @@ public class ConnectionListener implements ConnectionEventListener {
 				break;
 			case C_DC_NA_1: {
 				int address = aSdu.getInformationObjects()[0].getInformationObjectAddress();
+				System.out.println("Command " + address);
 				address -= COMMANDADDRESS;
 				int controllerId = address / ADDRESSOFFSET;
 				int functionId = address % ADDRESSOFFSET;

@@ -20,7 +20,7 @@ public class Element<T extends Type> {
 	private DateTime lastUpdate = null;
 	private final String unit;
 	private final Period validPeriod;
-	private boolean isValid = false;
+	private boolean isValid = true;
 
 	public Element(String name, String unit) {
 		this.name = name;

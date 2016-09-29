@@ -17,23 +17,29 @@
  */
 package io.openems.controller;
 
-import io.openems.channel.ChannelWorker;
-
 import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.openems.channel.ChannelWorker;
 
 public class ControllerWorker extends Thread {
 	private final static Logger log = LoggerFactory.getLogger(ControllerWorker.class);
 
 	private final Collection<ChannelWorker> modbusWorkers;
 	private final Controller controller;
+	private final int cycle;
 
-	public ControllerWorker(String name, Collection<ChannelWorker> modbusWorkers, Controller controller) {
+	public ControllerWorker(String name, Collection<ChannelWorker> modbusWorkers, Controller controller, int cycle) {
 		setName(name);
 		this.modbusWorkers = modbusWorkers;
 		this.controller = controller;
+		this.cycle = cycle;
+	}
+
+	public int getCycle() {
+		return cycle;
 	}
 
 	@Override
@@ -50,16 +56,22 @@ public class ControllerWorker extends Thread {
 				interrupt();
 			}
 		}
-		controller.init();
 
+		controller.init();
+		Long time;
 		while (!isInterrupted()) {
+			time = System.currentTimeMillis();
+			controller.run();
 			try {
-				for (ChannelWorker modbusWorker : modbusWorkers) {
-					modbusWorker.waitForMain();
+				Long sleep = cycle - (System.currentTimeMillis() - time);
+				if (sleep > 0) {
+					Thread.sleep(sleep);
+				} else {
+					log.info("elapsed time (" + (System.currentTimeMillis() - time) + ") is larger then cycle time ("
+							+ cycle + ")");
 				}
-				controller.run();
 			} catch (InterruptedException e) {
-				interrupt();
+				e.printStackTrace();
 			}
 		}
 		log.info("ControllerWorker {} stopped", getName());

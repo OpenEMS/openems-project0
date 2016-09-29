@@ -1,34 +1,28 @@
 package io.openems.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 
-import io.openems.App;
 import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
-import io.openems.device.io.IO;
-import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
-import io.openems.element.InvalidValueExcecption;
 
 public class IOController extends Controller {
 
-	private final HashMap<String, IO> io;
+	// private final HashMap<String, IO> io;
 	private SolarLog sl;
 
-	public IOController(String name, HashMap<String, IO> io) {
+	public IOController(String name) {
 		super(name);
-		this.io = io;
+		// this.io = io;
 	}
 
 	@Override
 	public void init() {
-		sl = (SolarLog) App.getConfig().getDevices().get("sl0");
+		// sl = (SolarLog) App.getConfig().getDevices().get("sl0");
 		// UnsignedShortWordElement setLimitType = (UnsignedShortWordElement)
 		// sl.getElement("SetLimitType");
 		// sl.addToWriteQueue(setLimitType, setLimitType.toRegister(new
@@ -50,24 +44,11 @@ public class IOController extends Controller {
 		// !wago.getBitElement("DigitalOutput_1_1").getValue().toBoolean());
 		// wago.addToWriteQueue(wago.getBitElement("DigitalOutput_1_2"),
 		// !wago.getBitElement("DigitalOutput_1_2").getValue().toBoolean());
-
-		try {
-			UnsignedIntegerDoublewordElement pac = (UnsignedIntegerDoublewordElement) sl.getElement("PAC");
-			System.out.print(pac.readable());
-			UnsignedIntegerDoublewordElement dailyYield = (UnsignedIntegerDoublewordElement) sl
-					.getElement("DailyYield");
-			System.out.println("\t" + dailyYield.readable());
-			Ess ess = (Ess) App.getConfig().getDevices().get("ess0");
-			System.out.println(ess.getActivePower());
-		} catch (InvalidValueExcecption e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
-	public HashMap<String, IO> getIo() {
-		return io;
-	}
+	// public HashMap<String, IO> getIo() {
+	// return io;
+	// }
 
 	@Override
 	public void handleSetPoint(int function, IeShortFloat informationElement) {

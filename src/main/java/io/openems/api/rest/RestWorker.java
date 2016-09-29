@@ -17,7 +17,8 @@ public class RestWorker extends Application {
 
 	public RestWorker() {
 		CorsService corsService = new CorsService();
-		corsService.setAllowedOrigins(new HashSet<String>(Arrays.asList("http://localhost:3000")));
+		corsService.setAllowedOrigins(
+				new HashSet<String>(Arrays.asList("http://localhost:3000", "https://192.168.178.177:4200")));
 		// TODO add URL of real web interface
 		corsService.setAllowedCredentials(true);
 		getServices().add(corsService);

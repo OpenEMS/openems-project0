@@ -58,7 +58,12 @@ public class ModbusChannelWorker extends ChannelWorker {
 				}
 			}
 		}
-
+		// Execute Modbus Main Queries
+		for (Device device : devices) {
+			if (device instanceof ModbusDevice) { // TODO: fix polymorphism
+				((ModbusDevice) device).executeMainQuery(modbusConnection);
+			}
+		}
 		initQueryFinished.release();
 
 		while (!isInterrupted()) {
@@ -69,7 +74,6 @@ public class ModbusChannelWorker extends ChannelWorker {
 					((ModbusDevice) device).executeMainQuery(modbusConnection);
 				}
 			}
-			mainQueryFinished.release();
 
 			// Execute Next Modbus Queries
 			for (Device device : devices) {

@@ -31,7 +31,9 @@ public class BalancingFactory extends ControllerFactory {
 		String channel = ConfigUtil.getAsString(controllerJson, "gridCounter");
 		Counter counter = (Counter) devices.get(channel);
 		boolean chargeFromAc = ConfigUtil.getAsBoolean(controllerJson, "chargeFromAc");
-		return new ControllerWorker(name, channelWorkers.values(), new Balancing(name, counter, ess, chargeFromAc));
+		int cycle = ConfigUtil.getAsInt(controllerJson, "cycle");
+		return new ControllerWorker(name, channelWorkers.values(), new Balancing(name, counter, ess, chargeFromAc),
+				cycle);
 	}
 
 	@Override

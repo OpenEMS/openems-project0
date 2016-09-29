@@ -12,7 +12,6 @@ import io.openems.config.ConfigUtil;
 import io.openems.config.exception.ConfigException;
 import io.openems.device.Device;
 import io.openems.device.ess.Ess;
-import io.openems.device.io.IO;
 
 public class MiniTestFactory extends ControllerFactory {
 
@@ -28,7 +27,8 @@ public class MiniTestFactory extends ControllerFactory {
 				ess.put(essDevice, (Ess) device);
 			}
 		}
-		return new ControllerWorker(name, channelWorkers.values(), new MiniTest(name, ess));
+		int cycle = ConfigUtil.getAsInt(controllerJson, "cycle");
+		return new ControllerWorker(name, channelWorkers.values(), new MiniTest(name, ess), cycle);
 	}
 
 	@Override
@@ -39,9 +39,9 @@ public class MiniTestFactory extends ControllerFactory {
 			jo.addProperty("type", ioc.getClass().getName());
 			JsonArray arr = new JsonArray();
 			jo.add("io", arr);
-			for (Map.Entry<String, IO> io : ioc.getIo().entrySet()) {
-				arr.add(io.getKey());
-			}
+			// for (Map.Entry<String, IO> io : ioc.getIo().entrySet()) {
+			// arr.add(io.getKey());
+			// }
 			return jo;
 		}
 		return null;
