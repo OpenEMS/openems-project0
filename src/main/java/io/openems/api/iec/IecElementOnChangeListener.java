@@ -2,7 +2,6 @@ package io.openems.api.iec;
 
 import org.openmuc.j60870.ASdu;
 import org.openmuc.j60870.CauseOfTransmission;
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeQuality;
 import org.openmuc.j60870.IeShortFloat;
 import org.openmuc.j60870.IeSinglePointWithQuality;
@@ -28,14 +27,14 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 	private final static Logger log = LoggerFactory.getLogger(IecElementOnChangeListener.class);
 
 	private Element<?> element;
-	private Connection iecConnection;
+	private ConnectionListener iecConnection;
 	private int iOA;
 	private float multiplier;
 	private final MessageType messageType;
 	private final int wait = 3000;
 	private long lastSend = 0;
 
-	public IecElementOnChangeListener(Element<?> element, Connection iecConnection, int iOA, float multiplier,
+	public IecElementOnChangeListener(Element<?> element, ConnectionListener iecConnection, int iOA, float multiplier,
 			MessageType messageType) {
 		super();
 		this.element = element;
@@ -51,7 +50,7 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 
 	@Override
 	public void elementChanged(String name, Type newValue, Type oldValue) {
-		if (newValue != oldValue) {
+		if (!newValue.isEqual(oldValue)) {
 			if (lastSend + wait <= System.currentTimeMillis()) {
 				if (iecConnection != null && name.equals(element.getFullName())) {
 					switch (messageType) {
@@ -59,8 +58,9 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 						break;
 					case MEASSUREMENT:
 						try {
-							iecConnection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS, false,
-									false, 0, 5101, new InformationObject[] { getCurrentValue() }));
+							iecConnection
+									.addASduToQueue(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS,
+											false, false, 0, 5101, new InformationObject[] { getCurrentValue() }));
 						} catch (Exception e) {
 							log.error("Failed to send Iec Spontaneous Values");
 							remove();
@@ -68,8 +68,9 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 						break;
 					case MESSAGE:
 						try {
-							iecConnection.send(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS, false,
-									false, 0, 5101, new InformationObject[] { getCurrentValue() }));
+							iecConnection
+									.addASduToQueue(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS,
+											false, false, 0, 5101, new InformationObject[] { getCurrentValue() }));
 						} catch (Exception e) {
 							log.error("Failed to send Iec Spontaneous Values");
 							remove();

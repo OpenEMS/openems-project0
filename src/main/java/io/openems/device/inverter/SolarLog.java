@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.api.iec.MessageType;
 import io.openems.channel.modbus.WritableModbusDevice;
@@ -152,7 +152,7 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
 		eventListener.add(createMeassurementListener(InverterProtocol.PAC.name(), startAddressMeassurements + 0, 0.001f,
@@ -161,7 +161,7 @@ public class SolarLog extends WritableModbusDevice {
 	}
 
 	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
-			Connection connection) {
+			ConnectionListener connection) {
 		Element<?> element = getElement(elementName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
 				MessageType.MEASSUREMENT);

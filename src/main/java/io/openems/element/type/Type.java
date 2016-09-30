@@ -8,4 +8,5 @@ public abstract class Type {
 	public abstract String readable();
 
 	public abstract JsonPrimitive toJson();
+
 }

@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.element.InvalidValueExcecption;
@@ -38,7 +38,7 @@ public class EssCluster extends Ess {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}

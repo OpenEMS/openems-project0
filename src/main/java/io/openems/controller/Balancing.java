@@ -20,12 +20,12 @@ package io.openems.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
@@ -153,7 +153,7 @@ public class Balancing extends Controller {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}

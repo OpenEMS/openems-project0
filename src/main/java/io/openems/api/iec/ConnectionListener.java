@@ -3,6 +3,7 @@ package io.openems.api.iec;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.openmuc.j60870.ASdu;
@@ -21,7 +22,7 @@ import io.openems.controller.ControllerWorker;
 import io.openems.device.ess.Ess;
 import io.openems.device.inverter.SolarLog;
 
-public class ConnectionListener implements ConnectionEventListener {
+public class ConnectionListener extends Thread implements ConnectionEventListener {
 
 	private final static Logger log = LoggerFactory.getLogger(ConnectionListener.class);
 	private final static int MEASSUREMENTSSTARTADDRESS = 9001;
@@ -33,11 +34,14 @@ public class ConnectionListener implements ConnectionEventListener {
 	private final Connection connection;
 	private final int connectionId;
 	private List<IecElementOnChangeListener> listeners;
+	private List<ASdu> queue;
 
 	public ConnectionListener(Connection connection, int connectionId) {
 		this.connection = connection;
 		this.connectionId = connectionId;
-		// registerElementChangeListener();
+		queue = new LinkedList<>();
+		registerElementChangeListener();
+		this.start();
 	}
 
 	private void registerElementChangeListener() {
@@ -47,7 +51,7 @@ public class ConnectionListener implements ConnectionEventListener {
 			for (ControllerWorker cw : App.getConfig().getControllerWorkers().values()) {
 				IecControllable c = cw.getController();
 				listeners.addAll(c.createChangeListeners(MEASSUREMENTSSTARTADDRESS + (controllerCount * 50),
-						MESSAGESSTARTADDRESS + (controllerCount * 50), connection));
+						MESSAGESSTARTADDRESS + (controllerCount * 50), this));
 				controllerCount++;
 			}
 			int essCount = 0;
@@ -55,15 +59,21 @@ public class ConnectionListener implements ConnectionEventListener {
 			for (IecControllable d : App.getConfig().getDevices().values()) {
 				if (d instanceof Ess) {
 					listeners.addAll(d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET,
-							MESSAGESSTARTADDRESS + 100 + (essCount * ADDRESSOFFSET), connection));
+							MESSAGESSTARTADDRESS + 100 + (essCount * ADDRESSOFFSET), this));
 					essCount++;
 				} else if (d instanceof SolarLog) {
 					listeners.addAll(
 							d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 600 + inverterCount * ADDRESSOFFSET,
-									MESSAGESSTARTADDRESS + 100 + (inverterCount * ADDRESSOFFSET), connection));
+									MESSAGESSTARTADDRESS + 100 + (inverterCount * ADDRESSOFFSET), this));
 					inverterCount++;
 				}
 			}
+		}
+	}
+
+	public void addASduToQueue(ASdu aSdu) {
+		synchronized (queue) {
+			queue.add(aSdu);
 		}
 	}
 
@@ -136,6 +146,24 @@ public class ConnectionListener implements ConnectionEventListener {
 		System.out.println("Connection (" + connectionId + ") was closed. " + e.getMessage());
 		for (IecElementOnChangeListener listener : listeners) {
 			listener.remove();
+		}
+	}
+
+	@Override
+	public void run() {
+		while (!isInterrupted()) {
+			try {
+				synchronized (queue) {
+					for (int i = queue.size() - 1; i >= 0; i--) {
+						ASdu aSdu = queue.get(i);
+						queue.remove(aSdu);
+						connection.send(aSdu);
+					}
+				}
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				log.error("Failed to send IEC spontaneous values.", e);
+			}
 		}
 	}
 }

@@ -1,15 +1,15 @@
 package de.fenecon.femscore.femscore;
 
-import io.openems.api.iec.IecElementOnChangeListener;
-import io.openems.device.ess.Ess;
-import io.openems.device.protocol.ModbusProtocol;
-
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+
+import io.openems.api.iec.ConnectionListener;
+import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.device.ess.Ess;
+import io.openems.device.protocol.ModbusProtocol;
 
 public class TestEss extends Ess {
 
@@ -44,7 +44,7 @@ public class TestEss extends Ess {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}

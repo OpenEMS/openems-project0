@@ -1,5 +1,6 @@
 package io.openems.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,12 +10,13 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import org.joda.time.DateTime;
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.App;
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.api.iec.MessageType;
 import io.openems.device.counter.Counter;
@@ -55,7 +57,7 @@ public class EnBAGController extends Controller {
 	private Element<IntegerType> remoteActivePower;
 	private long time = 0;
 	private long time2 = 0;
-	private boolean isOffGrid = true;
+	private boolean isSwitchedToOffGrid = true;
 	private int pvLimit = 100;
 	private boolean pvOnGridSwitch = false;
 	private boolean pvOffGridSwitch = false;
@@ -148,14 +150,14 @@ public class EnBAGController extends Controller {
 			log.error("can't start some ess", e);
 		}
 		try {
-			if (cluster.isOnGrid()) {
-				isOffGrid = true;
+			if (cluster.isOnGrid() && !isSwitchedToOnGrid()) {
+				isSwitchedToOffGrid = true;
 			} else {
-				isOffGrid = false;
+				isSwitchedToOffGrid = false;
 			}
 		} catch (InvalidValueExcecption e) {
 			log.error("can't read grid state");
-			isOffGrid = false;
+			isSwitchedToOffGrid = false;
 		}
 	}
 
@@ -175,7 +177,7 @@ public class EnBAGController extends Controller {
 				if (isOnGrid) {
 					// OnGrid
 					// switch all ESS and PV to onGrid
-					if (isOffGrid) {
+					if (isSwitchedToOffGrid) {
 						log.info("Switch to On-Grid");
 						try {
 							if (areAllEssDisconnected() && !io.readDigitalValue(pvOffGridSwitchName)
@@ -188,7 +190,7 @@ public class EnBAGController extends Controller {
 									// OnGridSwitch is inverted
 									pvOnGridSwitch = true;
 									activeEss = null;
-									isOffGrid = false;
+									isSwitchedToOffGrid = false;
 								}
 							} else {
 								// Switch all Ess off
@@ -226,11 +228,33 @@ public class EnBAGController extends Controller {
 							}
 							if (calculatedEssActivePower > 0) {
 								// discharge
+								// Run all ess, which are not running and Soc
+								// larger than minSoc
+								try {
+									for (Ess ess : essDevices.values()) {
+										if (!ess.isRunning() && ess.getSOC() > ess.getMinSoc() + 2) {
+											log.warn("ESS is not running. Start ESS");
+											ess.start();
+										}
+									}
+								} catch (InvalidValueExcecption e) {
+									log.error("can't start some ess", e);
+								}
+								// Reduce Power to max allowed discharge power
 								if (cluster.getAllowedDischarge() < calculatedEssActivePower) {
 									calculatedEssActivePower = cluster.getAllowedDischarge();
 								}
 							} else {
 								// charge
+								// Runn all ess by charging
+								try {
+									if (!cluster.isRunning()) {
+										log.warn("ESS is not running. Start ESS");
+										cluster.start();
+									}
+								} catch (InvalidValueExcecption e) {
+									log.error("can't start some ess", e);
+								}
 								if (allowChargeFromAC) { // charging is allowed
 									int reservedSoc = 20;
 									// Reserve storage capacity for the Pv peak
@@ -254,12 +278,15 @@ public class EnBAGController extends Controller {
 							}
 
 							// Reduce PV power
-							int toGridPower = gridCounter.getActivePower() * -1;
-							if (gridFeedLimitation && toGridPower >= getMaxGridFeedPower()
-									|| solarLog.getPVLimit() < solarLog.getTotalPower()) {
-								// set PV power
-								pvLimit = toGridPower - getMaxGridFeedPower();
-							}
+							// int toGridPower = gridCounter.getActivePower() *
+							// -1;
+							// if (gridFeedLimitation && toGridPower >=
+							// getMaxGridFeedPower()
+							// || solarLog.getPVLimit() <
+							// solarLog.getTotalPower()) {
+							// // set PV power
+							// pvLimit = toGridPower - getMaxGridFeedPower();
+							// }
 							// Write new calculated ActivePower to Ess device
 							cluster.setActivePower(calculatedEssActivePower);
 							log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
@@ -274,14 +301,13 @@ public class EnBAGController extends Controller {
 								log.error("Failed to stop ess!");
 							}
 						}
-						solarLog.setPVLimit(pvLimit);
 					}
 				} else {
 					// OffGrid
-					if (isOffGrid) {
+					if (isSwitchedToOffGrid) {
 						// Check soc of activeEss
 						try {
-							if (activeEss.getSOC() <= 76) {
+							if (activeEss.getSOC() <= 3) {
 								if (areAllEssDisconnected()) {
 									if (time2 + switchDelay <= System.currentTimeMillis()) {
 										// switch to next Ess
@@ -299,25 +325,29 @@ public class EnBAGController extends Controller {
 										}
 									}
 								} else {
-									// switch primary Ess off (is seperately
-									// needed
-									// because
-									// primary Ess output is inverted)
+									// disconnect all ess
 									for (Ess ess : allEss) {
 										if (ess.getName() != primaryOffGridEss) {
 											essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
 										}
 									}
+									// disconnect primary ess
 									essOffGridSwitches.put(essOffGridSwitchMapping.get(primaryOffGridEss), true);
-									// switch active Ess off
+									// stop active ess to reduce power
+									// consumption
+									if (activeEss != null) {
+										activeEss.stop();
+									}
 									time2 = System.currentTimeMillis();
 								}
-							} else if (activeEss.getSOC() >= 95) {
+							} else if (activeEss.getSOC() >= 90) {
 								pvOffGridSwitch = false;
 							}
 						} catch (InvalidValueExcecption e) {
 							log.error("can't switch to the next storage, because ther are invalid values", e);
 						}
+						// TODO Disconnect PV from Off grid if current on
+						// Storage is too large
 					} else {
 						log.info("Switch to Off-Grid");
 						try {
@@ -331,10 +361,10 @@ public class EnBAGController extends Controller {
 									availableEss = new LinkedList<>(essDevices.values());
 									availableEss.remove(activeEss);
 									// Switch Solar to OffGrid
-									// if (activeEss.getSOC() < 95) {
-									// pvOffGridSwitch = true;
-									// }
-									isOffGrid = true;
+									if (activeEss.getSOC() < 95) {
+										pvOffGridSwitch = true;
+									}
+									isSwitchedToOffGrid = true;
 								}
 							} else {
 								// Switch all Ess off
@@ -348,7 +378,7 @@ public class EnBAGController extends Controller {
 								pvOnGridSwitch = false;
 								pvOffGridSwitch = false;
 								// Set SolarLog max power to 35kW
-								// pvLimit = 35000;
+								pvLimit = 35000;
 								time2 = System.currentTimeMillis();
 							}
 						} catch (InvalidValueExcecption e) {
@@ -356,6 +386,7 @@ public class EnBAGController extends Controller {
 						}
 					}
 				}
+				solarLog.setPVLimit(pvLimit);
 				io.writeDigitalValue(pvOnGridSwitchName, pvOnGridSwitch);
 				io.writeDigitalValue(pvOffGridSwitchName, pvOffGridSwitch);
 				for (Entry<String, Boolean> value : essOffGridSwitches.entrySet()) {
@@ -382,6 +413,21 @@ public class EnBAGController extends Controller {
 		return true;
 	}
 
+	private boolean isSwitchedToOnGrid() throws InvalidValueExcecption {
+		for (Ess ess : essDevices.values()) {
+			if (io.readDigitalValue(essOffGridSwitchMapping.get(ess.getName()))) {
+				return false;
+			}
+		}
+		if (io.readDigitalValue(pvOffGridSwitchName)) {
+			return false;
+		}
+		if (!io.readDigitalValue(pvOnGridSwitchName)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		switch (function) {
@@ -390,6 +436,11 @@ public class EnBAGController extends Controller {
 			break;
 		case 1:
 			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
+			try {
+				App.getConfig().writeJsonFile();
+			} catch (IOException e) {
+				log.error("Failed to save IEC set-point changes", e);
+			}
 			break;
 		default:
 			break;
@@ -442,7 +493,7 @@ public class EnBAGController extends Controller {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
 				connection, startAddressMeassurements + 0, 0.001f, MessageType.MEASSUREMENT);

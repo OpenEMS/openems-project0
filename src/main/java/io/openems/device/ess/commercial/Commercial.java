@@ -23,12 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.api.iec.MessageType;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
@@ -572,7 +572,10 @@ public class Commercial extends Ess {
 
 	@Override
 	public int getAllowedDischarge() throws InvalidValueExcecption {
-		return ((UnsignedShortWordElement) getElement(EssProtocol.AllowedDischarge.name())).getValue().toInteger();
+		if (getSOC() > minSoc.getValue().toInteger()) {
+			return ((UnsignedShortWordElement) getElement(EssProtocol.AllowedDischarge.name())).getValue().toInteger();
+		}
+		return 0;
 	}
 
 	public UnsignedShortWordElement getAllowedApparent() {
@@ -644,8 +647,10 @@ public class Commercial extends Ess {
 	}
 
 	@Override
-	public void setActivePower(int power) {
-		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
+	public void setActivePower(int power) throws InvalidValueExcecption {
+		if (!(power > 0 && getSOC() <= minSoc.getValue().toInteger())) {
+			addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
+		}
 	}
 
 	@Override
@@ -750,7 +755,7 @@ public class Commercial extends Ess {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
 		eventListener.add(createMeassurementListener(EssProtocol.ChargeEnergy.name(), startAddressMeassurements + 0,
@@ -845,7 +850,7 @@ public class Commercial extends Ess {
 	}
 
 	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
-			Connection connection) {
+			ConnectionListener connection) {
 		Element<?> element = getElement(elementName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
 				MessageType.MEASSUREMENT);
@@ -854,7 +859,7 @@ public class Commercial extends Ess {
 	}
 
 	private IecElementOnChangeListener createMessageListener(String elementName, String bitName, int address,
-			Connection connection) {
+			ConnectionListener connection) {
 		BitsElement element = (BitsElement) getElement(elementName);
 		BitElement bit = element.getBit(bitName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(bit, connection, address, 0,

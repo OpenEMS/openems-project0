@@ -2,7 +2,6 @@ package io.openems.api.iec;
 
 import java.util.List;
 
-import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
 
@@ -12,5 +11,5 @@ public interface IecControllable {
 	public void handleCommand(int function, IeDoubleCommand informationElement);
 
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection);
+			int startAddressMessages, ConnectionListener connection);
 }

@@ -17,6 +17,15 @@
  */
 package io.openems.device.ess.mini;
 
+import java.util.List;
+import java.util.Set;
+
+import org.openmuc.j60870.IeDoubleCommand;
+import org.openmuc.j60870.IeShortFloat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.channel.modbus.write.ModbusSingleRegisterWriteRequest;
 import io.openems.device.ess.Ess;
@@ -30,15 +39,6 @@ import io.openems.device.protocol.interfaces.WordElement;
 import io.openems.element.state.AllowedState;
 import io.openems.element.state.EnabledState;
 import io.openems.element.type.IntegerType;
-
-import java.util.List;
-import java.util.Set;
-
-import org.openmuc.j60870.Connection;
-import org.openmuc.j60870.IeDoubleCommand;
-import org.openmuc.j60870.IeShortFloat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Mini extends Ess {
 	@SuppressWarnings("unused")
@@ -168,8 +168,7 @@ public class Mini extends Ess {
 						.map(6, "Remote scheduling") //
 						.map(8, "Timing mode").build(), //
 				new ElementBuilder(30158, name).name(MiniProtocol.PowerMeterLimit).unit("W").build())); //
-		protocol.addElementRange(new ElementRange(
-				30502, // //
+		protocol.addElementRange(new ElementRange(30502, // //
 				new ElementBuilder(30502, name).name(MiniProtocol.SetOffGridInverterAllowLoad).writable() // //
 						.map(0, AllowedState.ALLOWED) // //
 						.map(1, AllowedState.NOT_ALLOWED).build(), //
@@ -196,16 +195,16 @@ public class Mini extends Ess {
 						.map(1, "Charge/discharge at set time").build(), //
 				new ElementBuilder(30509, name).name(MiniProtocol.SetBatteryVoltageLowLimit).multiplier(100).unit("mV")
 						.writable().build(), //
-				new ElementBuilder(30510, name).name(MiniProtocol.SetBatteryVoltageHighLimit).multiplier(100)
-						.unit("mV").writable().build(), //
+				new ElementBuilder(30510, name).name(MiniProtocol.SetBatteryVoltageHighLimit).multiplier(100).unit("mV")
+						.writable().build(), //
 				new ElementBuilder(30511, name).name(MiniProtocol.SetGridVoltageLowLimit).multiplier(100).unit("mV")
 						.writable().build(), //
 				new ElementBuilder(30512, name).name(MiniProtocol.SetGridFrequencyLowLimit).multiplier(100).unit("mHz")
 						.writable().build(), //
 				new ElementBuilder(30513, name).name(MiniProtocol.SetGridVoltageHighLimit).multiplier(100).unit("mV")
 						.writable().build(), //
-				new ElementBuilder(30514, name).name(MiniProtocol.SetGridFrequencyHighLimit).multiplier(100)
-						.unit("mHz").writable().build(), //
+				new ElementBuilder(30514, name).name(MiniProtocol.SetGridFrequencyHighLimit).multiplier(100).unit("mHz")
+						.writable().build(), //
 				new ElementBuilder(30515, name).name(MiniProtocol.SetInverterCertificationStandard).writable() //
 						.map(0, "VDE4105 and off-grid") //
 						.map(1, "AS4777 and off-grid") //
@@ -241,26 +240,26 @@ public class Mini extends Ess {
 						.writable().build(), //
 				new ElementBuilder(30534, name).name(MiniProtocol.SetTimeModeStartDischargeHour).unit("h").writable()
 						.build(), //
-				new ElementBuilder(30535, name).name(MiniProtocol.SetTimeModeStopDischargeMinute).unit("min")
-						.writable().build(), //
+				new ElementBuilder(30535, name).name(MiniProtocol.SetTimeModeStopDischargeMinute).unit("min").writable()
+						.build(), //
 				new ElementBuilder(30536, name).name(MiniProtocol.SetTimeModeStopDischargeHour).unit("h").writable()
 						.build(), //
 				new ElementBuilder(30537, name).name(MiniProtocol.SetSystemMaxSOC).unit("%").writable().build(), //
 				new ElementBuilder(30538, name).name(MiniProtocol.SetSystemMinSOC).unit("%").writable().build(), //
 				new ElementBuilder(30539, name).name(MiniProtocol.SetSystemChargeFromGridSOC).unit("%").writable()
 						.build(), //
-				new ElementBuilder(30540, name).name(MiniProtocol.SetGridSlowVoltageLowLimit).multiplier(100)
-						.unit("mV").writable().build(), //
+				new ElementBuilder(30540, name).name(MiniProtocol.SetGridSlowVoltageLowLimit).multiplier(100).unit("mV")
+						.writable().build(), //
 				new ElementBuilder(30541, name).name(MiniProtocol.SetGridSlowVoltageHighLimit).multiplier(100)
 						.unit("mV").writable().build(), //
 				new ElementBuilder(30542, name).name(MiniProtocol.SetGridSlowVoltageLowTimeLimit).unit("ms").writable()
 						.build(), //
-				new ElementBuilder(30543, name).name(MiniProtocol.SetGridSlowVoltageHighTimeLimit).unit("ms")
-						.writable().build(), //
+				new ElementBuilder(30543, name).name(MiniProtocol.SetGridSlowVoltageHighTimeLimit).unit("ms").writable()
+						.build(), //
 				new ElementBuilder(30544, name).name(MiniProtocol.SetGridFastVoltageLowTimeLimit).unit("ms").writable()
 						.build(), //
-				new ElementBuilder(30545, name).name(MiniProtocol.SetGridFastVoltageHighTimeLimit).unit("ms")
-						.writable().build(), //
+				new ElementBuilder(30545, name).name(MiniProtocol.SetGridFastVoltageHighTimeLimit).unit("ms").writable()
+						.build(), //
 				new ElementBuilder(30546, name).name(MiniProtocol.SetGridFrequencyLowTimeLimit).unit("ms").writable()
 						.build(), //
 				new ElementBuilder(30547, name).name(MiniProtocol.SetGridFrequencyHighTimeLimit).unit("ms").writable()
@@ -274,8 +273,8 @@ public class Mini extends Ess {
 				new ElementBuilder(30551, name).name(MiniProtocol.SetGridVoltageStartPowerFactorAdjustmentLimit)
 						.multiplier(100).unit("V").writable().build(), //
 				new ElementBuilder(30552, name)
-						.name(MiniProtocol.SetGridVoltageStartPowerFactorAdjustmentPercentageLimit).unit("%")
-						.writable().build(), //
+						.name(MiniProtocol.SetGridVoltageStartPowerFactorAdjustmentPercentageLimit).unit("%").writable()
+						.build(), //
 				new ElementBuilder(30553, name).name(MiniProtocol.SetGridVoltageStopPowerFactorAdjustmentLimit)
 						.multiplier(100).unit("V").writable().build(), //
 				new ElementBuilder(30554, name).name(MiniProtocol.SetGridVoltageReconnectLowLimit).multiplier(100)
@@ -426,7 +425,7 @@ public class Mini extends Ess {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, Connection connection) {
+			int startAddressMessages, ConnectionListener connection) {
 		// TODO Auto-generated method stub
 		return null;
 	}
