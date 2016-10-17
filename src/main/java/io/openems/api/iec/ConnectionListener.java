@@ -12,6 +12,7 @@ import org.openmuc.j60870.Connection;
 import org.openmuc.j60870.ConnectionEventListener;
 import org.openmuc.j60870.IeDoubleCommand;
 import org.openmuc.j60870.IeShortFloat;
+import org.openmuc.j60870.IeTime56;
 import org.openmuc.j60870.InformationObject;
 import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 		this.connectionId = connectionId;
 		queue = new LinkedList<>();
 		registerElementChangeListener();
+		this.setName("IECConnection" + connectionId);
 		this.start();
 	}
 
@@ -84,7 +86,7 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 			// interrogation command
 			case C_IC_NA_1:
 				connection.sendConfirmation(aSdu);
-				System.out.println("Got interrogation command. Will send scaled measured values.\n");
+				log.info("Got interrogation command. Will send scaled measured values.\n");
 
 				for (IecElementOnChangeListener listener : listeners) {
 					try {
@@ -128,6 +130,15 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 				connection.sendConfirmation(aSdu);
 			}
 				break;
+			case C_CS_NA_1: {
+				IeTime56 time = (IeTime56) (aSdu.getInformationObjects()[0].getInformationElements()[0][0]);
+				if (System.currentTimeMillis() - time.getTimestamp() < 10000) {
+					connection.sendConfirmation(aSdu);
+				} else {
+					log.error("IEC time is not synchronized!");
+				}
+			}
+				break;
 			default:
 				System.out.println("Got unknown request: " + aSdu + ". Will not confirm it.\n");
 			}
@@ -143,10 +154,11 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 
 	@Override
 	public void connectionClosed(IOException e) {
-		System.out.println("Connection (" + connectionId + ") was closed. " + e.getMessage());
+		log.info("Connection (" + connectionId + ") was closed. " + e.getMessage());
 		for (IecElementOnChangeListener listener : listeners) {
 			listener.remove();
 		}
+		this.interrupt();
 	}
 
 	@Override

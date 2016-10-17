@@ -17,6 +17,7 @@
  */
 package io.openems.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,9 +30,7 @@ import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
 import io.openems.device.counter.Counter;
 import io.openems.device.ess.Ess;
-import io.openems.device.ess.EssProtocol;
-import io.openems.device.protocol.BitElement;
-import io.openems.device.protocol.BitsElement;
+import io.openems.device.ess.EssCluster;
 import io.openems.element.InvalidValueExcecption;
 
 public class Balancing extends Controller {
@@ -39,6 +38,7 @@ public class Balancing extends Controller {
 
 	private final Counter gridCounter;
 	private final Map<String, Ess> essDevices;
+	private final EssCluster cluster;
 	private final boolean allowChargeFromAC;
 
 	public Balancing(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc) {
@@ -46,6 +46,7 @@ public class Balancing extends Controller {
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
 		this.allowChargeFromAC = allowChargeFromAc;
+		this.cluster = new EssCluster("", "", 0, 0, new ArrayList<>(essDevices.values()));
 	}
 
 	public Counter getGridCounter() {
@@ -62,25 +63,15 @@ public class Balancing extends Controller {
 
 	@Override
 	public void init() {
-		for (Ess ess : essDevices.values()) {
-			BitsElement bitsElement = (BitsElement) ess.getElement(EssProtocol.SystemState.name());
-			BitElement essRunning = bitsElement.getBit(EssProtocol.SystemStates.Running.name());
-			if (essRunning == null) {
-				log.info("No connection to ESS");
+		try {
+			if (cluster.isRunning()) {
+				log.info("ESS is running");
 			} else {
-				try {
-					boolean isEssRunning = essRunning.getValue().toBoolean();
-					if (isEssRunning) {
-						log.info("ESS is running");
-					} else {
-						// Start ESS if not running
-						ess.start();
-						log.info("ESS is not running. Start ESS");
-					}
-				} catch (InvalidValueExcecption e) {
-					log.error("Fehler beim starten des Speichers.", e);
-				}
+				cluster.start();
+				log.info("ESS is not running. Start ESS");
 			}
+		} catch (InvalidValueExcecption e) {
+			log.error("Failed to run the storage.", e);
 		}
 	}
 
@@ -90,28 +81,44 @@ public class Balancing extends Controller {
 
 	@Override
 	public void run() {
-		Ess ess = essDevices.values().iterator().next();
 		try {
 
 			int calculatedEssActivePower;
 
 			// actual power calculation
-			calculatedEssActivePower = lastSetEssActivePower + gridCounter.getActivePower() / 2;
+			calculatedEssActivePower = cluster.getActivePower() + gridCounter.getActivePower() / 2;
 
 			if (calculatedEssActivePower > 0) {
 				// discharge
-				// Calculate discharge power with hysteresis for the minSoc
-				if (ess.getMaxDischargePower() < calculatedEssActivePower) {
-					calculatedEssActivePower = ess.getMaxDischargePower();
+				try {
+					for (Ess ess : essDevices.values()) {
+						if (!ess.isRunning() && ess.getSOC() > ess.getMinSoc() + 2) {
+							log.warn("ESS is not running. Start ESS");
+							ess.start();
+						}
+					}
+				} catch (InvalidValueExcecption e) {
+					log.error("can't start some ess", e);
+				}
+				// check max dischargepower
+				if (cluster.getAllowedDischarge() < calculatedEssActivePower) {
+					calculatedEssActivePower = cluster.getAllowedDischarge();
 				}
 			} else {
 				// charge
 				if (allowChargeFromAC) { // charging is allowed
-					if (calculatedEssActivePower < ess.getAllowedCharge()) {
+					// Runn all ess by charging
+					try {
+						if (!cluster.isRunning()) {
+							log.warn("ESS is not running. Start ESS");
+							cluster.start();
+						}
+					} catch (InvalidValueExcecption e) {
+						log.error("can't start some ess", e);
+					}
+					if (calculatedEssActivePower < cluster.getAllowedCharge()) {
 						// not allowed to charge with such high power
-						calculatedEssActivePower = ess.getAllowedCharge();
-					} else {
-						// charge with calculated value
+						calculatedEssActivePower = cluster.getAllowedCharge();
 					}
 				} else { // charging is not allowed
 					calculatedEssActivePower = 0;
@@ -121,18 +128,18 @@ public class Balancing extends Controller {
 			// round to 100: ess can only be controlled with precision 100 W
 			calculatedEssActivePower = calculatedEssActivePower / 100 * 100;
 
-			ess.setActivePower(calculatedEssActivePower);
+			cluster.setActivePower(calculatedEssActivePower);
 
 			lastSetEssActivePower = calculatedEssActivePower;
-			lastEssActivePower = ess.getActivePower();
+			lastEssActivePower = cluster.getActivePower();
 			lastCounterActivePower = gridCounter.getActivePower();
 
-			log.info(ess.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
+			log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
 					+ calculatedEssActivePower + "]");
 		} catch (InvalidValueExcecption e) {
 			log.error("The system encountered some invalid values. Set Storage power to zero.", e);
 			try {
-				ess.setActivePower(0);
+				cluster.setActivePower(0);
 			} catch (InvalidValueExcecption e1) {
 				log.error("Error on stoping the storage", e1);
 			}

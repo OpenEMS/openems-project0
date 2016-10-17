@@ -51,6 +51,7 @@ public class RestWorker extends Application {
 		// define all routes
 		router.attach("/config", ConfigDevicesResource.class);
 		router.attach("/device/{device}/current/{parametername}", DeviceCurrentValueResource.class);
+		router.attach("/current", ElementValueResource.class);
 
 		return router;
 	}

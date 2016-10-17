@@ -85,11 +85,17 @@ public class EssCluster extends Ess {
 					maxP = power;
 				}
 				double diff = maxP - minP;
-				if (e.getUseableSoc() > 0) {
+				if (e.getUseableSoc() >= 0) {
 					int p = (int) Math.ceil((minP + diff / useableSocSum * e.getUseableSoc()) / 100) * 100;
 					e.setActivePower(p);
 					log.info(e.getCurrentDataAsString() + " SetActivePower: [" + p + "]");
 					power -= p;
+				} else if (e.getUseableSoc() <= -3) {
+					int chargePower = -5000;
+					e.start();
+					e.setActivePower(chargePower);
+					log.info("Charge " + e.getName() + " to minSoc(" + e.getMinSoc() + ")");
+					power -= chargePower;
 				}
 			}
 		} else {
@@ -293,7 +299,6 @@ public class EssCluster extends Ess {
 	@Override
 	public boolean isRunning() throws InvalidValueExcecption {
 		for (Ess storage : storages) {
-			System.out.println(storage.getName());
 			if (!storage.isRunning()) {
 				return false;
 			}

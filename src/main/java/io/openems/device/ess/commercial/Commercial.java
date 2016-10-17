@@ -648,9 +648,10 @@ public class Commercial extends Ess {
 
 	@Override
 	public void setActivePower(int power) throws InvalidValueExcecption {
-		if (!(power > 0 && getSOC() <= minSoc.getValue().toInteger())) {
-			addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
+		if (power > 0 && getSOC() <= minSoc.getValue().toInteger()) {
+			power = 0;
 		}
+		addToWriteRequestQueue(new ModbusSingleRegisterWriteRequest(getSetActivePower(), power));
 	}
 
 	@Override

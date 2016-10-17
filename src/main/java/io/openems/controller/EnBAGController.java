@@ -150,8 +150,19 @@ public class EnBAGController extends Controller {
 			log.error("can't start some ess", e);
 		}
 		try {
-			if (cluster.isOnGrid() && !isSwitchedToOnGrid()) {
-				isSwitchedToOffGrid = true;
+			if (cluster.isOnGrid()) {
+				if (isSwitchedToOnGrid()) {
+					pvOnGridSwitch = true;
+					pvOffGridSwitch = false;
+					for (Ess ess : essDevices.values()) {
+						essOffGridSwitches.put(essOffGridSwitchMapping.get(ess.getName()), false);
+					}
+					// SetSolarLog to max power
+					pvLimit = solarLog.getTotalPower();
+					isSwitchedToOffGrid = false;
+				} else {
+					isSwitchedToOffGrid = true;
+				}
 			} else {
 				isSwitchedToOffGrid = false;
 			}
@@ -220,13 +231,14 @@ public class EnBAGController extends Controller {
 							this.inHousePowerConsumption.setValid(false);
 						}
 						try {
-							int calculatedEssActivePower = gridCounter.getActivePower() + cluster.getActivePower();
+							int calculatedPower = gridCounter.getActivePower() + cluster.getActivePower();
+							int calculatedEssActivePower = calculatedPower;
 
 							// overwrite ActivePower by Remote value
 							if (isRemoteControlled) {
 								calculatedEssActivePower = remoteActivePower.getValue().toInteger();
 							}
-							if (calculatedEssActivePower > 0) {
+							if (calculatedEssActivePower >= 0) {
 								// discharge
 								// Run all ess, which are not running and Soc
 								// larger than minSoc
@@ -246,11 +258,14 @@ public class EnBAGController extends Controller {
 								}
 							} else {
 								// charge
-								// Runn all ess by charging
+								// Runn all ess by charging if soc smaler than
+								// 97%
 								try {
-									if (!cluster.isRunning()) {
-										log.warn("ESS is not running. Start ESS");
-										cluster.start();
+									for (Ess ess : essDevices.values()) {
+										if (!ess.isRunning() && ess.getSOC() <= 97) {
+											log.warn("ESS is not running. Start ESS");
+											ess.start();
+										}
 									}
 								} catch (InvalidValueExcecption e) {
 									log.error("can't start some ess", e);
@@ -278,15 +293,13 @@ public class EnBAGController extends Controller {
 							}
 
 							// Reduce PV power
-							// int toGridPower = gridCounter.getActivePower() *
-							// -1;
-							// if (gridFeedLimitation && toGridPower >=
-							// getMaxGridFeedPower()
-							// || solarLog.getPVLimit() <
-							// solarLog.getTotalPower()) {
-							// // set PV power
-							// pvLimit = toGridPower - getMaxGridFeedPower();
-							// }
+							pvLimit = solarLog.getPVLimit()
+									+ (calculatedPower + getMaxGridFeedPower() - calculatedEssActivePower
+											- (calculatedEssActivePower - cluster.getAllowedCharge()));
+							if (pvLimit < 0) {
+								// set PV power
+								pvLimit = 0;
+							}
 							// Write new calculated ActivePower to Ess device
 							cluster.setActivePower(calculatedEssActivePower);
 							log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["

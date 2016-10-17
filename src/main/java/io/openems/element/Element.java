@@ -1,7 +1,7 @@
 package io.openems.element;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -11,8 +11,8 @@ import com.google.gson.JsonObject;
 import io.openems.element.type.Type;
 
 public class Element<T extends Type> {
-	private Set<ElementOnUpdateListener> listenersOnUpdate = new HashSet<>();
-	private Set<ElementOnChangeListener> listenersOnChange = new HashSet<>();
+	private List<ElementOnUpdateListener> listenersOnUpdate = new CopyOnWriteArrayList();
+	private List<ElementOnChangeListener> listenersOnChange = new CopyOnWriteArrayList();
 
 	private String deviceName;
 	private T value = null;
