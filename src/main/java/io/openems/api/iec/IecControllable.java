@@ -12,4 +12,6 @@ public interface IecControllable {
 
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, ConnectionListener connection);
+
+	public String getName();
 }

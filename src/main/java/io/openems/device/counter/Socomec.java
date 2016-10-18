@@ -17,6 +17,7 @@
  */
 package io.openems.device.counter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -29,12 +30,14 @@ import org.slf4j.LoggerFactory;
 
 import io.openems.api.iec.ConnectionListener;
 import io.openems.api.iec.IecElementOnChangeListener;
+import io.openems.api.iec.MessageType;
 import io.openems.device.protocol.ElementBuilder;
 import io.openems.device.protocol.ElementLength;
 import io.openems.device.protocol.ElementRange;
 import io.openems.device.protocol.ModbusProtocol;
 import io.openems.device.protocol.SignedIntegerDoublewordElement;
 import io.openems.device.protocol.UnsignedIntegerDoublewordElement;
+import io.openems.element.Element;
 import io.openems.element.InvalidValueExcecption;
 
 public class Socomec extends Counter {
@@ -136,7 +139,23 @@ public class Socomec extends Counter {
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, ConnectionListener connection) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
+		/* Meassurements */
+		eventListener.add(createMeassurementListener(CounterProtocol.ActivePower.name(), startAddressMeassurements + 0,
+				-0.001f, connection));
+		eventListener.add(createMeassurementListener(CounterProtocol.ReactivePower.name(),
+				startAddressMeassurements + 1, -0.001f, connection));
+		eventListener.add(createMeassurementListener(CounterProtocol.ApparentPower.name(),
+				startAddressMeassurements + 2, -0.001f, connection));
+		return eventListener;
+	}
+
+	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
+			ConnectionListener connection) {
+		Element<?> element = getElement(elementName);
+		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
+				MessageType.MEASSUREMENT);
+		element.addOnChangeListener(ieocl);
+		return ieocl;
 	}
 }

@@ -47,13 +47,13 @@ public class EnBAGController extends Controller {
 	private IO io;
 	private List<Ess> availableEss;
 	private SolarLog solarLog;
-	private Element<IntegerType> totalActivePower;
-	private Element<IntegerType> totalReactivePower;
-	private Element<IntegerType> totalApparentPower;
+	// private Element<IntegerType> totalActivePower;
+	// private Element<IntegerType> totalReactivePower;
+	// private Element<IntegerType> totalApparentPower;
 	private Element<LongType> inHousePowerConsumption;
-	private boolean gridFeedLimitation = true;
-	private Element<BooleanType> remoteStop;
-	private boolean isRemoteControlled = false;
+	private Element<BooleanType> gridFeedLimitation;
+	private Element<BooleanType> remoteStart;
+	private Element<BooleanType> isRemoteControlled;
 	private Element<IntegerType> remoteActivePower;
 	private long time = 0;
 	private long time2 = 0;
@@ -80,14 +80,22 @@ public class EnBAGController extends Controller {
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
 		this.solarLog = solarLog;
-		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
-		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
-		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
+		// totalActivePower = new Element<IntegerType>("totalActivePower", "W");
+		// totalReactivePower = new Element<IntegerType>("totalReactivePower",
+		// "W");
+		// totalApparentPower = new Element<IntegerType>("totalApparentPower",
+		// "W");
 		inHousePowerConsumption = new Element<LongType>("inHousePowerConsumption", "W");
-		remoteStop = new Element<BooleanType>("remoteStop", "");
 		remoteActivePower = new Element<IntegerType>("remoteActivePower", "W");
-		remoteStop.setValue(new BooleanType(false));
-		remoteStop.setValid(true);
+		remoteStart = new Element<BooleanType>("remoteStop", "");
+		remoteStart.setValue(new BooleanType(true));
+		remoteStart.setValid(true);
+		gridFeedLimitation = new Element<BooleanType>("gridFeedLimitation", "");
+		gridFeedLimitation.setValue(new BooleanType(true));
+		gridFeedLimitation.setValid(true);
+		isRemoteControlled = new Element<BooleanType>("isRemoteControlled", "");
+		isRemoteControlled.setValue(new BooleanType(false));
+		isRemoteControlled.setValid(true);
 		this.essOffGridSwitches = new HashMap<String, Boolean>();
 		for (Entry<String, String> value : essOffGridSwitchMapping.entrySet()) {
 			this.essOffGridSwitches.put(value.getValue(), false);
@@ -175,7 +183,7 @@ public class EnBAGController extends Controller {
 	@Override
 	public void run() {
 		try {
-			if (!remoteStop.getValue().toBoolean()) {
+			if (remoteStart.getValue().toBoolean()) {
 				ArrayList<Ess> allEss = new ArrayList<>(essDevices.values());
 				boolean isOnGrid = true;
 				try {
@@ -218,24 +226,29 @@ public class EnBAGController extends Controller {
 							log.error("failed to switch to OnGrid mode because there are invalid values!", e);
 						}
 					} else {
-						try {
-							this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
-							this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
-							this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
-							this.inHousePowerConsumption.setValue(new LongType(cluster.getActivePower()
-									+ gridCounter.getActivePower() + solarLog.getActivePower()));
-						} catch (InvalidValueExcecption e) {
-							this.totalActivePower.setValid(false);
-							this.totalReactivePower.setValid(false);
-							this.totalApparentPower.setValid(false);
-							this.inHousePowerConsumption.setValid(false);
-						}
+						// try {
+						// this.totalActivePower.setValue(new
+						// IntegerType(cluster.getActivePower()));
+						// this.totalReactivePower.setValue(new
+						// IntegerType(cluster.getReactivePower()));
+						// this.totalApparentPower.setValue(new
+						// IntegerType(cluster.getApparentPower()));
+						// this.inHousePowerConsumption.setValue(new
+						// LongType(cluster.getActivePower()
+						// + gridCounter.getActivePower() +
+						// solarLog.getActivePower()));
+						// } catch (InvalidValueExcecption e) {
+						// this.totalActivePower.setValid(false);
+						// this.totalReactivePower.setValid(false);
+						// this.totalApparentPower.setValid(false);
+						// this.inHousePowerConsumption.setValid(false);
+						// }
 						try {
 							int calculatedPower = gridCounter.getActivePower() + cluster.getActivePower();
 							int calculatedEssActivePower = calculatedPower;
 
 							// overwrite ActivePower by Remote value
-							if (isRemoteControlled) {
+							if (isRemoteControlled.getValue().toBoolean()) {
 								calculatedEssActivePower = remoteActivePower.getValue().toInteger();
 							}
 							if (calculatedEssActivePower >= 0) {
@@ -293,12 +306,16 @@ public class EnBAGController extends Controller {
 							}
 
 							// Reduce PV power
-							pvLimit = solarLog.getPVLimit()
-									+ (calculatedPower + getMaxGridFeedPower() - calculatedEssActivePower
-											- (calculatedEssActivePower - cluster.getAllowedCharge()));
-							if (pvLimit < 0) {
-								// set PV power
-								pvLimit = 0;
+							if (gridFeedLimitation.getValue().toBoolean()) {
+								pvLimit = solarLog.getPVLimit()
+										+ (calculatedPower + getMaxGridFeedPower() - calculatedEssActivePower
+												- (calculatedEssActivePower - cluster.getAllowedCharge()));
+								if (pvLimit < 0) {
+									// set PV power
+									pvLimit = 0;
+								}
+							} else {
+								pvLimit = solarLog.getTotalPower();
 							}
 							// Write new calculated ActivePower to Ess device
 							cluster.setActivePower(calculatedEssActivePower);
@@ -469,11 +486,11 @@ public class EnBAGController extends Controller {
 			default:
 			case ON:
 				cluster.start();
-				remoteStop.setValue(new BooleanType(false));
+				remoteStart.setValue(new BooleanType(true));
 				break;
 			case OFF:
 				cluster.stop();
-				remoteStop.setValue(new BooleanType(true));
+				remoteStart.setValue(new BooleanType(false));
 				break;
 			}
 			break;
@@ -481,10 +498,10 @@ public class EnBAGController extends Controller {
 			switch (informationElement.getCommandState()) {
 			default:
 			case ON:
-				gridFeedLimitation = true;
+				gridFeedLimitation.setValue(new BooleanType(true));
 				break;
 			case OFF:
-				gridFeedLimitation = false;
+				gridFeedLimitation.setValue(new BooleanType(false));
 				break;
 			}
 			break;
@@ -492,10 +509,10 @@ public class EnBAGController extends Controller {
 			switch (informationElement.getCommandState()) {
 			default:
 			case ON:
-				isRemoteControlled = true;
+				isRemoteControlled.setValue(new BooleanType(true));
 				break;
 			case OFF:
-				isRemoteControlled = false;
+				isRemoteControlled.setValue(new BooleanType(false));
 				break;
 			}
 			break;
@@ -508,22 +525,30 @@ public class EnBAGController extends Controller {
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
-		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
-				connection, startAddressMeassurements + 0, 0.001f, MessageType.MEASSUREMENT);
-		totalActivePower.addOnChangeListener(totalActivePowerListener);
-		eventListener.add(totalActivePowerListener);
-		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
-				connection, startAddressMeassurements + 1, 0.001f, MessageType.MEASSUREMENT);
-		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
-		eventListener.add(totalReactivePowerListener);
-		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
-				connection, startAddressMeassurements + 2, 0.001f, MessageType.MEASSUREMENT);
-		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
-		eventListener.add(totalApparentPowerListener);
-		IecElementOnChangeListener inHousePowerConsumptionListener = new IecElementOnChangeListener(
-				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f, MessageType.MEASSUREMENT);
-		inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
-		eventListener.add(inHousePowerConsumptionListener);
+		// IecElementOnChangeListener totalActivePowerListener = new
+		// IecElementOnChangeListener(totalActivePower,
+		// connection, startAddressMeassurements + 0, 0.001f,
+		// MessageType.MEASSUREMENT);
+		// totalActivePower.addOnChangeListener(totalActivePowerListener);
+		// eventListener.add(totalActivePowerListener);
+		// IecElementOnChangeListener totalReactivePowerListener = new
+		// IecElementOnChangeListener(totalReactivePower,
+		// connection, startAddressMeassurements + 1, 0.001f,
+		// MessageType.MEASSUREMENT);
+		// totalReactivePower.addOnChangeListener(totalReactivePowerListener);
+		// eventListener.add(totalReactivePowerListener);
+		// IecElementOnChangeListener totalApparentPowerListener = new
+		// IecElementOnChangeListener(totalApparentPower,
+		// connection, startAddressMeassurements + 2, 0.001f,
+		// MessageType.MEASSUREMENT);
+		// totalApparentPower.addOnChangeListener(totalApparentPowerListener);
+		// eventListener.add(totalApparentPowerListener);
+		// IecElementOnChangeListener inHousePowerConsumptionListener = new
+		// IecElementOnChangeListener(
+		// inHousePowerConsumption, connection, startAddressMeassurements + 3,
+		// 0.001f, MessageType.MEASSUREMENT);
+		// inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
+		// eventListener.add(inHousePowerConsumptionListener);
 		IecElementOnChangeListener maxGridFeedPowerListener = new IecElementOnChangeListener(maxGridFeedPower,
 				connection, startAddressMeassurements + 4, 0.001f, MessageType.MEASSUREMENT);
 		maxGridFeedPower.addOnChangeListener(maxGridFeedPowerListener);
@@ -532,10 +557,18 @@ public class EnBAGController extends Controller {
 				connection, startAddressMeassurements + 5, 0.001f, MessageType.MEASSUREMENT);
 		remoteActivePower.addOnChangeListener(remoteActivePowerListener);
 		eventListener.add(remoteActivePowerListener);
-		IecElementOnChangeListener remoteStopListener = new IecElementOnChangeListener(remoteStop, connection,
+		IecElementOnChangeListener remoteStopListener = new IecElementOnChangeListener(remoteStart, connection,
 				startAddressMessages + 0, 0, MessageType.MESSAGE);
-		remoteStop.addOnChangeListener(remoteStopListener);
+		remoteStart.addOnChangeListener(remoteStopListener);
 		eventListener.add(remoteStopListener);
+		IecElementOnChangeListener gridFeedLimitationListener = new IecElementOnChangeListener(gridFeedLimitation,
+				connection, startAddressMessages + 1, 0, MessageType.MESSAGE);
+		gridFeedLimitation.addOnChangeListener(gridFeedLimitationListener);
+		eventListener.add(gridFeedLimitationListener);
+		IecElementOnChangeListener isRemoteControlledListener = new IecElementOnChangeListener(isRemoteControlled,
+				connection, startAddressMessages + 2, 0, MessageType.MESSAGE);
+		isRemoteControlled.addOnChangeListener(isRemoteControlledListener);
+		eventListener.add(isRemoteControlledListener);
 		return eventListener;
 	}
 }

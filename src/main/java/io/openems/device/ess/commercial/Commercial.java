@@ -846,7 +846,10 @@ public class Commercial extends Ess {
 				EssProtocol.InverterStates.Running.name(), startAddressMessages + 17, connection));
 		eventListener.add(createMessageListener(EssProtocol.InverterState.name(),
 				EssProtocol.InverterStates.Debug.name(), startAddressMessages + 18, connection));
-
+		eventListener.add(createMessageListener(EssProtocol.GridMode.name(), EssProtocol.GridStates.OnGrid.name(),
+				startAddressMessages + 19, connection));
+		eventListener.add(createMessageListener(EssProtocol.GridMode.name(), EssProtocol.GridStates.OffGrid.name(),
+				startAddressMessages + 20, connection));
 		return eventListener;
 	}
 

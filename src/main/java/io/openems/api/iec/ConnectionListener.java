@@ -18,16 +18,17 @@ import org.openmuc.j60870.TypeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import io.openems.App;
 import io.openems.controller.ControllerWorker;
-import io.openems.device.ess.Ess;
-import io.openems.device.inverter.SolarLog;
 
 public class ConnectionListener extends Thread implements ConnectionEventListener {
 
 	private final static Logger log = LoggerFactory.getLogger(ConnectionListener.class);
-	private final static int MEASSUREMENTSSTARTADDRESS = 9001;
-	private final static int MESSAGESSTARTADDRESS = 5001;
+	// private final static int MEASSUREMENTSSTARTADDRESS = 9001;
+	// private final static int MESSAGESSTARTADDRESS = 5001;
 	private final static int ADDRESSOFFSET = 100;
 	private final static int SETPOINTADDRESS = 21001;
 	private final static int COMMANDADDRESS = 25001;
@@ -36,10 +37,12 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 	private final int connectionId;
 	private List<IecElementOnChangeListener> listeners;
 	private List<ASdu> queue;
+	private final JsonObject config;
 
-	public ConnectionListener(Connection connection, int connectionId) {
+	public ConnectionListener(Connection connection, int connectionId, JsonObject config) {
 		this.connection = connection;
 		this.connectionId = connectionId;
+		this.config = config;
 		queue = new LinkedList<>();
 		registerElementChangeListener();
 		this.setName("IECConnection" + connectionId);
@@ -49,26 +52,41 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 	private void registerElementChangeListener() {
 		if (connection != null) {
 			listeners = new ArrayList<>();
-			int controllerCount = 0;
+			List<IecControllable> things = new ArrayList<>(App.getConfig().getDevices().values());
+			// int controllerCount = 0;
 			for (ControllerWorker cw : App.getConfig().getControllerWorkers().values()) {
-				IecControllable c = cw.getController();
-				listeners.addAll(c.createChangeListeners(MEASSUREMENTSSTARTADDRESS + (controllerCount * 50),
-						MESSAGESSTARTADDRESS + (controllerCount * 50), this));
-				controllerCount++;
+				things.add(cw.getController());
+				// IecControllable c = cw.getController();
+				// listeners.addAll(c.createChangeListeners(MEASSUREMENTSSTARTADDRESS
+				// + (controllerCount * 50),
+				// MESSAGESSTARTADDRESS + (controllerCount * 50), this));
+				// controllerCount++;
 			}
-			int essCount = 0;
-			int inverterCount = 0;
-			for (IecControllable d : App.getConfig().getDevices().values()) {
-				if (d instanceof Ess) {
-					listeners.addAll(d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 100 + essCount * ADDRESSOFFSET,
-							MESSAGESSTARTADDRESS + 100 + (essCount * ADDRESSOFFSET), this));
-					essCount++;
-				} else if (d instanceof SolarLog) {
-					listeners.addAll(
-							d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 600 + inverterCount * ADDRESSOFFSET,
-									MESSAGESSTARTADDRESS + 100 + (inverterCount * ADDRESSOFFSET), this));
-					inverterCount++;
+			// int essCount = 0;
+			// int inverterCount = 0;
+			for (IecControllable d : things) {
+				JsonElement e = config.get(d.getName());
+				if (e != null) {
+					JsonObject jo = e.getAsJsonObject();
+					int meassurementStartAddress = jo.get("meassurement").getAsInt();
+					int messageStartAddress = jo.get("message").getAsInt();
+					listeners.addAll(d.createChangeListeners(meassurementStartAddress, messageStartAddress, this));
 				}
+				// if (d instanceof Ess) {
+				// listeners.addAll(
+				// d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 100 +
+				// essCount * ADDRESSOFFSET,
+				// MESSAGESSTARTADDRESS + 100 + (essCount * ADDRESSOFFSET),
+				// this));
+				// essCount++;
+				// } else if (d instanceof SolarLog) {
+				// listeners.addAll(
+				// d.createChangeListeners(MEASSUREMENTSSTARTADDRESS + 600 +
+				// inverterCount * ADDRESSOFFSET,
+				// MESSAGESSTARTADDRESS + 100 + (inverterCount * ADDRESSOFFSET),
+				// this));
+				// inverterCount++;
+				// }
 			}
 		}
 	}

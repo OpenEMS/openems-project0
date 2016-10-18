@@ -49,4 +49,10 @@ public class MiniConfigurationController extends Controller {
 		return new ArrayList<>();
 	}
 
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

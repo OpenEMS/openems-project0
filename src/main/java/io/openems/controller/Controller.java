@@ -30,4 +30,9 @@ public abstract class Controller implements IecControllable {
 	public abstract void init();
 
 	public abstract void run();
+
+	@Override
+	public String getName() {
+		return name;
+	}
 }
