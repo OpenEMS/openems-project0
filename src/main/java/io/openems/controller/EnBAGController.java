@@ -47,9 +47,9 @@ public class EnBAGController extends Controller {
 	private IO io;
 	private List<Ess> availableEss;
 	private SolarLog solarLog;
-	// private Element<IntegerType> totalActivePower;
-	// private Element<IntegerType> totalReactivePower;
-	// private Element<IntegerType> totalApparentPower;
+	private Element<IntegerType> totalActivePower;
+	private Element<IntegerType> totalReactivePower;
+	private Element<IntegerType> totalApparentPower;
 	private Element<LongType> inHousePowerConsumption;
 	private Element<BooleanType> gridFeedLimitation;
 	private Element<BooleanType> remoteStart;
@@ -80,11 +80,9 @@ public class EnBAGController extends Controller {
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
 		this.solarLog = solarLog;
-		// totalActivePower = new Element<IntegerType>("totalActivePower", "W");
-		// totalReactivePower = new Element<IntegerType>("totalReactivePower",
-		// "W");
-		// totalApparentPower = new Element<IntegerType>("totalApparentPower",
-		// "W");
+		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
+		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
+		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
 		inHousePowerConsumption = new Element<LongType>("inHousePowerConsumption", "W");
 		remoteActivePower = new Element<IntegerType>("remoteActivePower", "W");
 		remoteStart = new Element<BooleanType>("remoteStop", "");
@@ -226,23 +224,22 @@ public class EnBAGController extends Controller {
 							log.error("failed to switch to OnGrid mode because there are invalid values!", e);
 						}
 					} else {
-						// try {
-						// this.totalActivePower.setValue(new
-						// IntegerType(cluster.getActivePower()));
-						// this.totalReactivePower.setValue(new
-						// IntegerType(cluster.getReactivePower()));
-						// this.totalApparentPower.setValue(new
-						// IntegerType(cluster.getApparentPower()));
-						// this.inHousePowerConsumption.setValue(new
-						// LongType(cluster.getActivePower()
-						// + gridCounter.getActivePower() +
-						// solarLog.getActivePower()));
-						// } catch (InvalidValueExcecption e) {
-						// this.totalActivePower.setValid(false);
-						// this.totalReactivePower.setValid(false);
-						// this.totalApparentPower.setValid(false);
-						// this.inHousePowerConsumption.setValid(false);
-						// }
+						try {
+							this.totalActivePower.setValue(new IntegerType(cluster.getActivePower()));
+							this.totalReactivePower.setValue(new IntegerType(cluster.getReactivePower()));
+							this.totalApparentPower.setValue(new IntegerType(cluster.getApparentPower()));
+							this.inHousePowerConsumption.setValue(new LongType(cluster.getActivePower()
+									+ gridCounter.getActivePower() + solarLog.getActivePower()));
+							this.totalActivePower.setValid(true);
+							this.totalReactivePower.setValid(true);
+							this.totalApparentPower.setValid(true);
+							this.inHousePowerConsumption.setValid(true);
+						} catch (InvalidValueExcecption e) {
+							this.totalActivePower.setValid(false);
+							this.totalReactivePower.setValid(false);
+							this.totalApparentPower.setValid(false);
+							this.inHousePowerConsumption.setValid(false);
+						}
 						try {
 							int calculatedPower = gridCounter.getActivePower() + cluster.getActivePower();
 							int calculatedEssActivePower = calculatedPower;
@@ -462,7 +459,7 @@ public class EnBAGController extends Controller {
 	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		switch (function) {
 		case 0:
-			remoteActivePower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
+			remoteActivePower.setValue(new IntegerType((int) (informationElement.getValue() * -100)));
 			break;
 		case 1:
 			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
@@ -525,36 +522,28 @@ public class EnBAGController extends Controller {
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
-		// IecElementOnChangeListener totalActivePowerListener = new
-		// IecElementOnChangeListener(totalActivePower,
-		// connection, startAddressMeassurements + 0, 0.001f,
-		// MessageType.MEASSUREMENT);
-		// totalActivePower.addOnChangeListener(totalActivePowerListener);
-		// eventListener.add(totalActivePowerListener);
-		// IecElementOnChangeListener totalReactivePowerListener = new
-		// IecElementOnChangeListener(totalReactivePower,
-		// connection, startAddressMeassurements + 1, 0.001f,
-		// MessageType.MEASSUREMENT);
-		// totalReactivePower.addOnChangeListener(totalReactivePowerListener);
-		// eventListener.add(totalReactivePowerListener);
-		// IecElementOnChangeListener totalApparentPowerListener = new
-		// IecElementOnChangeListener(totalApparentPower,
-		// connection, startAddressMeassurements + 2, 0.001f,
-		// MessageType.MEASSUREMENT);
-		// totalApparentPower.addOnChangeListener(totalApparentPowerListener);
-		// eventListener.add(totalApparentPowerListener);
-		// IecElementOnChangeListener inHousePowerConsumptionListener = new
-		// IecElementOnChangeListener(
-		// inHousePowerConsumption, connection, startAddressMeassurements + 3,
-		// 0.001f, MessageType.MEASSUREMENT);
-		// inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
-		// eventListener.add(inHousePowerConsumptionListener);
+		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
+				connection, startAddressMeassurements + 0, -0.001f, MessageType.MEASSUREMENT);
+		totalActivePower.addOnChangeListener(totalActivePowerListener);
+		eventListener.add(totalActivePowerListener);
+		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
+				connection, startAddressMeassurements + 1, -0.001f, MessageType.MEASSUREMENT);
+		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
+		eventListener.add(totalReactivePowerListener);
+		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
+				connection, startAddressMeassurements + 2, -0.001f, MessageType.MEASSUREMENT);
+		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
+		eventListener.add(totalApparentPowerListener);
+		IecElementOnChangeListener inHousePowerConsumptionListener = new IecElementOnChangeListener(
+				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f, MessageType.MEASSUREMENT);
+		inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
+		eventListener.add(inHousePowerConsumptionListener);
 		IecElementOnChangeListener maxGridFeedPowerListener = new IecElementOnChangeListener(maxGridFeedPower,
 				connection, startAddressMeassurements + 4, 0.001f, MessageType.MEASSUREMENT);
 		maxGridFeedPower.addOnChangeListener(maxGridFeedPowerListener);
 		eventListener.add(maxGridFeedPowerListener);
 		IecElementOnChangeListener remoteActivePowerListener = new IecElementOnChangeListener(remoteActivePower,
-				connection, startAddressMeassurements + 5, 0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 5, -0.001f, MessageType.MEASSUREMENT);
 		remoteActivePower.addOnChangeListener(remoteActivePowerListener);
 		eventListener.add(remoteActivePowerListener);
 		IecElementOnChangeListener remoteStopListener = new IecElementOnChangeListener(remoteStart, connection,

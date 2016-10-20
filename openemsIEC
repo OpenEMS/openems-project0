@@ -1,0 +1,30 @@
+{
+	enbag:{
+		meassurement: 9001,
+		message: 5001
+	},
+	ess0:{
+		meassurement: 9101,
+		message: 5101
+	},
+	ess1:{
+		meassurement: 9201,
+		message: 5201
+	},
+	sl0:{
+		meassurement: 9601,
+		message: 5301
+	},
+	io0:{
+		meassurement: 9901,
+		message: 5401
+	},
+	counter0:{
+		meassurement: 9701,
+		message: 5501
+	},
+	counter1:{
+		meassurement: 9801,
+		message: 5601
+	}
+}

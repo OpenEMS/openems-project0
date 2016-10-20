@@ -28,6 +28,8 @@ public class ServerListener implements ServerEventListener {
 	public ServerListener() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
 		super();
 		File file = new File("/etc/openemsIEC");
+		// File file = new
+		// File("C:/Users/matthias.rossmann/Dev/git/openems/openemsIEC");
 		log.info("Read configuration from " + file.getAbsolutePath());
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(new FileReader(file));

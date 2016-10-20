@@ -1,25 +1,42 @@
-{
-	"channel": {
-		"lan0": {
-			"type": "io.openems.channel.modbus.ModbusTcpConnection",
-			"inetAddress": "10.4.0.16",
-			"cycle": 1000
-		}
+{"channel":
+	{
+		"lan0":
+			{"type":"io.openems.channel.modbus.ModbusTcpConnection","inetAddress":"10.4.0.15","cycle":1000},
+		"lan3":
+			{"type":"io.openems.channel.modbus.ModbusTcpConnection","inetAddress":"10.4.0.17","cycle":1000},
+		"usb0":
+			{"type":"io.openems.channel.modbus.ModbusRtuConnection","serialinterface":"/dev/ttyUSB0","baudrate":"38400","databits":8,"parity":"even","stopbits":1,"cycle":1000},
+		"lan1":
+			{"type":"io.openems.channel.modbus.ModbusTcpConnection","inetAddress":"10.4.0.16","cycle":1000},
+		"lan2":
+			{"type":"io.openems.channel.modbus.ModbusTcpConnection","inetAddress":"192.168.26.202","cycle":1000}
 	},
-	"device": {
-		"ess0": {
-			"type": "io.openems.device.ess.commercial.Commercial",
-			"channel": "lan0",
-			"modbusUnit": 100,
-			"minSoc": 15
-		}
+	"device":
+	{
+		"ess1":
+			{"type":"io.openems.device.ess.commercial.Commercial","channel":"lan1","modbusUnit":100,"minSoc":25},
+		"ess0":
+			{"type":"io.openems.device.ess.commercial.Commercial","channel":"lan0","modbusUnit":100,"minSoc":25},
+		"counter0":
+			{"type":"io.openems.device.counter.Socomec","channel":"usb0","modbusUnit":5}
 	},
-	"controller": {
-		"ctr":{
-			"type": "io.openems.controller.IOController",
-			"cycle": 1000
-		}
-	},
-	"monitor":{
+	"controller":
+	{
+		"enbag":
+			{
+				"type":"io.openems.controller.EnBAGController",
+				"chargeFromAc":true,
+				"gridCounter":"counter0",
+				"ess":["ess1","ess0"],
+				"essOffGridSwitches":{},
+				"maxGridFeedPower":10000,
+				"pvOnGridSwitch":"",
+				"pvOffGridSwitch":"",
+				"primaryEss":"ess1",
+				"io":"io0",
+				"solarLog":"sl0",
+				"cycle":1000
+			}
+		},
+		"monitor":{}
 	}
-}

@@ -229,7 +229,7 @@ public class Wago extends IO {
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
 			int startAddressMessages, ConnectionListener connection) {
 		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<>();
 	}
 
 }

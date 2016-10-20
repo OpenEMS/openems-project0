@@ -70,6 +70,7 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 					JsonObject jo = e.getAsJsonObject();
 					int meassurementStartAddress = jo.get("meassurement").getAsInt();
 					int messageStartAddress = jo.get("message").getAsInt();
+					log.info("Create IEC Change Listener for " + d.getName());
 					listeners.addAll(d.createChangeListeners(meassurementStartAddress, messageStartAddress, this));
 				}
 				// if (d instanceof Ess) {
