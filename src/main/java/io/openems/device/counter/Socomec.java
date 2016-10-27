@@ -142,19 +142,19 @@ public class Socomec extends Counter {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
 		eventListener.add(createMeassurementListener(CounterProtocol.ActivePower.name(), startAddressMeassurements + 0,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(CounterProtocol.ReactivePower.name(),
-				startAddressMeassurements + 1, -0.001f, connection));
+				startAddressMeassurements + 1, -0.001f, connection, false));
 		eventListener.add(createMeassurementListener(CounterProtocol.ApparentPower.name(),
-				startAddressMeassurements + 2, -0.001f, connection));
+				startAddressMeassurements + 2, -0.001f, connection, false));
 		return eventListener;
 	}
 
 	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
-			ConnectionListener connection) {
+			ConnectionListener connection, boolean absoluteValue) {
 		Element<?> element = getElement(elementName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
-				MessageType.MEASSUREMENT);
+				MessageType.MEASSUREMENT, absoluteValue);
 		element.addOnChangeListener(ieocl);
 		return ieocl;
 	}

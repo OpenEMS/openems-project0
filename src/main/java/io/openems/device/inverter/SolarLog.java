@@ -164,7 +164,7 @@ public class SolarLog extends WritableModbusDevice {
 			ConnectionListener connection) {
 		Element<?> element = getElement(elementName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
-				MessageType.MEASSUREMENT);
+				MessageType.MEASSUREMENT, false);
 		element.addOnChangeListener(ieocl);
 		return ieocl;
 	}

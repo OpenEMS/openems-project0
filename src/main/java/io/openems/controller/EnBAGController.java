@@ -484,10 +484,12 @@ public class EnBAGController extends Controller {
 			case ON:
 				cluster.start();
 				remoteStart.setValue(new BooleanType(true));
+				log.info("System start command from IEC");
 				break;
 			case OFF:
 				cluster.stop();
 				remoteStart.setValue(new BooleanType(false));
+				log.info("System stop command from IEC");
 				break;
 			}
 			break;
@@ -496,9 +498,11 @@ public class EnBAGController extends Controller {
 			default:
 			case ON:
 				gridFeedLimitation.setValue(new BooleanType(true));
+				log.info("grid feed limitation activated from IEC");
 				break;
 			case OFF:
 				gridFeedLimitation.setValue(new BooleanType(false));
+				log.info("grid feed limitation deactivated from IEC");
 				break;
 			}
 			break;
@@ -507,9 +511,11 @@ public class EnBAGController extends Controller {
 			default:
 			case ON:
 				isRemoteControlled.setValue(new BooleanType(true));
+				log.info("remoteControll activated from IEC");
 				break;
 			case OFF:
 				isRemoteControlled.setValue(new BooleanType(false));
+				log.info("remoteControll deactivated from IEC");
 				break;
 			}
 			break;
@@ -523,39 +529,40 @@ public class EnBAGController extends Controller {
 			int startAddressMessages, ConnectionListener connection) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
-				connection, startAddressMeassurements + 0, -0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 0, -0.001f, MessageType.MEASSUREMENT, false);
 		totalActivePower.addOnChangeListener(totalActivePowerListener);
 		eventListener.add(totalActivePowerListener);
 		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
-				connection, startAddressMeassurements + 1, -0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 1, -0.001f, MessageType.MEASSUREMENT, false);
 		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
 		eventListener.add(totalReactivePowerListener);
 		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
-				connection, startAddressMeassurements + 2, -0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 2, -0.001f, MessageType.MEASSUREMENT, false);
 		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
 		eventListener.add(totalApparentPowerListener);
 		IecElementOnChangeListener inHousePowerConsumptionListener = new IecElementOnChangeListener(
-				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f, MessageType.MEASSUREMENT);
+				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f, MessageType.MEASSUREMENT,
+				false);
 		inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
 		eventListener.add(inHousePowerConsumptionListener);
 		IecElementOnChangeListener maxGridFeedPowerListener = new IecElementOnChangeListener(maxGridFeedPower,
-				connection, startAddressMeassurements + 4, 0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 4, 0.001f, MessageType.MEASSUREMENT, false);
 		maxGridFeedPower.addOnChangeListener(maxGridFeedPowerListener);
 		eventListener.add(maxGridFeedPowerListener);
 		IecElementOnChangeListener remoteActivePowerListener = new IecElementOnChangeListener(remoteActivePower,
-				connection, startAddressMeassurements + 5, -0.001f, MessageType.MEASSUREMENT);
+				connection, startAddressMeassurements + 5, -0.001f, MessageType.MEASSUREMENT, false);
 		remoteActivePower.addOnChangeListener(remoteActivePowerListener);
 		eventListener.add(remoteActivePowerListener);
 		IecElementOnChangeListener remoteStopListener = new IecElementOnChangeListener(remoteStart, connection,
-				startAddressMessages + 0, 0, MessageType.MESSAGE);
+				startAddressMessages + 0, 0, MessageType.MESSAGE, false);
 		remoteStart.addOnChangeListener(remoteStopListener);
 		eventListener.add(remoteStopListener);
 		IecElementOnChangeListener gridFeedLimitationListener = new IecElementOnChangeListener(gridFeedLimitation,
-				connection, startAddressMessages + 1, 0, MessageType.MESSAGE);
+				connection, startAddressMessages + 1, 0, MessageType.MESSAGE, false);
 		gridFeedLimitation.addOnChangeListener(gridFeedLimitationListener);
 		eventListener.add(gridFeedLimitationListener);
 		IecElementOnChangeListener isRemoteControlledListener = new IecElementOnChangeListener(isRemoteControlled,
-				connection, startAddressMessages + 2, 0, MessageType.MESSAGE);
+				connection, startAddressMessages + 2, 0, MessageType.MESSAGE, false);
 		isRemoteControlled.addOnChangeListener(isRemoteControlledListener);
 		eventListener.add(isRemoteControlledListener);
 		return eventListener;

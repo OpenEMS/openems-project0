@@ -33,15 +33,17 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 	private final MessageType messageType;
 	private final int wait = 3000;
 	private long lastSend = 0;
+	private boolean absolute = false;
 
 	public IecElementOnChangeListener(Element<?> element, ConnectionListener iecConnection, int iOA, float multiplier,
-			MessageType messageType) {
+			MessageType messageType, boolean absolute) {
 		super();
 		this.element = element;
 		this.iecConnection = iecConnection;
 		this.iOA = iOA;
 		this.multiplier = multiplier;
 		this.messageType = messageType;
+		this.absolute = absolute;
 	}
 
 	public MessageType getMessageType() {
@@ -100,6 +102,9 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 					value = ((IntegerType) newValue).toInteger();
 				} else if (newValue instanceof DoubleType) {
 					value = ((DoubleType) newValue).toDouble().floatValue();
+				}
+				if (absolute) {
+					value = Math.abs(value);
 				}
 				io = new InformationObject(iOA,
 						new InformationElement[][] { { new IeShortFloat((value) * multiplier),

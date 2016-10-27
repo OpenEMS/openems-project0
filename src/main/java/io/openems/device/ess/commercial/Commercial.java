@@ -764,51 +764,51 @@ public class Commercial extends Ess {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
 		eventListener.add(createMeassurementListener(EssProtocol.ChargeEnergy.name(), startAddressMeassurements + 0,
-				-0.001f, connection));
+				0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.DischargeEnergy.name(), startAddressMeassurements + 1,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryChargeEnergy.name(),
-				startAddressMeassurements + 2, -0.001f, connection));
+				startAddressMeassurements + 2, 0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryDischargeEnergy.name(),
-				startAddressMeassurements + 3, -0.001f, connection));
+				startAddressMeassurements + 3, -0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterActivePower.name(),
-				startAddressMeassurements + 10, -0.001f, connection));
+				startAddressMeassurements + 10, -0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.ReactivePower.name(), startAddressMeassurements + 11,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.ApparentPower.name(), startAddressMeassurements + 12,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterCurrentPhase1.name(),
-				startAddressMeassurements + 13, -0.001f, connection));
+				startAddressMeassurements + 13, -0.001f, connection, true));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterCurrentPhase2.name(),
-				startAddressMeassurements + 14, -0.001f, connection));
+				startAddressMeassurements + 14, -0.001f, connection, true));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterCurrentPhase3.name(),
-				startAddressMeassurements + 15, -0.001f, connection));
+				startAddressMeassurements + 15, -0.001f, connection, true));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterVoltagePhase1.name(),
-				startAddressMeassurements + 16, 0.001f, connection));
+				startAddressMeassurements + 16, 0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterVoltagePhase2.name(),
-				startAddressMeassurements + 17, 0.001f, connection));
+				startAddressMeassurements + 17, 0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.InverterVoltagePhase3.name(),
-				startAddressMeassurements + 18, 0.001f, connection));
+				startAddressMeassurements + 18, 0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.Frequency.name(), startAddressMeassurements + 19,
-				0.001f, connection));
+				0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.AllowedCharge.name(), startAddressMeassurements + 20,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.AllowedDischarge.name(),
-				startAddressMeassurements + 21, -0.001f, connection));
+				startAddressMeassurements + 21, -0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.AllowedApparent.name(), startAddressMeassurements + 22,
-				0.001f, connection));
+				0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryVoltage.name(), startAddressMeassurements + 30,
-				0.001f, connection));
+				0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryCurrent.name(), startAddressMeassurements + 31,
-				-0.001f, connection));
+				-0.001f, connection, true));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryPower.name(), startAddressMeassurements + 32,
-				-0.001f, connection));
+				-0.001f, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryStringSoc.name(),
-				startAddressMeassurements + 33, 1, connection));
+				startAddressMeassurements + 33, 1, connection, false));
 		eventListener.add(createMeassurementListener(EssProtocol.BatteryStringSOH.name(),
-				startAddressMeassurements + 34, 1, connection));
+				startAddressMeassurements + 34, 1, connection, false));
 		IecElementOnChangeListener minSocListener = new IecElementOnChangeListener(minSoc, connection,
-				startAddressMeassurements + 35, 1, MessageType.MEASSUREMENT);
+				startAddressMeassurements + 35, 1, MessageType.MEASSUREMENT, false);
 		minSoc.addOnChangeListener(minSocListener);
 		eventListener.add(minSocListener);
 		/* Messages */
@@ -858,10 +858,10 @@ public class Commercial extends Ess {
 	}
 
 	private IecElementOnChangeListener createMeassurementListener(String elementName, int address, float multiplier,
-			ConnectionListener connection) {
+			ConnectionListener connection, boolean absoluteValue) {
 		Element<?> element = getElement(elementName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(element, connection, address, multiplier,
-				MessageType.MEASSUREMENT);
+				MessageType.MEASSUREMENT, absoluteValue);
 		element.addOnChangeListener(ieocl);
 		return ieocl;
 	}
@@ -871,7 +871,7 @@ public class Commercial extends Ess {
 		BitsElement element = (BitsElement) getElement(elementName);
 		BitElement bit = element.getBit(bitName);
 		IecElementOnChangeListener ieocl = new IecElementOnChangeListener(bit, connection, address, 0,
-				MessageType.MESSAGE);
+				MessageType.MESSAGE, false);
 		bit.addOnChangeListener(ieocl);
 		return ieocl;
 	}
