@@ -138,15 +138,19 @@ public class Socomec extends Counter {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection) {
+			int startAddressMessages, ConnectionListener connection, boolean negateValues) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
+		float multiplier = 1;
+		if (negateValues) {
+			multiplier = -1;
+		}
 		eventListener.add(createMeassurementListener(CounterProtocol.ActivePower.name(), startAddressMeassurements + 0,
-				-0.001f, connection, false));
+				0.001f * multiplier, connection, false));
 		eventListener.add(createMeassurementListener(CounterProtocol.ReactivePower.name(),
-				startAddressMeassurements + 1, -0.001f, connection, false));
+				startAddressMeassurements + 1, 0.001f * multiplier, connection, false));
 		eventListener.add(createMeassurementListener(CounterProtocol.ApparentPower.name(),
-				startAddressMeassurements + 2, -0.001f, connection, false));
+				startAddressMeassurements + 2, 0.001f * multiplier, connection, false));
 		return eventListener;
 	}
 

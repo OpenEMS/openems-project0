@@ -1,30 +1,37 @@
 {
 	enbag:{
 		meassurement: 9001,
-		message: 5001
+		message: 5001,
+		negateValues: false
 	},
 	ess0:{
 		meassurement: 9101,
-		message: 5101
+		message: 5101,
+		negateValues: true
 	},
 	ess1:{
 		meassurement: 9201,
-		message: 5201
+		message: 5201,
+		negateValues: true
 	},
 	sl0:{
 		meassurement: 9601,
-		message: 5301
+		message: 5301,
+		negateValues: true
 	},
 	io0:{
 		meassurement: 9901,
-		message: 5401
+		message: 5401,
+		negateValues: false
 	},
 	counter0:{
 		meassurement: 9701,
-		message: 5501
+		message: 5501,
+		negateValues: false
 	},
 	counter1:{
 		meassurement: 9801,
-		message: 5601
+		message: 5601,
+		negateValues: true
 	}
 }

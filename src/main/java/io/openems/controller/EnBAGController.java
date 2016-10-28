@@ -462,7 +462,7 @@ public class EnBAGController extends Controller {
 			remoteActivePower.setValue(new IntegerType((int) (informationElement.getValue() * -100)));
 			break;
 		case 1:
-			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 100)));
+			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 1000)));
 			try {
 				App.getConfig().writeJsonFile();
 			} catch (IOException e) {
@@ -493,7 +493,7 @@ public class EnBAGController extends Controller {
 				break;
 			}
 			break;
-		case 1:
+		case 2:
 			switch (informationElement.getCommandState()) {
 			default:
 			case ON:
@@ -506,7 +506,7 @@ public class EnBAGController extends Controller {
 				break;
 			}
 			break;
-		case 2:
+		case 4:
 			switch (informationElement.getCommandState()) {
 			default:
 			case ON:
@@ -526,25 +526,33 @@ public class EnBAGController extends Controller {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection) {
+			int startAddressMessages, ConnectionListener connection, boolean negate) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
-		IecElementOnChangeListener totalActivePowerListener = new IecElementOnChangeListener(totalActivePower,
-				connection, startAddressMeassurements + 0, -0.001f, MessageType.MEASSUREMENT, false);
-		totalActivePower.addOnChangeListener(totalActivePowerListener);
-		eventListener.add(totalActivePowerListener);
-		IecElementOnChangeListener totalReactivePowerListener = new IecElementOnChangeListener(totalReactivePower,
-				connection, startAddressMeassurements + 1, -0.001f, MessageType.MEASSUREMENT, false);
-		totalReactivePower.addOnChangeListener(totalReactivePowerListener);
-		eventListener.add(totalReactivePowerListener);
-		IecElementOnChangeListener totalApparentPowerListener = new IecElementOnChangeListener(totalApparentPower,
-				connection, startAddressMeassurements + 2, -0.001f, MessageType.MEASSUREMENT, false);
-		totalApparentPower.addOnChangeListener(totalApparentPowerListener);
-		eventListener.add(totalApparentPowerListener);
-		IecElementOnChangeListener inHousePowerConsumptionListener = new IecElementOnChangeListener(
-				inHousePowerConsumption, connection, startAddressMeassurements + 3, 0.001f, MessageType.MEASSUREMENT,
-				false);
-		inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
-		eventListener.add(inHousePowerConsumptionListener);
+		// IecElementOnChangeListener totalActivePowerListener = new
+		// IecElementOnChangeListener(totalActivePower,
+		// connection, startAddressMeassurements + 0, -0.001f,
+		// MessageType.MEASSUREMENT, false);
+		// totalActivePower.addOnChangeListener(totalActivePowerListener);
+		// eventListener.add(totalActivePowerListener);
+		// IecElementOnChangeListener totalReactivePowerListener = new
+		// IecElementOnChangeListener(totalReactivePower,
+		// connection, startAddressMeassurements + 1, -0.001f,
+		// MessageType.MEASSUREMENT, false);
+		// totalReactivePower.addOnChangeListener(totalReactivePowerListener);
+		// eventListener.add(totalReactivePowerListener);
+		// IecElementOnChangeListener totalApparentPowerListener = new
+		// IecElementOnChangeListener(totalApparentPower,
+		// connection, startAddressMeassurements + 2, -0.001f,
+		// MessageType.MEASSUREMENT, false);
+		// totalApparentPower.addOnChangeListener(totalApparentPowerListener);
+		// eventListener.add(totalApparentPowerListener);
+		// IecElementOnChangeListener inHousePowerConsumptionListener = new
+		// IecElementOnChangeListener(
+		// inHousePowerConsumption, connection, startAddressMeassurements + 3,
+		// 0.001f, MessageType.MEASSUREMENT,
+		// false);
+		// inHousePowerConsumption.addOnChangeListener(inHousePowerConsumptionListener);
+		// eventListener.add(inHousePowerConsumptionListener);
 		IecElementOnChangeListener maxGridFeedPowerListener = new IecElementOnChangeListener(maxGridFeedPower,
 				connection, startAddressMeassurements + 4, 0.001f, MessageType.MEASSUREMENT, false);
 		maxGridFeedPower.addOnChangeListener(maxGridFeedPowerListener);

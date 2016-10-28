@@ -11,7 +11,7 @@ public interface IecControllable {
 	public void handleCommand(int function, IeDoubleCommand informationElement);
 
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection);
+			int startAddressMessages, ConnectionListener connection, boolean negate);
 
 	public String getName();
 }

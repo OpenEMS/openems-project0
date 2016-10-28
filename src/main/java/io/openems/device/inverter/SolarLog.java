@@ -152,11 +152,15 @@ public class SolarLog extends WritableModbusDevice {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection) {
+			int startAddressMessages, ConnectionListener connection, boolean negate) {
 		ArrayList<IecElementOnChangeListener> eventListener = new ArrayList<>();
 		/* Meassurements */
+		float multiplier = 1;
+		if (negate) {
+			multiplier = -1;
+		}
 		eventListener.add(createMeassurementListener(InverterProtocol.PAC.name(), startAddressMeassurements + 0,
-				-0.001f, connection));
+				0.001f * multiplier, connection));
 		return eventListener;
 	}
 

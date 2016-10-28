@@ -44,7 +44,7 @@ public class MiniConfigurationController extends Controller {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection) {
+			int startAddressMessages, ConnectionListener connection, boolean negate) {
 		// TODO Auto-generated method stub
 		return new ArrayList<>();
 	}

@@ -425,7 +425,7 @@ public class Mini extends Ess {
 
 	@Override
 	public List<IecElementOnChangeListener> createChangeListeners(int startAddressMeassurements,
-			int startAddressMessages, ConnectionListener connection) {
+			int startAddressMessages, ConnectionListener connection, boolean negate) {
 		// TODO Auto-generated method stub
 		return null;
 	}
