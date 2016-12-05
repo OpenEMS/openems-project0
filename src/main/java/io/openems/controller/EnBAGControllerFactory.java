@@ -38,6 +38,7 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		}
 		String channel = ConfigUtil.getAsString(controllerJson, "gridCounter");
 		Counter counter = (Counter) devices.get(channel);
+		Counter pvCounter = (Counter) devices.get(ConfigUtil.getAsString(controllerJson, "pvCounter"));
 		boolean chargeFromAc = ConfigUtil.getAsBoolean(controllerJson, "chargeFromAc");
 
 		Gson gson = new Gson();
@@ -52,8 +53,9 @@ public class EnBAGControllerFactory extends ControllerFactory {
 		IO io = (IO) devices.get(ConfigUtil.getAsString(controllerJson, "io"));
 		SolarLog solarLog = (SolarLog) devices.get(ConfigUtil.getAsString(controllerJson, "solarLog"));
 		int cycle = ConfigUtil.getAsInt(controllerJson, "cycle");
-		return new ControllerWorker(name, channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc,
-				maxGridFeedPower, pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io, solarLog),
+		return new ControllerWorker(name,
+				channelWorkers.values(), new EnBAGController(name, counter, ess, chargeFromAc, maxGridFeedPower,
+						pvOnGridSwitch, pvOffGridSwitch, essOffGridSwitches, primaryEss, io, solarLog, pvCounter),
 				cycle);
 	}
 
@@ -83,7 +85,7 @@ public class EnBAGControllerFactory extends ControllerFactory {
 				jo.addProperty("io", bal.getIo().getName());
 				jo.addProperty("solarLog", bal.getSolarLog().getName());
 				jo.addProperty("cycle", worker.getCycle());
-
+				jo.addProperty("pvCounter", bal.getPvCounter().getName());
 				return jo;
 			}
 		} catch (Exception e) {

@@ -17,6 +17,8 @@ import io.openems.element.InvalidValueExcecption;
 public class EssCluster extends Ess {
 	private final static Logger log = LoggerFactory.getLogger(EssCluster.class);
 
+	private boolean lastCycleWrittenValue = false;
+
 	public EssCluster(String name, String modbusid, int unitid, int minSoc, List<Ess> storages) {
 		super(name, modbusid, unitid, minSoc);
 		this.storages = storages;
@@ -86,6 +88,7 @@ public class EssCluster extends Ess {
 				}
 				double diff = maxP - minP;
 				if (e.getUseableSoc() >= 0) {
+					lastCycleWrittenValue = true;
 					int p = (int) Math.ceil((minP + diff / useableSocSum * e.getUseableSoc()) / 100) * 100;
 					e.setActivePower(p);
 					log.info(e.getCurrentDataAsString() + " SetActivePower: [" + p + "]");
@@ -96,6 +99,10 @@ public class EssCluster extends Ess {
 					e.setActivePower(chargePower);
 					log.info("Charge " + e.getName() + " to minSoc(" + e.getMinSoc() + ")");
 					power -= chargePower;
+				} else if (lastCycleWrittenValue && power == 0) {
+					lastCycleWrittenValue = false;
+					e.setActivePower(0);
+					log.info(e.getCurrentDataAsString() + " SetActivePower: [" + 0 + "]");
 				}
 			}
 		} else {
@@ -125,6 +132,7 @@ public class EssCluster extends Ess {
 				double diff = maxP - minP;
 				int p = (int) Math.floor((minP + diff / useableSocSum * (100 - e.getUseableSoc())) / 100) * 100;
 				e.setActivePower(p);
+				lastCycleWrittenValue = true;
 				log.info(e.getCurrentDataAsString() + " SetActivePower: [" + p + "]");
 				power -= p;
 			}

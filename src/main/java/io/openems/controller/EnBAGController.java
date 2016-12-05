@@ -35,6 +35,7 @@ public class EnBAGController extends Controller {
 	private final static Logger log = LoggerFactory.getLogger(EnBAGController.class);
 
 	private final Counter gridCounter;
+	private final Counter pvCounter;
 	private final Map<String, Ess> essDevices;
 	private final boolean allowChargeFromAC;
 	private final Element<IntegerType> maxGridFeedPower;
@@ -64,10 +65,13 @@ public class EnBAGController extends Controller {
 	private Map<String, Boolean> essOffGridSwitches;
 	private EssCluster cluster;
 	private int switchDelay = 10000;
+	private long lastPvOffGridDisconnect = 0L;
+	private int pvSwitchDelay = 10 * 60 * 1000;
 
 	public EnBAGController(String name, Counter gridCounter, Map<String, Ess> essDevices, boolean allowChargeFromAc,
 			int maxGridFeedPower, String pvOnGridSwitch, String pvOffGridSwitch,
-			Map<String, String> essOffGridSwitchMapping, String primaryOffGridEss, IO io, SolarLog solarLog) {
+			Map<String, String> essOffGridSwitchMapping, String primaryOffGridEss, IO io, SolarLog solarLog,
+			Counter pvCounter) {
 		super(name);
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
@@ -80,6 +84,7 @@ public class EnBAGController extends Controller {
 		this.primaryOffGridEss = primaryOffGridEss;
 		this.io = io;
 		this.solarLog = solarLog;
+		this.pvCounter = pvCounter;
 		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
 		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
 		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
@@ -143,6 +148,10 @@ public class EnBAGController extends Controller {
 
 	public SolarLog getSolarLog() {
 		return solarLog;
+	}
+
+	public Counter getPvCounter() {
+		return this.pvCounter;
 	}
 
 	@Override
@@ -281,7 +290,7 @@ public class EnBAGController extends Controller {
 									log.error("can't start some ess", e);
 								}
 								if (allowChargeFromAC) { // charging is allowed
-									int reservedSoc = 20;
+									int reservedSoc = 50;
 									// Reserve storage capacity for the Pv peak
 									// at
 									// midday
@@ -316,8 +325,9 @@ public class EnBAGController extends Controller {
 							}
 							// Write new calculated ActivePower to Ess device
 							cluster.setActivePower(calculatedEssActivePower);
-							log.info(cluster.getCurrentDataAsString() + gridCounter.getCurrentDataAsString() + " SET: ["
-									+ calculatedEssActivePower + "]");
+							log.info(cluster.getCurrentDataAsString() + "NAP: " + gridCounter.getCurrentDataAsString()
+									+ ", Pv" + pvCounter.getCurrentDataAsString() + " SET: [" + calculatedEssActivePower
+									+ "]");
 							lastActivePower = calculatedEssActivePower;
 						} catch (InvalidValueExcecption e) {
 							log.error("An error occured on controll the storages!", e);
@@ -332,6 +342,15 @@ public class EnBAGController extends Controller {
 				} else {
 					// OffGrid
 					if (isSwitchedToOffGrid) {
+						// Disconnect PV from Off grid if power of PV is too
+						// large
+						if (solarLog.getPVLimit() <= 35000 && pvCounter.getActivePower() <= 37000
+								&& lastPvOffGridDisconnect + pvSwitchDelay <= System.currentTimeMillis()) {
+							pvOffGridSwitch = true;
+						} else {
+							pvOffGridSwitch = false;
+							lastPvOffGridDisconnect = System.currentTimeMillis();
+						}
 						// Check soc of activeEss
 						try {
 							if (activeEss.getSOC() <= 3) {
@@ -367,14 +386,20 @@ public class EnBAGController extends Controller {
 									}
 									time2 = System.currentTimeMillis();
 								}
-							} else if (activeEss.getSOC() >= 90) {
+							}
+							// disconnect PV if soc is lager than 90%
+							if (activeEss.getSOC() >= 90) {
 								pvOffGridSwitch = false;
+							}
+							// reconnect PV if soc is smaller than 75% and
+							// no safety disconnect occurred
+							if (activeEss.getSOC() <= 75
+									&& lastPvOffGridDisconnect + pvSwitchDelay <= System.currentTimeMillis()) {
+								pvOffGridSwitch = true;
 							}
 						} catch (InvalidValueExcecption e) {
 							log.error("can't switch to the next storage, because ther are invalid values", e);
 						}
-						// TODO Disconnect PV from Off grid if current on
-						// Storage is too large
 					} else {
 						log.info("Switch to Off-Grid");
 						try {
@@ -388,7 +413,7 @@ public class EnBAGController extends Controller {
 									availableEss = new LinkedList<>(essDevices.values());
 									availableEss.remove(activeEss);
 									// Switch Solar to OffGrid
-									if (activeEss.getSOC() < 95) {
+									if (activeEss.getSOC() < 95 && solarLog.getPVLimit() <= 35000) {
 										pvOffGridSwitch = true;
 									}
 									isSwitchedToOffGrid = true;
@@ -459,7 +484,7 @@ public class EnBAGController extends Controller {
 	public void handleSetPoint(int function, IeShortFloat informationElement) {
 		switch (function) {
 		case 0:
-			remoteActivePower.setValue(new IntegerType((int) (informationElement.getValue() * -100)));
+			remoteActivePower.setValue(new IntegerType((int) (informationElement.getValue() * -1000)));
 			break;
 		case 1:
 			maxGridFeedPower.setValue(new IntegerType((int) (informationElement.getValue() * 1000)));
