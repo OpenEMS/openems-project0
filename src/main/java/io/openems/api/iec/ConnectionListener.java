@@ -47,6 +47,20 @@ public class ConnectionListener extends Thread implements ConnectionEventListene
 		registerElementChangeListener();
 		this.setName("IECConnection" + connectionId);
 		this.start();
+		// Send initial Data
+		for (IecElementOnChangeListener listener : listeners) {
+			try {
+				if (listener.getMessageType() == MessageType.MEASSUREMENT) {
+					connection.send(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS, false, false, 0,
+							5101, new InformationObject[] { listener.getCurrentValue() }));
+				} else {
+					connection.send(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS, false, false, 0,
+							5101, new InformationObject[] { listener.getCurrentValue() }));
+				}
+			} catch (Exception e) {
+				log.error("Failed to send IEC Interrogation value", e);
+			}
+		}
 	}
 
 	private void registerElementChangeListener() {
