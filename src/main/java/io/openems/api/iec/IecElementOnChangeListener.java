@@ -53,12 +53,12 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 	@Override
 	public void elementChanged(String name, Type newValue, Type oldValue) {
 		if (!newValue.isEqual(oldValue)) {
-			if (lastSend + wait <= System.currentTimeMillis()) {
-				if (iecConnection != null && name.equals(element.getFullName())) {
-					switch (messageType) {
-					case COMMAND:
-						break;
-					case MEASSUREMENT:
+			if (iecConnection != null && name.equals(element.getFullName())) {
+				switch (messageType) {
+				case COMMAND:
+					break;
+				case MEASSUREMENT:
+					if (lastSend + wait <= System.currentTimeMillis()) {
 						try {
 							iecConnection
 									.addASduToQueue(new ASdu(TypeId.M_ME_TF_1, false, CauseOfTransmission.SPONTANEOUS,
@@ -67,22 +67,21 @@ public class IecElementOnChangeListener implements ElementOnChangeListener {
 							log.error("Failed to send Iec Spontaneous Values");
 							remove();
 						}
-						break;
-					case MESSAGE:
-						try {
-							iecConnection
-									.addASduToQueue(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS,
-											false, false, 0, 5101, new InformationObject[] { getCurrentValue() }));
-						} catch (Exception e) {
-							log.error("Failed to send Iec Spontaneous Values");
-							remove();
-						}
-						break;
-					case SCALEDVALUES:
-						break;
+						lastSend = System.currentTimeMillis();
 					}
+					break;
+				case MESSAGE:
+					try {
+						iecConnection.addASduToQueue(new ASdu(TypeId.M_SP_TB_1, false, CauseOfTransmission.SPONTANEOUS,
+								false, false, 0, 5101, new InformationObject[] { getCurrentValue() }));
+					} catch (Exception e) {
+						log.error("Failed to send Iec Spontaneous Values");
+						remove();
+					}
+					break;
+				case SCALEDVALUES:
+					break;
 				}
-				lastSend = System.currentTimeMillis();
 			}
 		}
 	}
