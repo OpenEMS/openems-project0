@@ -76,7 +76,7 @@ public class EnBAGController extends Controller {
 		this.gridCounter = gridCounter;
 		this.essDevices = essDevices;
 		this.allowChargeFromAC = allowChargeFromAc;
-		this.maxGridFeedPower = new Element<IntegerType>("maxGridFeedPower", "W");
+		this.maxGridFeedPower = new Element<>("maxGridFeedPower", "W");
 		this.maxGridFeedPower.setValue(new IntegerType(maxGridFeedPower));
 		this.pvOnGridSwitchName = pvOnGridSwitch;
 		this.pvOffGridSwitchName = pvOffGridSwitch;
@@ -85,25 +85,25 @@ public class EnBAGController extends Controller {
 		this.io = io;
 		this.solarLog = solarLog;
 		this.pvCounter = pvCounter;
-		totalActivePower = new Element<IntegerType>("totalActivePower", "W");
-		totalReactivePower = new Element<IntegerType>("totalReactivePower", "W");
-		totalApparentPower = new Element<IntegerType>("totalApparentPower", "W");
-		inHousePowerConsumption = new Element<LongType>("inHousePowerConsumption", "W");
-		remoteActivePower = new Element<IntegerType>("remoteActivePower", "W");
-		remoteStart = new Element<BooleanType>("remoteStop", "");
+		totalActivePower = new Element<>("totalActivePower", "W");
+		totalReactivePower = new Element<>("totalReactivePower", "W");
+		totalApparentPower = new Element<>("totalApparentPower", "W");
+		inHousePowerConsumption = new Element<>("inHousePowerConsumption", "W");
+		remoteActivePower = new Element<>("remoteActivePower", "W");
+		remoteStart = new Element<>("remoteStop", "");
 		remoteStart.setValue(new BooleanType(true));
 		remoteStart.setValid(true);
-		gridFeedLimitation = new Element<BooleanType>("gridFeedLimitation", "");
+		gridFeedLimitation = new Element<>("gridFeedLimitation", "");
 		gridFeedLimitation.setValue(new BooleanType(true));
 		gridFeedLimitation.setValid(true);
-		isRemoteControlled = new Element<BooleanType>("isRemoteControlled", "");
+		isRemoteControlled = new Element<>("isRemoteControlled", "");
 		isRemoteControlled.setValue(new BooleanType(false));
 		isRemoteControlled.setValid(true);
-		this.essOffGridSwitches = new HashMap<String, Boolean>();
+		this.essOffGridSwitches = new HashMap<>();
 		for (Entry<String, String> value : essOffGridSwitchMapping.entrySet()) {
 			this.essOffGridSwitches.put(value.getValue(), false);
 		}
-		this.cluster = new EssCluster("Cluster", "", 0, 0, new ArrayList<Ess>(essDevices.values()));
+		this.cluster = new EssCluster("Cluster", "", 0, 0, new ArrayList<>(essDevices.values()));
 	}
 
 	public int getMaxGridFeedPower() throws InvalidValueExcecption {
@@ -255,7 +255,12 @@ public class EnBAGController extends Controller {
 
 							// overwrite ActivePower by Remote value
 							if (isRemoteControlled.getValue().toBoolean()) {
-								calculatedEssActivePower = remoteActivePower.getValue().toInteger();
+								int maxPower = Math.abs(remoteActivePower.getValue().toInteger());
+								if (calculatedEssActivePower > maxPower) {
+									calculatedEssActivePower = maxPower;
+								} else if (calculatedEssActivePower < maxPower * -1) {
+									calculatedEssActivePower = maxPower * -1;
+								}
 							}
 							if (calculatedEssActivePower >= 0) {
 								// discharge
